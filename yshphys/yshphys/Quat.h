@@ -10,8 +10,10 @@ public:
 	Quat(const Vec3& axis, double angle);
 	virtual ~Quat();
 
+	Vec3 Transform(const Vec3& v) const;
+
 	Quat operator * (const Quat& q) const;
-	Quat operator -() const;
+	Quat operator - () const; // conjugate http://mathworld.wolfram.com/QuaternionConjugate.html
 	
 protected:
 

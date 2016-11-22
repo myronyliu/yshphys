@@ -3,6 +3,7 @@
 
 
 Quat::Quat()
+	: x(0.0), y(0.0), z(0.0), w(1.0)
 {
 }
 
@@ -24,6 +25,14 @@ Quat::~Quat()
 {
 }
 
+Vec3 Quat::Transform(const Vec3& v) const
+{
+	Quat p(v.x, v.y, v.z, 0.0);
+	const Quat& q = *this;
+	Quat pRotated = q*p*(-q);
+	return Vec3(pRotated.x, pRotated.y, pRotated.z);
+}
+
 Quat Quat::operator * (const Quat& q) const
 {
 	return Quat
@@ -37,5 +46,5 @@ Quat Quat::operator * (const Quat& q) const
 
 Quat Quat::operator - () const
 {
-	return Quat(x, y, z, -w);
+	return Quat(-x, -y, -z, w);
 }
