@@ -31,52 +31,22 @@ Vec3 Vec3::Cross(const Vec3& v) const
 	);
 }
 
-void Vec3::operator *= (double k)
+Vec3 Vec3::Scale(double k) const
 {
-	x *= k;
-	y *= k;
-	z *= k;
+	return Vec3(k*x, k*y, k*z);
 }
 
-void Vec3::operator /= (double k)
+Vec3 Vec3::Times(const Vec3& v) const
 {
-	double kInv = 1.0 / k;
-	x *= kInv;
-	y *= kInv;
-	z *= kInv;
+	return Vec3(x*v.x, y*v.y, z*v.z);
 }
 
-void Vec3::operator += (const Vec3& v)
+Vec3 Vec3::operator + (const Vec3& v) const
 {
-	x += v.x;
-	y += v.y;
-	z += v.z;
-}
-void Vec3::operator -= (const Vec3& v)
-{
-	x -= v.x;
-	y -= v.y;
-	z -= v.z;
+	return Vec3(x + v.x, y + v.y, z + v.z);
 }
 
-Vec3 operator * (double k, const Vec3& v)
+Vec3 Vec3::operator - (const Vec3& v) const
 {
-	return Vec3(k*v.x, k*v.y, k*v.z);
-}
-Vec3 operator * (const Vec3& v, double k)
-{
-	return Vec3(k*v.x, k*v.y, k*v.z);
-}
-Vec3 operator / (const Vec3& v, double k)
-{
-	double kInv = 1.0 / k;
-	return Vec3(kInv*v.x, kInv*v.y, kInv*v.z);
-}
-Vec3 operator + (const Vec3& u, const Vec3& v)
-{
-	return Vec3(u.x + v.x, u.y + v.y, u.z + v.z);
-}
-Vec3 operator - (const Vec3& u, const Vec3& v)
-{
-	return Vec3(u.x - v.x, u.y - v.y, u.z - v.z);
+	return Vec3(x - v.x, y - v.y, z - v.z);
 }

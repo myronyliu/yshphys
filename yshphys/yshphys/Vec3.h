@@ -12,11 +12,11 @@ public:
 
 	double Dot(const Vec3& v) const;
 	Vec3 Cross(const Vec3& v) const;
+	Vec3 Scale(double x) const;
+	Vec3 Times(const Vec3& v) const; // Componentwise multiplication
 
-	void operator *= (double k);
-	void operator /= (double k);
-	void operator += (const Vec3& v);
-	void operator -= (const Vec3& v);
+	Vec3 operator + (const Vec3& v) const;
+	Vec3 operator - (const Vec3& v) const;
 
 	///////////////
 	// VARIABLES //
@@ -25,9 +25,3 @@ public:
 	double x, y, z;
 };
 
-
-Vec3 operator * (double k, const Vec3& v);
-Vec3 operator * (const Vec3& v, double k);
-Vec3 operator / (const Vec3& v, double k);
-Vec3 operator + (const Vec3& u, const Vec3& v);
-Vec3 operator - (const Vec3& u, const Vec3& v);
