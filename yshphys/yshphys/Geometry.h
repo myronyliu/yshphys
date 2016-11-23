@@ -19,6 +19,8 @@ public:
 	double ComputeSeparation(const Geometry* geom, Vec3& ptSelf, Vec3& ptGeom) const;
 
 protected:
+	double ComputePenetration(const Geometry* geom, Vec3& ptSelf, Vec3& ptGeom, Vec3* tetrahedron) const;
+
 	Vec3 m_pos; // position
 	Quat m_rot; // rotation
 };
