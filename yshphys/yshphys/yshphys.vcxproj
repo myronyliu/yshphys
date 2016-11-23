@@ -147,7 +147,9 @@
   <ItemGroup>
     <ClInclude Include="Box.h" />
     <ClInclude Include="BV.h" />
+    <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Quat.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="stdafx.h" />
@@ -157,7 +159,9 @@
   <ItemGroup>
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="BV.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="stdafx.cpp">

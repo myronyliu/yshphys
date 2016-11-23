@@ -13,7 +13,7 @@ Cylinder::~Cylinder()
 
 Vec3 Cylinder::Support(const Vec3& v) const
 {
-	Vec3 vLocal = (-m_ori).Transform(v);
+	Vec3 vLocal = (-m_rot).Transform(v);
 	Vec3 supportLocal;
 	double xySqr = vLocal.x*vLocal.x + vLocal.y*vLocal.y;
 
@@ -29,5 +29,5 @@ Vec3 Cylinder::Support(const Vec3& v) const
 		supportLocal.y = 0.0;
 	}
 	supportLocal.z = m_halfHeight * (double)((0.0 < vLocal.z) - (vLocal.z < 0.0));
-	return m_pos + m_ori.Transform(supportLocal);
+	return m_pos + m_rot.Transform(supportLocal);
 }
