@@ -23,6 +23,16 @@ Quat Geometry::GetRotation() const
 	return m_rot;
 }
 
+void Geometry::SetPosition(const Vec3& pos)
+{
+	m_pos = pos;
+}
+
+void Geometry::SetRotation(const Quat& rot)
+{
+	m_rot = rot;
+}
+
 Vec3 Geometry::Support(const Vec3& v) const
 {
 	return Vec3(0.0, 0.0, 0.0);

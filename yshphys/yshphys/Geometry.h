@@ -12,6 +12,9 @@ public:
 	Vec3 GetPosition() const;
 	Quat GetRotation() const;
 
+	void SetPosition(const Vec3& pos);
+	void SetRotation(const Quat& rot);
+
 	virtual Vec3 Support(const Vec3& v) const;
 
 	// ptSelf and ptGeoms are the points on the respective Geometries
