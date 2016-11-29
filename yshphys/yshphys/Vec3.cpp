@@ -1,29 +1,33 @@
 #include "stdafx.h"
 #include "Vec3.h"
 
-
-Vec3::Vec3()
+template <class T>
+Vec3_t<T>::Vec3_t()
 {
 	// Leave unitialized for efficiency
 }
 
-Vec3::Vec3(double x_, double y_, double z_)
+template <class T>
+Vec3_t<T>::Vec3_t(T x_, T y_, T z_)
 	: x(x_), y(y_), z(z_)
 {
 }
 
-Vec3::~Vec3()
+template <class T>
+Vec3_t<T>::~Vec3_t()
 {
 }
 
-double Vec3::Dot(const Vec3& v) const
+template <class T>
+T Vec3_t<T>::Dot(const Vec3_t<T>& v) const
 {
 	return x*v.x + y*v.y + z*v.z;
 }
 
-Vec3 Vec3::Cross(const Vec3& v) const
+template <class T>
+Vec3_t<T> Vec3_t<T>::Cross(const Vec3_t<T>& v) const
 {
-	return Vec3
+	return Vec3_t<T>
 	(
 		y*v.z - z*v.y,
 		z*v.x - x*v.z,
@@ -31,27 +35,69 @@ Vec3 Vec3::Cross(const Vec3& v) const
 	);
 }
 
-Vec3 Vec3::Scale(double k) const
+template <class T>
+Vec3_t<T> Vec3_t<T>::Scale(T k) const
 {
-	return Vec3(k*x, k*y, k*z);
+	return Vec3_t<T>(k*x, k*y, k*z);
 }
 
-Vec3 Vec3::Times(const Vec3& v) const
+template <class T>
+Vec3_t<T> Vec3_t<T>::Times(const Vec3_t<T>& v) const
 {
-	return Vec3(x*v.x, y*v.y, z*v.z);
+	return Vec3_t<T>(x*v.x, y*v.y, z*v.z);
 }
 
-Vec3 Vec3::operator + (const Vec3& v) const
+template <class T>
+Vec3_t<T> Vec3_t<T>::operator + (const Vec3_t<T>& v) const
 {
-	return Vec3(x + v.x, y + v.y, z + v.z);
+	return Vec3_t<T>(x + v.x, y + v.y, z + v.z);
 }
 
-Vec3 Vec3::operator - (const Vec3& v) const
+template <class T>
+Vec3_t<T> Vec3_t<T>::operator - (const Vec3_t<T>& v) const
 {
-	return Vec3(x - v.x, y - v.y, z - v.z);
+	return Vec3_t<T>(x - v.x, y - v.y, z - v.z);
 }
 
-Vec3 Vec3::operator - () const
+template <class T>
+Vec3_t<T> Vec3_t<T>::operator - () const
 {
-	return Vec3(-x, -y, -z);
+	return Vec3_t<T>(-x, -y, -z);
 }
+
+template <class T>
+T Vec3_t<T>::operator [] (int i) const
+{
+	switch (i)
+	{
+	case 0:
+		return x;
+	case 1:
+		return y;
+	case 2:
+		return z;
+	default:
+		assert(false);
+		return x;
+	}
+}
+
+template <class T>
+T& Vec3_t<T>::operator [] (int i)
+{
+	switch (i)
+	{
+	case 0:
+		return x;
+	case 1:
+		return y;
+	case 2:
+		return z;
+	default:
+		assert(false);
+		return x;
+	}
+}
+
+template class Vec3_t<float>;
+template class Vec3_t<double>;

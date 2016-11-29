@@ -18,14 +18,14 @@ int main(int argc, char *args[])
 	Box box2;
 	box1.SetDimensions(1, 1, 1);
 	box2.SetDimensions(1, 1, 1);
-	box1.SetPosition(Vec3(0.0, 0.0, 0.0));
-	box2.SetPosition(Vec3(3.0, 0.0, 0.0));
+	box1.SetPosition(dVec3(0.0, 0.0, 0.0));
+	box2.SetPosition(dVec3(3.0, 0.0, 0.0));
 	box1.SetRotation(Quat(0.0, 0.0, 0.0, 1.0));
 	box2.SetRotation(Quat(0.0, 0.0, 0.0, 1.0));
-	Vec3 pt1;
-	Vec3 pt2;
-	Vec3 pt3;
-	Vec3 pt4;
+	dVec3 pt1;
+	dVec3 pt2;
+	dVec3 pt3;
+	dVec3 pt4;
 	double asdf = box1.ComputeSeparation(&box2, pt1, pt2);
 	double qwer = box2.ComputeSeparation(&box1, pt3, pt4);
 	

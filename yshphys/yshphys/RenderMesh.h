@@ -9,10 +9,10 @@ public:
 	virtual ~RenderMesh();
 
 	void CreateBox(
-		double halfDimX, double halfDimY, double halfDimZ,
+		float halfDimX, float halfDimY, float halfDimZ,
 		unsigned int divisionsX, unsigned int divisionsY, unsigned int divisionsZ
 		);
-	void CreateCylinder(double radius, double halfHeight);
+	void CreateCylinder(float radius, float halfHeight);
 
 private:
 
@@ -22,9 +22,9 @@ private:
 	unsigned int m_nVertices;
 	unsigned int m_nIndices;
 
-	Vec3* m_positions;
-	Vec3* m_normals;
-	Vec3* m_colors;
+	fVec3* m_positions;
+	fVec3* m_normals;
+	fVec3* m_colors;
 
 	unsigned int* m_indices;
 };

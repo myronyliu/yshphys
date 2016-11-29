@@ -10,7 +10,7 @@ public:
 	void GetDimensions(double& halfDimX, double& halfDimY, double& halfDimZ) const;
 	void SetDimensions(double halfDimX, double halDimY, double halfDimZ);
 
-	Vec3 Support(const Vec3& v) const;
+	dVec3 Support(const dVec3& v) const;
 
 protected:
 	double m_halfDim[3];

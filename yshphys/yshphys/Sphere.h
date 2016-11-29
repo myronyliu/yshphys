@@ -7,7 +7,7 @@ public:
 	Sphere();
 	virtual ~Sphere();
 
-	virtual Vec3 Support(const Vec3& v) const;
+	virtual dVec3 Support(const dVec3& v) const;
 
 protected:
 	float m_radius;

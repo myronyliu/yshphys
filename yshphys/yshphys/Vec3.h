@@ -1,28 +1,33 @@
 #pragma once
-class Vec3
+template<class T> class Vec3_t
 {
 public:
 	///////////////
 	// FUNCTIONS //
 	///////////////
 
-	Vec3();
-	Vec3(double x_, double y_, double z_);
-	virtual ~Vec3();
+	Vec3_t();
+	Vec3_t(T x_, T y_, T z_);
+	virtual ~Vec3_t();
 
-	double Dot(const Vec3& v) const;
-	Vec3 Cross(const Vec3& v) const;
-	Vec3 Scale(double x) const;
-	Vec3 Times(const Vec3& v) const; // Componentwise multiplication
+	T Dot(const Vec3_t<T>& v) const;
+	Vec3_t<T> Cross(const Vec3_t<T>& v) const;
+	Vec3_t<T> Scale(T x) const;
+	Vec3_t<T> Times(const Vec3_t<T>& v) const; // Componentwise multiplication
 
-	Vec3 operator + (const Vec3& v) const;
-	Vec3 operator - (const Vec3& v) const;
-	Vec3 operator - () const;
+	Vec3_t<T> operator + (const Vec3_t<T>& v) const;
+	Vec3_t<T> operator - (const Vec3_t<T>& v) const;
+	Vec3_t<T> operator - () const;
+
+	T operator [] (int i) const;
+	T& operator [] (int i);
 
 	///////////////
 	// VARIABLES //
 	///////////////
 
-	double x, y, z;
+	T x, y, z;
 };
 
+typedef Vec3_t<double> dVec3;
+typedef Vec3_t<float> fVec3;

@@ -9,23 +9,23 @@ public:
 	Geometry();
 	virtual ~Geometry();
 
-	Vec3 GetPosition() const;
+	dVec3 GetPosition() const;
 	Quat GetRotation() const;
 
-	void SetPosition(const Vec3& pos);
+	void SetPosition(const dVec3& pos);
 	void SetRotation(const Quat& rot);
 
-	virtual Vec3 Support(const Vec3& v) const;
+	virtual dVec3 Support(const dVec3& v) const;
 
 	// ptSelf and ptGeoms are the points on the respective Geometries
 	// that consititue the smallest separation between the Geometries.
 	// separation is the distance between ptSelf and ptGeom (negative if penetrating)
-	double ComputeSeparation(const Geometry* geom, Vec3& ptSelf, Vec3& ptGeom) const;
+	double ComputeSeparation(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom) const;
 
 protected:
-	double ComputePenetration(const Geometry* geom, Vec3& ptSelf, Vec3& ptGeom, Simplex3D tetrahedron) const;
+	double ComputePenetration(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom, Simplex3D tetrahedron) const;
 
-	Vec3 m_pos; // position
+	dVec3 m_pos; // position
 	Quat m_rot; // rotation
 };
 

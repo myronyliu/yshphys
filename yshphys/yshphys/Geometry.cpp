@@ -14,7 +14,7 @@ Geometry::~Geometry()
 {
 }
 
-Vec3 Geometry::GetPosition() const
+dVec3 Geometry::GetPosition() const
 {
 	return m_pos;
 }
@@ -23,7 +23,7 @@ Quat Geometry::GetRotation() const
 	return m_rot;
 }
 
-void Geometry::SetPosition(const Vec3& pos)
+void Geometry::SetPosition(const dVec3& pos)
 {
 	m_pos = pos;
 }
@@ -33,25 +33,25 @@ void Geometry::SetRotation(const Quat& rot)
 	m_rot = rot;
 }
 
-Vec3 Geometry::Support(const Vec3& v) const
+dVec3 Geometry::Support(const dVec3& v) const
 {
-	return Vec3(0.0, 0.0, 0.0);
+	return dVec3(0.0, 0.0, 0.0);
 }
 
-double Geometry::ComputePenetration(const Geometry* geom, Vec3& ptSelf, Vec3& ptGeom, Simplex3D tetrahedron) const
+double Geometry::ComputePenetration(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom, Simplex3D tetrahedron) const
 {
 	return -1.0;
 }
 
-double Geometry::ComputeSeparation(const Geometry* geom, Vec3& ptSelf, Vec3& ptGeom) const
+double Geometry::ComputeSeparation(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom) const
 {
 	Simplex3D simplex;
 
 	// First pass is special. Don't check for termination since v is just a guess.
-	Vec3 v(m_pos - geom->m_pos);
+	dVec3 v(m_pos - geom->m_pos);
 	ptSelf = Support(-v);
 	ptGeom = geom->Support(v);
-	Vec3 ptSimplex(ptSelf - ptGeom);
+	dVec3 ptSimplex(ptSelf - ptGeom);
 	simplex.SetVertices(1, &ptSimplex);
 
 	int nIter = 0;
@@ -61,7 +61,7 @@ double Geometry::ComputeSeparation(const Geometry* geom, Vec3& ptSelf, Vec3& ptG
 		// Get the closest point on the convex hull of the simplex, set it to the new support direction "v"
 		// and discard any existing points on the simplex that are not needed to express "v"
 		Simplex3D newSimplex;
-		v = simplex.ClosestPoint(Vec3(0.0, 0.0, 0.0), newSimplex);
+		v = simplex.ClosestPoint(dVec3(0.0, 0.0, 0.0), newSimplex);
 
 		if (newSimplex.GetNumVertices() == 4)
 		{

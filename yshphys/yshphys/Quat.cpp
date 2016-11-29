@@ -12,7 +12,7 @@ Quat::Quat(double x_, double y_, double z_, double w_)
 {
 }
 
-Quat::Quat(const Vec3& axis, double angle)
+Quat::Quat(const dVec3& axis, double angle)
 	: w(cos(0.5f * angle))
 {
 	double k = sin(0.5f *angle);
@@ -25,12 +25,12 @@ Quat::~Quat()
 {
 }
 
-Vec3 Quat::Transform(const Vec3& v) const
+dVec3 Quat::Transform(const dVec3& v) const
 {
 	Quat p(v.x, v.y, v.z, 0.0);
 	const Quat& q = *this;
 	Quat pRotated = q*p*(-q);
-	return Vec3(pRotated.x, pRotated.y, pRotated.z);
+	return dVec3(pRotated.x, pRotated.y, pRotated.z);
 }
 
 Quat Quat::operator * (const Quat& q) const

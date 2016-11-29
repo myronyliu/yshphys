@@ -11,10 +11,10 @@ Cylinder::~Cylinder()
 {
 }
 
-Vec3 Cylinder::Support(const Vec3& v) const
+dVec3 Cylinder::Support(const dVec3& v) const
 {
-	Vec3 vLocal = (-m_rot).Transform(v);
-	Vec3 supportLocal;
+	dVec3 vLocal = (-m_rot).Transform(v);
+	dVec3 supportLocal;
 	double xySqr = vLocal.x*vLocal.x + vLocal.y*vLocal.y;
 
 	if (xySqr > 0.0)

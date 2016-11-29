@@ -7,7 +7,7 @@ public:
 	Cylinder();
 	~Cylinder();
 
-	Vec3 Support(const Vec3& v) const;
+	dVec3 Support(const dVec3& v) const;
 
 protected:
 	double m_halfHeight;
