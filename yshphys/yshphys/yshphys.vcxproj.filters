@@ -16,6 +16,9 @@
     <Filter Include="Math">
       <UniqueIdentifier>{86b835a6-3bae-4b61-ae55-f4987ab8bbc3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{fe995c72-c368-4e98-9d2b-cd067ae37dfc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -27,19 +30,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Geometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BV.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Cylinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Quat.h">
@@ -48,13 +39,28 @@
     <ClInclude Include="Vec3.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="MathUtils.h">
+    <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Cylinder.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils.h">
+      <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="Simplex3D.h">
-      <Filter>Header Files</Filter>
+      <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
+    <ClInclude Include="Sphere.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,19 +71,7 @@
     <ClCompile Include="yshphys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Geometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BV.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Cylinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Quat.cpp">
@@ -86,13 +80,28 @@
     <ClCompile Include="Vec3.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="MathUtils.cpp">
+    <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Cylinder.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="MathUtils.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Simplex3D.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
