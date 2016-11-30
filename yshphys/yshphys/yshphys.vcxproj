@@ -76,7 +76,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>D:\Projects\yshphys\yshphys\packages\glew.v140.1.12.0\build\native\include\GL;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Projects\yshphys\yshphys\yshphys\glew-2.0.0\include\GL;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -112,8 +112,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Projects\yshphys\yshphys\packages\glew.v140.1.12.0\build\native\lib\x64\Release;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Projects\yshphys\yshphys\yshphys\glew-2.0.0\lib\Release\x64;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -161,7 +161,9 @@
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="MathUtils.h" />
+    <ClInclude Include="OpenGLRenderer.h" />
     <ClInclude Include="Quat.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderMesh.h" />
     <ClInclude Include="Simplex3D.h" />
     <ClInclude Include="Sphere.h" />
@@ -176,6 +178,7 @@
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="MathUtils.cpp" />
+    <ClCompile Include="OpenGLRenderer.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="RenderMesh.cpp" />
     <ClCompile Include="Simplex3D.cpp" />
@@ -191,16 +194,8 @@
     <ClCompile Include="yshphys.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="DefaultVertShader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\glew.v140.1.12.0\build\native\glew.v140.targets" Condition="Exists('..\packages\glew.v140.1.12.0\build\native\glew.v140.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\glew.v140.1.12.0\build\native\glew.v140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glew.v140.1.12.0\build\native\glew.v140.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

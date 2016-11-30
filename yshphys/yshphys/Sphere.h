@@ -10,6 +10,6 @@ public:
 	virtual dVec3 Support(const dVec3& v) const;
 
 protected:
-	float m_radius;
+	double m_radius;
 };
 

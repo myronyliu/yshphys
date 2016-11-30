@@ -204,7 +204,7 @@ dVec3 Simplex3D::ClosestPoint(const dVec3& x, Simplex3D& closestFeature) const
 			n.Scale(n.Dot(v1 - v0)); // make sure the normal is facing outward
 
 			const dVec3 v1_x(x - v1);
-			const float d = n.Dot(v1_x);
+			const double d = n.Dot(v1_x);
 
 			if (d >= 0.0)
 			{

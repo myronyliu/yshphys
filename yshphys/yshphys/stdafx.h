@@ -13,6 +13,12 @@
 #include <cstdlib>
 #include <math.h>
 #include <cassert>
+#include <string>
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
 
 // Returns (-1, 0 , 1). See http://stackoverflow.com/a/4609795
 template <typename T> int sgn(T val)
