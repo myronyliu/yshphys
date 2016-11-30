@@ -10,10 +10,10 @@ public:
 	virtual ~Geometry();
 
 	dVec3 GetPosition() const;
-	Quat GetRotation() const;
+	dQuat GetRotation() const;
 
 	void SetPosition(const dVec3& pos);
-	void SetRotation(const Quat& rot);
+	void SetRotation(const dQuat& rot);
 
 	virtual dVec3 Support(const dVec3& v) const;
 
@@ -26,6 +26,6 @@ protected:
 	double ComputePenetration(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom, Simplex3D tetrahedron) const;
 
 	dVec3 m_pos; // position
-	Quat m_rot; // rotation
+	dQuat m_rot; // rotation
 };
 

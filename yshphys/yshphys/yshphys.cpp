@@ -20,8 +20,8 @@ int main(int argc, char *args[])
 	box2.SetDimensions(1, 1, 1);
 	box1.SetPosition(dVec3(0.0, 0.0, 0.0));
 	box2.SetPosition(dVec3(3.0, 0.0, 0.0));
-	box1.SetRotation(Quat(0.0, 0.0, 0.0, 1.0));
-	box2.SetRotation(Quat(0.0, 0.0, 0.0, 1.0));
+	box1.SetRotation(dQuat(0.0, 0.0, 0.0, 1.0));
+	box2.SetRotation(dQuat(0.0, 0.0, 0.0, 1.0));
 	dVec3 pt1;
 	dVec3 pt2;
 	dVec3 pt3;

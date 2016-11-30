@@ -18,7 +18,7 @@ dVec3 Geometry::GetPosition() const
 {
 	return m_pos;
 }
-Quat Geometry::GetRotation() const
+dQuat Geometry::GetRotation() const
 {
 	return m_rot;
 }
@@ -28,7 +28,7 @@ void Geometry::SetPosition(const dVec3& pos)
 	m_pos = pos;
 }
 
-void Geometry::SetRotation(const Quat& rot)
+void Geometry::SetRotation(const dQuat& rot)
 {
 	m_rot = rot;
 }

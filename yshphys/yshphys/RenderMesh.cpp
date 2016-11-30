@@ -24,6 +24,24 @@ void RenderMesh::ClearMesh()
 	delete[] m_colors;
 }
 
+
+fVec3 RenderMesh::GetPosition() const
+{
+	return m_pos;
+}
+fQuat RenderMesh::GetRotation() const
+{
+	return m_rot;
+}
+void RenderMesh::SetPosition(const fVec3& pos)
+{
+	m_pos = pos;
+}
+void RenderMesh::SetRotation(const fQuat& rot)
+{
+	m_rot = rot;
+}
+
 void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nIndices)
 {
 	ClearMesh();

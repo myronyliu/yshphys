@@ -1,41 +1,46 @@
 #include "stdafx.h"
 #include "Quat.h"
 
-
-Quat::Quat()
-	: x(0.0), y(0.0), z(0.0), w(1.0)
+template <class T>
+Quat_t<T>::Quat_t()
+	: x(T(0.0)), y(T(0.0)), z(T(0.0)), w(T(1.0))
 {
 }
 
-Quat::Quat(double x_, double y_, double z_, double w_)
+template <class T>
+Quat_t<T>::Quat_t(T x_, T y_, T z_, T w_)
 	: x(x_), y(y_), z(z_), w(w_)
 {
 }
 
-Quat::Quat(const dVec3& axis, double angle)
-	: w(cos(0.5f * angle))
+template <class T>
+Quat_t<T>::Quat_t(const Vec3_t<T>& axis, T angle)
+	: w(cos(T(0.5) * angle))
 {
-	double k = sin(0.5f *angle);
+	T k = sin(T(0.5) *angle);
 	x = k * axis.x;
 	y = k * axis.y;
 	z = k * axis.z;
 }
 
-Quat::~Quat()
+template <class T>
+Quat_t<T>::~Quat_t()
 {
 }
 
-dVec3 Quat::Transform(const dVec3& v) const
+template <class T>
+Vec3_t<T> Quat_t<T>::Transform(const Vec3_t<T>& v) const
 {
-	Quat p(v.x, v.y, v.z, 0.0);
-	const Quat& q = *this;
-	Quat pRotated = q*p*(-q);
-	return dVec3(pRotated.x, pRotated.y, pRotated.z);
+	Quat_t<T> p(v.x, v.y, v.z, 0.0);
+	const Quat_t<T>& q = *this;
+	Quat_t<T> pRotated = q*p*(-q);
+	return Vec3_t<T>(pRotated.x, pRotated.y, pRotated.z);
 }
 
-Quat Quat::operator * (const Quat& q) const
+template <class T>
+Quat_t<T> Quat_t<T>::operator * (const Quat_t& q) const
 {
-	return Quat
+	return Quat_t<T>
 	(
 		w*q.x + x*q.w + y*q.z - z*q.y,
 		w*q.y - x*q.z + y*q.w + z*q.x,
@@ -44,7 +49,11 @@ Quat Quat::operator * (const Quat& q) const
 	);
 }
 
-Quat Quat::operator - () const
+template <class T>
+Quat_t<T> Quat_t<T>::operator - () const
 {
-	return Quat(-x, -y, -z, w);
+	return Quat_t<T>(-x, -y, -z, w);
 }
+
+template class Quat_t<float>;
+template class Quat_t<double>;

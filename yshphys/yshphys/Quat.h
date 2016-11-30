@@ -1,19 +1,20 @@
 #pragma once
 #include "Vec3.h"
 
-class Quat
+template <class T>
+class Quat_t
 {
 public:
 	// For constructors, we adopt the convention of AXIS first and ANGLE second
-	Quat();
-	Quat(double x_, double y_, double z_, double w_);
-	Quat(const dVec3& axis, double angle);
-	virtual ~Quat();
+	Quat_t();
+	Quat_t(T x_, T y_, T z_, T w_);
+	Quat_t(const Vec3_t<T>& axis, T angle);
+	virtual ~Quat_t();
 
-	dVec3 Transform(const dVec3& v) const;
+	Vec3_t<T> Transform(const Vec3_t<T>& v) const;
 
-	Quat operator * (const Quat& q) const;
-	Quat operator - () const; // conjugate http://mathworld.wolfram.com/QuaternionConjugate.html
+	Quat_t<T> operator * (const Quat_t<T>& q) const;
+	Quat_t<T> operator - () const; // conjugate http://mathworld.wolfram.com/QuaternionConjugate.html
 	
 protected:
 
@@ -21,7 +22,9 @@ protected:
 	// VARIABLES //
 	///////////////
 
-	double x, y, z;
-	double w;
+	T x, y, z;
+	T w;
 };
 
+typedef Quat_t<float> fQuat;
+typedef Quat_t<double> dQuat;
