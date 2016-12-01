@@ -2,22 +2,24 @@
 #include "RenderMesh.h"
 
 
-RenderMesh::RenderMesh()
+RenderMesh::RenderMesh() : m_VAO(0), m_VBO_positions(0), m_VBO_normals(0), m_VBO_colors(0), m_IBO(0)
 {
 }
 
 RenderMesh::~RenderMesh()
 {
+	ClearMesh();
+	ClearGLBufferObjects();
 }
 void RenderMesh::GetMeshData
 (
 	unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,
-	unsigned int& nIndices, const unsigned int* indices
+	unsigned int& nTriangles, const unsigned int* indices
 )
 const
 {
 	nVertices = m_nVertices;
-	nIndices = m_nIndices;
+	nTriangles = m_nTriangles;
 	positions = m_positions;
 	normals = m_normals;
 	colors = m_colors;
@@ -26,27 +28,87 @@ const
 void RenderMesh::ClearMesh()
 {
 	m_nVertices = 0;
-	m_nIndices = 0;
+	m_nTriangles = 0;
 
-	delete[] m_indices;
+	delete[] m_triangles;
 
 	delete[] m_positions;
 	delete[] m_normals;
 	delete[] m_colors;
 }
 
-void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nIndices)
+void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nTriangles)
 {
 	ClearMesh();
 
 	m_nVertices = nVertices;
-	m_nIndices = nIndices;
+	m_nTriangles = nTriangles;
 
 	m_positions = new fVec3[nVertices];
 	m_normals = new fVec3[nVertices];
 	m_colors = new fVec3[nVertices];
 
-	m_indices = new unsigned int[3 * nIndices];
+	m_triangles = new TriangleVertexIndices[nTriangles];
+}
+
+void RenderMesh::ClearGLBufferObjects()
+{
+	glBindVertexArray(m_VAO);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glBindVertexArray(0);
+
+	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_VBO_positions);
+	glDeleteBuffers(1, &m_VBO_normals);
+	glDeleteBuffers(1, &m_VBO_colors);
+	glDeleteBuffers(1, &m_IBO);
+}
+void RenderMesh::GenerateGLBufferObjects()
+{
+	ClearGLBufferObjects();
+
+	// allocate GPU memory
+	glGenVertexArrays(1, &m_VAO);
+	glGenBuffers(1, &m_VBO_positions);
+	glGenBuffers(1, &m_VBO_normals);
+	glGenBuffers(1, &m_VBO_colors);
+	glGenBuffers(1, &m_IBO);
+
+	glBindVertexArray(m_VAO);
+	{
+		// Specify the vertex data
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO_positions);
+		{
+			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_positions, GL_STATIC_DRAW);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO_normals);
+		{
+			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_normals, GL_STATIC_DRAW);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO_colors);
+		{
+			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_colors, GL_STATIC_DRAW);
+			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// Enable all three vertex attributes (position, normals, colors)
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+
+		// Specify the triangle indices data
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+		{
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * m_nTriangles * sizeof(GL_UNSIGNED_INT), m_triangles, GL_STATIC_DRAW);
+		}
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+	glBindVertexArray(0);
 }
 
 void RenderMesh::CreateBox
@@ -59,14 +121,14 @@ void RenderMesh::CreateBox
 		(divisionsX + 2)*(divisionsY + 2) +
 		(divisionsY + 2)*(divisionsZ + 2) +
 		(divisionsZ + 2)*(divisionsX + 2)));
-	const unsigned int nIndices(4 * (
+	const unsigned int nTriangles(4 * (
 		(divisionsX + 1)*(divisionsY + 1) +
 		(divisionsY + 1)*(divisionsZ + 1) +
 		(divisionsZ + 1)*(divisionsX + 1)));
-	AllocateMesh(nVertices, nIndices);
+	AllocateMesh(nVertices, nTriangles);
 
 	unsigned int iVertex = 0;
-	unsigned int iIndex = 0;
+	unsigned int iTriangle = 0;
 
 	const float halfDims[3] = { halfDimX, halfDimY, halfDimZ };
 	const unsigned int nPoints[3] = { divisionsX + 2, divisionsY + 2, divisionsZ + 2 };
@@ -128,23 +190,23 @@ void RenderMesh::CreateBox
 				const unsigned int i11((i + 1) + nPointsY * (j+1));
 				const unsigned int i10((i + 1) + nPointsY * (j+0));
 
-				m_indices[iIndex + 0] = i00;
-				m_indices[iIndex + 1] = i10;
-				m_indices[iIndex + 2] = i11;
+				m_triangles[iTriangle].m_vertexIndices[0] = i00;
+				m_triangles[iTriangle].m_vertexIndices[1] = i10;
+				m_triangles[iTriangle].m_vertexIndices[2] = i11;
 
-				m_indices[iIndex + 3] = i00;
-				m_indices[iIndex + 4] = i11;
-				m_indices[iIndex + 5] = i01;
+				m_triangles[iTriangle + 1].m_vertexIndices[0] = i00;
+				m_triangles[iTriangle + 1].m_vertexIndices[1] = i11;
+				m_triangles[iTriangle + 1].m_vertexIndices[2] = i01;
 
-				m_indices[iIndex + 0 + nIndices / 2] = i00 + nVertices / 2;
-				m_indices[iIndex + 1 + nIndices / 2] = i11 + nVertices / 2;
-				m_indices[iIndex + 2 + nIndices / 2] = i10 + nVertices / 2;
+				m_triangles[iTriangle + nTriangles / 2].m_vertexIndices[0] = i00 + nVertices / 2;
+				m_triangles[iTriangle + nTriangles / 2].m_vertexIndices[1] = i11 + nVertices / 2;
+				m_triangles[iTriangle + nTriangles / 2].m_vertexIndices[2] = i10 + nVertices / 2;
 
-				m_indices[iIndex + 3 + nIndices / 2] = i00 + nVertices / 2;
-				m_indices[iIndex + 4 + nIndices / 2] = i01 + nVertices / 2;
-				m_indices[iIndex + 5 + nIndices / 2] = i11 + nVertices / 2;
+				m_triangles[iTriangle + 1 + nTriangles / 2].m_vertexIndices[0] = i00 + nVertices / 2;
+				m_triangles[iTriangle + 1 + nTriangles / 2].m_vertexIndices[1] = i01 + nVertices / 2;
+				m_triangles[iTriangle + 1 + nTriangles / 2].m_vertexIndices[2] = i11 + nVertices / 2;
 
-				iIndex += 6;
+				iTriangle += 2;
 			}
 		}
 	}

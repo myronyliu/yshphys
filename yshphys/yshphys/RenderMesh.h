@@ -2,6 +2,13 @@
 
 #include "Vec3.h"
 #include "Quat.h"
+#include "glew.h"
+
+class TriangleVertexIndices
+{
+public:
+	unsigned int m_vertexIndices[3];
+};
 
 class RenderMesh
 {
@@ -11,7 +18,7 @@ public:
 
 	void GetMeshData(
 		unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,
-		unsigned int& nIndices, const unsigned int* indices
+		unsigned int& nTriangles, const unsigned int* indices
 	) const;
 
 	// FACTORY
@@ -24,14 +31,23 @@ public:
 private:
 
 	void ClearMesh();
-	void AllocateMesh(unsigned int nVertices, unsigned int nIndices);
+	void AllocateMesh(unsigned int nVertices, unsigned int nTriangles);
+
+	void ClearGLBufferObjects();
+	void GenerateGLBufferObjects();
 
 	unsigned int m_nVertices;
-	unsigned int m_nIndices;
+	unsigned int m_nTriangles;
 
 	fVec3* m_positions;
 	fVec3* m_normals;
 	fVec3* m_colors;
 
-	unsigned int* m_indices;
+	TriangleVertexIndices* m_triangles;
+
+	GLuint m_VAO;
+	GLuint m_VBO_positions;
+	GLuint m_VBO_normals;
+	GLuint m_VBO_colors;
+	GLuint m_IBO;
 };
