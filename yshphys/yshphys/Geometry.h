@@ -27,5 +27,10 @@ protected:
 
 	dVec3 m_pos; // position
 	dQuat m_rot; // rotation
+
+	unsigned int m_nChildren;
+
+	Geometry* m_parent;
+	Geometry* m_children[16];
 };
 

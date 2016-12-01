@@ -162,8 +162,10 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="OpenGLRenderer.h" />
+    <ClInclude Include="PhysicsObject.h" />
     <ClInclude Include="Quat.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderManager.h" />
     <ClInclude Include="RenderMesh.h" />
     <ClInclude Include="Simplex3D.h" />
     <ClInclude Include="Sphere.h" />
@@ -179,7 +181,9 @@
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="OpenGLRenderer.cpp" />
+    <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="Quat.cpp" />
+    <ClCompile Include="RenderManager.cpp" />
     <ClCompile Include="RenderMesh.cpp" />
     <ClCompile Include="Simplex3D.cpp" />
     <ClCompile Include="Sphere.cpp" />

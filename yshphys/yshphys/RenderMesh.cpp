@@ -2,28 +2,18 @@
 #include "RenderMesh.h"
 
 
-RenderMesh::RenderMesh()
+RenderMesh::RenderMesh() : m_node(nullptr)
 {
 }
-
 
 RenderMesh::~RenderMesh()
 {
 }
 
-
-void RenderMesh::ClearMesh()
+RenderNode* RenderMesh::GetRenderNode() const
 {
-	m_nVertices = 0;
-	m_nIndices = 0;
-
-	delete[] m_indices;
-
-	delete[] m_positions;
-	delete[] m_normals;
-	delete[] m_colors;
+	return m_node;
 }
-
 
 fVec3 RenderMesh::GetPosition() const
 {
@@ -40,6 +30,32 @@ void RenderMesh::SetPosition(const fVec3& pos)
 void RenderMesh::SetRotation(const fQuat& rot)
 {
 	m_rot = rot;
+}
+
+void RenderMesh::GetMeshData
+(
+	unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,
+	unsigned int& nIndices, const unsigned int* indices
+)
+const
+{
+	nVertices = m_nVertices;
+	nIndices = m_nIndices;
+	positions = m_positions;
+	normals = m_normals;
+	colors = m_colors;
+}
+
+void RenderMesh::ClearMesh()
+{
+	m_nVertices = 0;
+	m_nIndices = 0;
+
+	delete[] m_indices;
+
+	delete[] m_positions;
+	delete[] m_normals;
+	delete[] m_colors;
 }
 
 void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nIndices)
