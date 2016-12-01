@@ -2,10 +2,11 @@
 #include "Vec3.h"
 #include "Quat.h"
 
-class MathUtils
+template <class T> class MathUtils_t
 {
 public:
-	MathUtils();
-	virtual ~MathUtils();
+	static T Determinant(const T* matrix, int size);
+private:
+	MathUtils_t() {}
+	~MathUtils_t() {}
 };
-

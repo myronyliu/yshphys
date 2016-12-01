@@ -1,4 +1,7 @@
 #pragma once
+
+template<class T> class Vec4_t;
+
 template<class T> class Vec3_t
 {
 public:
@@ -8,6 +11,7 @@ public:
 
 	Vec3_t();
 	Vec3_t(T x_, T y_, T z_);
+	Vec3_t(const Vec4_t<T>& v4);
 	virtual ~Vec3_t();
 
 	T Dot(const Vec3_t<T>& v) const;

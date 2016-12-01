@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Vec3.h"
+#include "Vec4.h"
 
 template <class T>
 Vec3_t<T>::Vec3_t()
@@ -10,6 +11,12 @@ Vec3_t<T>::Vec3_t()
 template <class T>
 Vec3_t<T>::Vec3_t(T x_, T y_, T z_)
 	: x(x_), y(y_), z(z_)
+{
+}
+
+template <class T>
+Vec3_t<T>::Vec3_t(const Vec4_t<T>& v4)
+	: x(v4.x / v4.w), y(v4.y / v4.w), z(v4.z / v4.w)
 {
 }
 
