@@ -1,25 +1,27 @@
 #pragma once
 
-#include "RenderMesh.h"
+#include "RenderObject.h"
+#include "Renderer.h"
+#include <glew.h>
 
 class RenderNode
 {
 	// Only the render manager can instantiate RenderNodes. This way it is safe to assume that all nodes come from the RenderManager's free list.
 	friend class RenderManager;
 public:
-	RenderMesh* GetMesh() const;
+	RenderObject* GetRenderObject() const;
 	RenderNode* GetPrev() const;
 	RenderNode* GetNext() const;
 private:
 	RenderNode();
 	virtual ~RenderNode();
 
-	void BindMesh(RenderMesh* mesh);
+	void BindRenderObject(RenderObject* renderObject);
 	void Remove();
 	void AppendTo(RenderNode* prev);
 	void PrependTo(RenderNode* next);
 
-	RenderMesh* m_mesh;
+	RenderObject* m_renderObject;
 
 	RenderNode* m_next;
 	RenderNode* m_prev;
@@ -47,10 +49,15 @@ public:
 	RenderManager();
 	virtual ~RenderManager();
 
-	void AddRenderMesh(RenderMesh* mesh);
-	void RemoveRenderMesh(RenderMesh* mesh);
+	void AddRenderObject(RenderObject* renderObject);
+	void RemoveRenderObject(RenderObject* renderObject);
+
+
 protected:
+
 	std::vector<FreeRenderNode> m_freeNodeStack;
 	RenderNode* m_rootNode;
+
+	Renderer* m_renderer;
 };
 

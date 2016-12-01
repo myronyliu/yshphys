@@ -3,15 +3,15 @@
 
 #define MAX_RENDER_MESHES 1024
 
-RenderNode::RenderNode() : m_mesh(nullptr), m_prev(nullptr), m_next(nullptr)
+RenderNode::RenderNode() : m_renderObject(nullptr), m_prev(nullptr), m_next(nullptr)
 {
 }
 RenderNode::~RenderNode()
 {
 }
-RenderMesh* RenderNode::GetMesh() const
+RenderObject* RenderNode::GetRenderObject() const
 {
-	return m_mesh;
+	return m_renderObject;
 }
 RenderNode* RenderNode::GetPrev() const
 {
@@ -21,10 +21,10 @@ RenderNode* RenderNode::GetNext() const
 {
 	return m_prev;
 }
-void RenderNode::BindMesh(RenderMesh* mesh)
+void RenderNode::BindRenderObject(RenderObject* renderObject)
 {
-	m_mesh = mesh;
-	mesh->m_node = this;
+	m_renderObject = renderObject;
+	renderObject->m_node = this;
 }
 void RenderNode::Remove()
 {
@@ -113,12 +113,12 @@ RenderManager::~RenderManager()
 {
 }
 
-void RenderManager::AddRenderMesh(RenderMesh* mesh)
+void RenderManager::AddRenderObject(RenderObject* renderObject)
 {
 	if (!m_freeNodeStack.empty())
 	{
 		FreeRenderNode& freeNode = m_freeNodeStack.back();
-		freeNode.m_node->BindMesh(mesh);
+		freeNode.m_node->BindRenderObject(renderObject);
 
 		if (freeNode.m_precedingNode)
 		{
@@ -134,15 +134,15 @@ void RenderManager::AddRenderMesh(RenderMesh* mesh)
 	}
 }
 
-void RenderManager::RemoveRenderMesh(RenderMesh* mesh)
+void RenderManager::RemoveRenderObject(RenderObject* renderObject)
 {
-	if (RenderNode* node = mesh->GetRenderNode())
+	if (RenderNode* node = renderObject->GetRenderNode())
 	{
 		if (node->GetPrev() == nullptr && node->GetNext() != nullptr)
 		{
 			m_rootNode = node->GetNext();
 		}
-		node->BindMesh(nullptr);
+		node->BindRenderObject(nullptr);
 		FreeRenderNode freeNode;
 		freeNode.m_precedingNode = node->GetPrev();
 		freeNode.m_node = node;

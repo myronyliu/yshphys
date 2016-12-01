@@ -2,36 +2,13 @@
 #include "RenderMesh.h"
 
 
-RenderMesh::RenderMesh() : m_node(nullptr)
+RenderMesh::RenderMesh()
 {
 }
 
 RenderMesh::~RenderMesh()
 {
 }
-
-RenderNode* RenderMesh::GetRenderNode() const
-{
-	return m_node;
-}
-
-fVec3 RenderMesh::GetPosition() const
-{
-	return m_pos;
-}
-fQuat RenderMesh::GetRotation() const
-{
-	return m_rot;
-}
-void RenderMesh::SetPosition(const fVec3& pos)
-{
-	m_pos = pos;
-}
-void RenderMesh::SetRotation(const fQuat& rot)
-{
-	m_rot = rot;
-}
-
 void RenderMesh::GetMeshData
 (
 	unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,

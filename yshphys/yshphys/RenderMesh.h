@@ -5,18 +5,9 @@
 
 class RenderMesh
 {
-	friend class RenderNode;
 public:
 	RenderMesh();
 	virtual ~RenderMesh();
-
-	RenderNode* GetRenderNode() const;
-
-	fVec3 GetPosition() const;
-	fQuat GetRotation() const;
-
-	void SetPosition(const fVec3& pos);
-	void SetRotation(const fQuat& rot);
 
 	void GetMeshData(
 		unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,
@@ -43,9 +34,4 @@ private:
 	fVec3* m_colors;
 
 	unsigned int* m_indices;
-
-	fVec3 m_pos;
-	fQuat m_rot;
-
-	RenderNode* m_node;
 };
