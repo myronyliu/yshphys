@@ -76,7 +76,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>D:\Projects\yshphys\yshphys\yshphys\glew-2.0.0\include\GL;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Projects\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\include\GL;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -112,8 +112,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Projects\yshphys\yshphys\yshphys\glew-2.0.0\lib\Release\x64;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Projects\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\lib\x64;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -160,16 +160,17 @@
     <ClInclude Include="BV.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="Shader_Default.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="YshMath.h" />
     <ClInclude Include="HomogeneousTransformation.h" />
     <ClInclude Include="Mat33.h" />
     <ClInclude Include="Mat44.h" />
     <ClInclude Include="MathUtils.h" />
-    <ClInclude Include="OpenGLRenderer.h" />
     <ClInclude Include="PhysicsObject.h" />
     <ClInclude Include="Quat.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="RenderManager.h" />
+    <ClInclude Include="RenderScene.h" />
     <ClInclude Include="RenderMesh.h" />
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="resource.h" />
@@ -191,12 +192,13 @@
     <ClCompile Include="Mat33.cpp" />
     <ClCompile Include="Mat44.cpp" />
     <ClCompile Include="MathUtils.cpp" />
-    <ClCompile Include="OpenGLRenderer.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="Quat.cpp" />
-    <ClCompile Include="RenderManager.cpp" />
+    <ClCompile Include="RenderScene.cpp" />
     <ClCompile Include="RenderMesh.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Shader_Default.cpp" />
     <ClCompile Include="Simplex3D.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -205,6 +207,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vec3.cpp" />
     <ClCompile Include="Vec4.cpp" />
     <ClCompile Include="Viewport.cpp" />
@@ -213,10 +216,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultVertShader.glsl" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="yshphys.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets" Condition="Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" />
+    <Import Project="..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets" Condition="Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets'))" />
+  </Target>
 </Project>

@@ -11,6 +11,17 @@ RenderMesh::~RenderMesh()
 	ClearMesh();
 	ClearGLBufferObjects();
 }
+
+unsigned int RenderMesh::GetNTriangles() const
+{
+	return m_nTriangles;
+}
+
+GLuint RenderMesh::GetVAO() const
+{
+	return m_VAO;
+}
+
 void RenderMesh::GetMeshData
 (
 	unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,

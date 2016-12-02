@@ -16,6 +16,9 @@ public:
 	RenderMesh();
 	virtual ~RenderMesh();
 
+	unsigned int GetNTriangles() const;
+	GLuint GetVAO() const;
+
 	void GetMeshData(
 		unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,
 		unsigned int& nTriangles, const unsigned int* indices

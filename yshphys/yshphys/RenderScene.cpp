@@ -1,5 +1,6 @@
 #include "stdafx.h"
-#include "RenderManager.h"
+#include "RenderScene.h"
+#include <freeglut.h>
 
 #define MAX_RENDER_MESHES 1024
 
@@ -77,6 +78,7 @@ void RenderNode::PrependTo(RenderNode* next)
 		next->m_prev = this;
 	}
 }
+
 FreeRenderNode::FreeRenderNode() : m_node(nullptr), m_precedingNode(nullptr)
 {
 }
@@ -84,7 +86,7 @@ FreeRenderNode::~FreeRenderNode()
 {
 }
 
-RenderManager::RenderManager()
+RenderScene::RenderScene()
 	: m_rootNode(nullptr)
 {
 	m_freeNodeStack.reserve(MAX_RENDER_MESHES);
@@ -109,11 +111,11 @@ RenderManager::RenderManager()
 }
 
 
-RenderManager::~RenderManager()
+RenderScene::~RenderScene()
 {
 }
 
-void RenderManager::AddRenderObject(RenderObject* renderObject)
+void RenderScene::AddRenderObject(RenderObject* renderObject)
 {
 	if (!m_freeNodeStack.empty())
 	{
@@ -134,7 +136,7 @@ void RenderManager::AddRenderObject(RenderObject* renderObject)
 	}
 }
 
-void RenderManager::RemoveRenderObject(RenderObject* renderObject)
+void RenderScene::RemoveRenderObject(RenderObject* renderObject)
 {
 	if (RenderNode* node = renderObject->GetRenderNode())
 	{
@@ -148,5 +150,34 @@ void RenderManager::RemoveRenderObject(RenderObject* renderObject)
 		freeNode.m_node = node;
 		node->Remove();
 		m_freeNodeStack.push_back(freeNode);
+	}
+}
+
+void RenderScene::DrawScene() const
+{
+	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
+	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
+
+	const RenderNode* node = m_rootNode;
+	while (node)
+	{
+		const RenderObject* obj = node->GetRenderObject();
+		const fMat44 modelMatrix = obj->CreateModelMatrix();
+		const GLuint program = obj->GetShader()->GetProgram();
+		const GLuint vao = obj->GetRenderMesh()->GetVAO();
+		const unsigned int nTriangles = obj->GetRenderMesh()->GetNTriangles();
+		glUseProgram(program);
+		glBindVertexArray(vao);
+		const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
+		const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
+		const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
+		// Pass in the transpose because OpenGL likes to be all edgy with its
+		// column major matrices while we are row major like everybody else.
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
+		glDrawArrays(GL_TRIANGLES, 0, 3 * nTriangles);
+
+		node = node->GetNext();
 	}
 }

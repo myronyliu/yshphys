@@ -1,7 +1,9 @@
 #pragma once
 
+#include "YshMath.h"
 #include "RenderMesh.h"
-#include "glew.h"
+#include "Shader.h"
+#include <glew.h>
 
 class RenderObject
 {
@@ -10,7 +12,6 @@ public:
 	RenderObject();
 	virtual ~RenderObject();
 
-
 	fVec3 GetPosition() const;
 	fQuat GetRotation() const;
 
@@ -18,16 +19,20 @@ public:
 	void SetRotation(const fQuat& rot);
 
 	RenderMesh* GetRenderMesh() const;
+	Shader* GetShader() const;
+
 	RenderNode* GetRenderNode() const;
+
+	fMat44 CreateModelMatrix() const;
 
 protected:
 
 	fVec3 m_pos;
 	fQuat m_rot;
 
-	RenderNode* m_node;
+	RenderNode* m_node; // The render-node is used by the manager to keep tabs on all rendered objects
 
 	RenderMesh* m_mesh;
-	GLuint m_forwardShader;
+	Shader* m_shader;
 };
 

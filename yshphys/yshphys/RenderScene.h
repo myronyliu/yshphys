@@ -1,17 +1,19 @@
 #pragma once
 
 #include "RenderObject.h"
-#include "Renderer.h"
+#include "Shader.h"
+#include "Viewport.h"
 #include <glew.h>
 
 class RenderNode
 {
-	// Only the render manager can instantiate RenderNodes. This way it is safe to assume that all nodes come from the RenderManager's free list.
-	friend class RenderManager;
+	// Only the render manager can instantiate RenderNodes. This way it is safe to assume that all nodes come from the RenderScene's free list.
+	friend class RenderScene;
 public:
 	RenderObject* GetRenderObject() const;
 	RenderNode* GetPrev() const;
 	RenderNode* GetNext() const;
+
 private:
 	RenderNode();
 	virtual ~RenderNode();
@@ -43,21 +45,22 @@ public:
 	RenderNode* m_precedingNode;
 };
 
-class RenderManager
+class RenderScene
 {
 public:
-	RenderManager();
-	virtual ~RenderManager();
+	RenderScene();
+	virtual ~RenderScene();
 
 	void AddRenderObject(RenderObject* renderObject);
 	void RemoveRenderObject(RenderObject* renderObject);
 
+	void DrawScene() const;
 
 protected:
 
 	std::vector<FreeRenderNode> m_freeNodeStack;
 	RenderNode* m_rootNode;
 
-	Renderer* m_renderer;
+	Viewport m_viewport;
 };
 
