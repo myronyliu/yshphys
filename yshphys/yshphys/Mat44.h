@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Vec4.h"
+#include "MathTemplates.h"
 
 template <class T>
 class Mat44_t

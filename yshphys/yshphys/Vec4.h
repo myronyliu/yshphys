@@ -1,6 +1,5 @@
 #pragma once
-
-template<class T> class Vec3_t;
+#include "MathTemplates.h"
 
 template<class T> class Vec4_t
 {

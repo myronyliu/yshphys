@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Mat44.h"
-#include "Mat33.h"
+#include "Vec4.h"
 #include "MathUtils.h"
 
 template <class T>

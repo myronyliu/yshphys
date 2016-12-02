@@ -1,9 +1,38 @@
 #include "stdafx.h"
 #include "Mat33.h"
+#include "Vec3.h"
+#include "Quat.h"
 
 template <class T>
 Mat33_t<T>::Mat33_t()
 {
+}
+
+template <class T>
+Mat33_t<T>::Mat33_t(const Quat_t<T>& q)
+{
+	// https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
+	const T n(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
+	const T s(T(2.0) / n);
+	const T	wx(s*q.w*q.x);
+	const T wy(s*q.w*q.y);
+	const T wz(s*q.w*q.z);
+	const T xx(s*q.x*q.x);
+	const T xy(s*q.x*q.y);
+	const T xz(s*q.x*q.z);
+	const T yy(s*q.y*q.y);
+	const T yz(s*q.y*q.z);
+	const T zz(s*q.z*q.z);
+
+	M_ij[0][0] = (T)1.0 - (yy + zz);
+	M_ij[0][1] = xy - wz;
+	M_ij[0][2] = xz + wy;
+	M_ij[1][0] = xy + wz;
+	M_ij[1][1] = (T)1.0 - (xx + zz);
+	M_ij[1][2] = yz - wx;
+	M_ij[2][0] = xz - wy;
+	M_ij[2][1] = yz + wx;
+	M_ij[2][2] = (T)1.0 - (xx + yy);
 }
 
 template <class T>

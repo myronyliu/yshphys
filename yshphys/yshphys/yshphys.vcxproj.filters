@@ -54,9 +54,6 @@
     <ClInclude Include="Geometry.h">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="MathUtils.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Simplex3D.h">
       <Filter>Physics</Filter>
     </ClInclude>
@@ -96,6 +93,18 @@
     <ClInclude Include="Mat44.h">
       <Filter>Math\Mat</Filter>
     </ClInclude>
+    <ClInclude Include="Viewport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HomogeneousTransformation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MathTemplates.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -120,9 +129,6 @@
       <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Geometry.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="MathUtils.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Simplex3D.cpp">
@@ -157,6 +163,15 @@
     </ClCompile>
     <ClCompile Include="Mat44.cpp">
       <Filter>Math\Mat</Filter>
+    </ClCompile>
+    <ClCompile Include="Viewport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HomogeneousTransformation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MathUtils.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Quat.h"
+#include "Mat33.h"
+#include "Vec3.h"
 
 template <class T>
 Quat_t<T>::Quat_t()
@@ -21,6 +23,19 @@ Quat_t<T>::Quat_t(const Vec3_t<T>& axis, T angle)
 	x = k * axis.x;
 	y = k * axis.y;
 	z = k * axis.z;
+}
+
+template <class T>
+Quat_t<T>::Quat_t(const Mat33_t<T>& R)
+{
+	// https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
+	const T t(R(0, 0) + R(1, 1) + R(2, 2));
+	const T r(sqrt((T)1.0 + t));
+	const T s((T)0.5 / r);
+	w = (T)0.5*r;
+	x = (R(2, 1) - R(1, 2))*s;
+	y = (R(0, 2) - R(2, 0))*s;
+	z = (R(1, 0) - R(0, 1))*s;
 }
 
 template <class T>
