@@ -160,7 +160,7 @@
     <ClInclude Include="BV.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Geometry.h" />
-    <ClInclude Include="MathTemplates.h" />
+    <ClInclude Include="YshMath.h" />
     <ClInclude Include="HomogeneousTransformation.h" />
     <ClInclude Include="Mat33.h" />
     <ClInclude Include="Mat44.h" />

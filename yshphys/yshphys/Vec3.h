@@ -1,6 +1,5 @@
 #pragma once
-
-template<class T> class Vec4_t;
+#include "YshMath.h"
 
 template<class T> class Vec3_t
 {
@@ -32,6 +31,3 @@ public:
 
 	T x, y, z;
 };
-
-typedef Vec3_t<double> dVec3;
-typedef Vec3_t<float> fVec3;

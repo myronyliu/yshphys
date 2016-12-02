@@ -1,5 +1,5 @@
 #pragma once
-#include "MathTemplates.h"
+#include "YshMath.h"
 
 template <class T>
 class Mat33_t
@@ -23,6 +23,3 @@ public:
 private:
 	T M_ij[3][3];
 };
-
-typedef Mat33_t<float> fMat33;
-typedef Mat33_t<double> dMat33;

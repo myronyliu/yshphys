@@ -96,13 +96,13 @@
     <ClInclude Include="Viewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HomogeneousTransformation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MathUtils.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="MathTemplates.h">
+    <ClInclude Include="HomogeneousTransformation.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="YshMath.h">
       <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
@@ -167,10 +167,10 @@
     <ClCompile Include="Viewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HomogeneousTransformation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MathUtils.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="HomogeneousTransformation.cpp">
       <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>

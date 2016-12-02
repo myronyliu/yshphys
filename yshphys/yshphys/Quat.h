@@ -1,5 +1,5 @@
 #pragma once
-#include "MathTemplates.h"
+#include "YshMath.h"
 
 template <class T>
 class Quat_t
@@ -24,6 +24,3 @@ public:
 	T x, y, z;
 	T w;
 };
-
-typedef Quat_t<float> fQuat;
-typedef Quat_t<double> dQuat;

@@ -1,4 +1,5 @@
 #pragma once
+#include "YshMath.h"
 #include "Vec3.h"
 
 class Simplex3D

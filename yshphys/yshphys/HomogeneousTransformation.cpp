@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "HomogeneousTransformation.h"
+#include "Mat44.h"
+#include "Vec3.h"
+#include "Quat.h"
 
 template <class T>
 HomogeneousTransformation_t<T>::HomogeneousTransformation_t()
@@ -28,24 +31,23 @@ Mat44_t<T> HomogeneousTransformation_t<T>::CreateRotation(const Quat_t<T>& q)
 	const T yz(s*q.y*q.z);
 	const T zz(s*q.z*q.z);
 
-	Mat33_t<T> R;
-	R.M_ij(0, 0) = (T)1.0 - (yy + zz);
-	R.M_ij(0, 1) = xy - wz;
-	R_M_ij(0, 2) = xz + wy;
-	R.M_ij(1, 0) = xy + wz;
-	R.M_ij(1, 1) = (T)1.0 - (xx + zz);
-	R.M_ij(1, 2) = yz - wx;
-	R.M_ij(2, 0) = xz - wy;
-	R.M_ij(2, 1) = yz + wx;
-	R.M_ij(2, 2) = (T)1.0 - (xx + yy);
+	R(0, 0) = (T)1.0 - (yy + zz);
+	R(0, 1) = xy - wz;
+	R(0, 2) = xz + wy;
+	R(1, 0) = xy + wz;
+	R(1, 1) = (T)1.0 - (xx + zz);
+	R(1, 2) = yz - wx;
+	R(2, 0) = xz - wy;
+	R(2, 1) = yz + wx;
+	R(2, 2) = (T)1.0 - (xx + yy);
 
-	R.M_ij(3, 0) = (T)0.0;
-	R.M_ij(3, 1) = (T)0.0;
-	R.M_ij(3, 2) = (T)0.0;
-	R.M_ij(3, 3) = (T)1.0;
-	R.M_ij(0, 3) = (T)0.0;
-	R.M_ij(1, 3) = (T)0.0;
-	R.M_ij(2, 3) = (T)0.0;
+	R(3, 0) = (T)0.0;
+	R(3, 1) = (T)0.0;
+	R(3, 2) = (T)0.0;
+	R(3, 3) = (T)1.0;
+	R(0, 3) = (T)0.0;
+	R(1, 3) = (T)0.0;
+	R(2, 3) = (T)0.0;
 
 	return R;
 }
@@ -103,3 +105,37 @@ Mat44_t<T> HomogeneousTransformation_t<T>::CreateScale(T sx, T sy, T sz)
 
 	return S;
 }
+template <class T>
+Mat44_t<T> HomogeneousTransformation_t<T>::CreateProjection(T fov, T aspect, T near, T far)
+{
+	// http://ogldev.atspace.co.uk/www/tutorial12/tutorial12.html
+	Mat44_t<T> P;
+
+	const T dProjPlane(1.0f / tan((T)0.5*fov));
+	const T dNearToFar(far - near);
+
+	P(0, 0) = dProjPlane / aspect;
+	P(0, 1) = (T)0.0;
+	P(0, 2) = (T)0.0;
+	P(0, 3) = (T)0.0;
+
+	P(1, 0) = (T)0.0;
+	P(1, 1) = dProjPlane;
+	P(1, 2) = (T)0.0;
+	P(1, 3) = (T)0.0;
+
+	P(2, 0) = (T)0.0;
+	P(2, 1) = (T)0.0;
+	P(2, 2) = (near + far) / dNearToFar;
+	P(2, 3) = (T)2.0*near*far / dNearToFar;
+
+	P(3, 0) = (T)0.0;
+	P(3, 1) = (T)0.0;
+	P(3, 2) = (T)1.0;
+	P(3, 3) = (T)0.0;
+
+	return P;
+}
+
+template class HomogeneousTransformation_t<float>;
+template class HomogeneousTransformation_t<double> ;
