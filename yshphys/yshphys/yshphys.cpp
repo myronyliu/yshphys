@@ -7,12 +7,33 @@
 
 #include <glew.h>
 #include "Window.h"
+#include "RenderScene.h"
+#include "Shader_Default.h"
 
 int main(int argc, char *args[])
 {
 	Window window;
 	window.CreateWindow();
-	SDL_Delay(8000);
+
+	RenderScene scene;
+	scene.m_window = &window;
+
+	RenderMesh mesh;
+	mesh.CreateBox(1.0f, 1.0f, 1.0f, 0, 0, 0);
+//	mesh.CreateTriangle();
+	Shader_Default shader;
+	RenderObject obj;
+	obj.SetRenderMesh(&mesh);
+	obj.SetShader(&shader);
+	obj.SetPosition(fVec3(0.0f, 0.0f, -10.0f));
+
+	scene.AddRenderObject(&obj);
+
+	while (true)
+	{
+		scene.DrawScene();
+		SDL_Delay(16);
+	}
 
 	Box box1;
 	Box box2;

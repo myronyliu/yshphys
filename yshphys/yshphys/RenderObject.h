@@ -21,6 +21,10 @@ public:
 	RenderMesh* GetRenderMesh() const;
 	Shader* GetShader() const;
 
+	void SetRenderMesh(RenderMesh* mesh);
+	void SetShader(Shader* shader);
+
+
 	RenderNode* GetRenderNode() const;
 
 	fMat44 CreateModelMatrix() const;

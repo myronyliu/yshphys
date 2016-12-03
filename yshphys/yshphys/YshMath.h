@@ -30,6 +30,9 @@ template <typename> class HomogeneousTransformation_t;
 typedef HomogeneousTransformation_t<float> fHomogeneousTransformation;
 typedef HomogeneousTransformation_t<double> dHomogeneousTransformation;
 
+#define fPI 3.141592653589793238462643383279502884197169399375105820974f
+#define dPI 3.141592653589793238462643383279502884197169399375105820974
+
 // Now we include all of the headers with the member functions. This way, we force the .cpp code to be compiled for
 // relevant template data-types (specifically <float> and <double>). Anything that wishes to use the math library
 // merely needs to include this file YshPhys.h

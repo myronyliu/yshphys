@@ -130,7 +130,7 @@ Mat33_t<T> Mat33_t<T>::operator * (const Mat33_t& B) const
 	Mat33_t<T> product;
 	for (int i = 0; i < 3; ++i)
 	{
-		for (int j = 0; j < 3; ++i)
+		for (int j = 0; j < 3; ++j)
 		{
 			T contraction(0.0);
 			for (int k = 0; k < 3; ++k)

@@ -2,7 +2,10 @@
 #include "RenderObject.h"
 
 
-RenderObject::RenderObject() : m_node(nullptr)
+RenderObject::RenderObject() :
+	m_node(nullptr),
+	m_pos(0.0f, 0.0f, 0.0f),
+	m_rot(0.0f, 0.0f, 0.0f, 1.0f)
 {
 }
 
@@ -37,6 +40,14 @@ void RenderObject::SetPosition(const fVec3& pos)
 void RenderObject::SetRotation(const fQuat& rot)
 {
 	m_rot = rot;
+}
+void RenderObject::SetRenderMesh(RenderMesh* mesh)
+{
+	m_mesh = mesh;
+}
+void RenderObject::SetShader(Shader* shader)
+{
+	m_shader = shader;
 }
 fMat44 RenderObject::CreateModelMatrix() const
 {

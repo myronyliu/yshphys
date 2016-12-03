@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "RenderMesh.h"
 
+#define VERTEX_POSITION_DIM 3
+#define VERTEX_NORMAL_DIM 3
+#define VERTEX_COLOR_DIM 3
 
 RenderMesh::RenderMesh() : m_VAO(0), m_VBO_positions(0), m_VBO_normals(0), m_VBO_colors(0), m_IBO(0)
 {
@@ -24,7 +27,7 @@ GLuint RenderMesh::GetVAO() const
 
 void RenderMesh::GetMeshData
 (
-	unsigned int& nVertices, const fVec3* positions, const fVec3* normals, const fVec3* colors,
+	unsigned int& nVertices, const float* positions, const float* normals, const float* colors,
 	unsigned int& nTriangles, const unsigned int* indices
 )
 const
@@ -55,11 +58,11 @@ void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nTriangles)
 	m_nVertices = nVertices;
 	m_nTriangles = nTriangles;
 
-	m_positions = new fVec3[nVertices];
-	m_normals = new fVec3[nVertices];
-	m_colors = new fVec3[nVertices];
+	m_positions = new float[nVertices*VERTEX_POSITION_DIM];
+	m_normals = new float[nVertices*VERTEX_NORMAL_DIM];
+	m_colors = new float[nVertices*VERTEX_COLOR_DIM];
 
-	m_triangles = new TriangleVertexIndices[nTriangles];
+	m_triangles = new unsigned int[nTriangles * 3];
 }
 
 void RenderMesh::ClearGLBufferObjects()
@@ -76,6 +79,7 @@ void RenderMesh::ClearGLBufferObjects()
 	glDeleteBuffers(1, &m_VBO_colors);
 	glDeleteBuffers(1, &m_IBO);
 }
+
 void RenderMesh::GenerateGLBufferObjects()
 {
 	ClearGLBufferObjects();
@@ -122,6 +126,39 @@ void RenderMesh::GenerateGLBufferObjects()
 	glBindVertexArray(0);
 }
 
+void RenderMesh::CreateTriangle()
+{
+	AllocateMesh(3, 1);
+	m_nTriangles = 1;
+	m_nVertices = 3;
+
+	m_positions[0] = -1.0f;
+	m_positions[1] = -1.0f;
+	m_positions[2] = 0.0f;
+	m_positions[3] = 1.0f;
+	m_positions[4] = -1.0f;
+	m_positions[5] = 0.0f;
+	m_positions[6] = 0.0f;
+	m_positions[7] = 1.0f;
+	m_positions[8] = 0.0f;
+
+	m_triangles[0] = 0;
+	m_triangles[1] = 1;
+	m_triangles[2] = 2;
+
+	m_colors[0] = 1.0f;
+	m_colors[1] = 1.0f;
+	m_colors[2] = 1.0f;
+	m_colors[3] = 1.0f;
+	m_colors[4] = 1.0f;
+	m_colors[5] = 1.0f;
+	m_colors[6] = 1.0f;
+	m_colors[7] = 1.0f;
+	m_colors[8] = 1.0f;
+
+	GenerateGLBufferObjects();
+}
+
 void RenderMesh::CreateBox
 (
 	float halfDimX, float halfDimY, float halfDimZ,
@@ -147,8 +184,10 @@ void RenderMesh::CreateBox
 
 	for (int iDimX = 0; iDimX < 3; ++iDimX)
 	{
+		const unsigned int iFaceVertex0 = iVertex; // cache this index, so that we know where to start for this face's triangle indices
+
 		const unsigned int iDimY((iDimX + 1) % 3);
-		const unsigned int iDimZ((iDimY + 2) % 3);
+		const unsigned int iDimZ((iDimX + 2) % 3);
 
 		const unsigned int& nPointsY = nPoints[iDimY];
 		const unsigned int& nPointsZ = nPoints[iDimZ];
@@ -164,11 +203,11 @@ void RenderMesh::CreateBox
 		{
 			for (unsigned int i = 0; i < nPointsY; ++i)
 			{
-				const float y((float(2 * i) / float(nPointsY + 1)) * halfDimY);
-				const float z((float(2 * j) / float(nPointsZ + 1)) * halfDimZ);
+				const float y((2.0f * (float)i / float(nPointsY - 1) - 1.0f) * halfDimY);
+				const float z((2.0f * (float)j / float(nPointsZ - 1) - 1.0f) * halfDimZ);
 
-				fVec3& position_neg = m_positions[iVertex];
-				fVec3& normal_neg = m_normals[iVertex];
+				float* position_neg = &m_positions[iVertex * 3];
+				float* normal_neg = &m_normals[iVertex * 3];
 
 				position_neg[iDimX] = -halfDimX;
 				position_neg[iDimY] = y;
@@ -178,16 +217,18 @@ void RenderMesh::CreateBox
 				normal_neg[iDimY] = 0.0f;
 				normal_neg[iDimZ] = 0.0f;
 
-				fVec3& position_pos = m_positions[iVertex + nVertices / 2];
-				fVec3& normal_pos = m_normals[iVertex + nVertices / 2];
+				float* position_pos = &m_positions[(iVertex + nVertices / 2) * 3];
+				float* normal_pos = &m_normals[(iVertex + nVertices / 2) * 3];
 				
 				position_pos[iDimX] = halfDimX;
 				position_pos[iDimY] = y;
 				position_pos[iDimZ] = z;
 
-				normal_neg[iDimX] = 1.0f;
-				normal_neg[iDimY] = 0.0f;
-				normal_neg[iDimZ] = 0.0f;
+				normal_pos[iDimX] = 1.0f;
+				normal_pos[iDimY] = 0.0f;
+				normal_pos[iDimZ] = 0.0f;
+
+				iVertex++;
 			}
 		}
 
@@ -196,29 +237,45 @@ void RenderMesh::CreateBox
 		{
 			for (unsigned int i = 0; i < nEdgesY; ++i)
 			{
-				const unsigned int i00((i + 0) + nPointsY * (j+0));
-				const unsigned int i01((i + 1) + nPointsY * (j+0));
-				const unsigned int i11((i + 1) + nPointsY * (j+1));
-				const unsigned int i10((i + 1) + nPointsY * (j+0));
+				const unsigned int i00((i + 0) + nPointsY * (j + 0) + iFaceVertex0);
+				const unsigned int i10((i + 1) + nPointsY * (j + 0) + iFaceVertex0);
+				const unsigned int i11((i + 1) + nPointsY * (j + 1) + iFaceVertex0);
+				const unsigned int i01((i + 0) + nPointsY * (j + 1) + iFaceVertex0);
 
-				m_triangles[iTriangle].m_vertexIndices[0] = i00;
-				m_triangles[iTriangle].m_vertexIndices[1] = i10;
-				m_triangles[iTriangle].m_vertexIndices[2] = i11;
+				unsigned int* triangle = &m_triangles[iTriangle * 3];
 
-				m_triangles[iTriangle + 1].m_vertexIndices[0] = i00;
-				m_triangles[iTriangle + 1].m_vertexIndices[1] = i11;
-				m_triangles[iTriangle + 1].m_vertexIndices[2] = i01;
+				triangle[0] = i00;
+				triangle[1] = i11;
+				triangle[2] = i10;
 
-				m_triangles[iTriangle + nTriangles / 2].m_vertexIndices[0] = i00 + nVertices / 2;
-				m_triangles[iTriangle + nTriangles / 2].m_vertexIndices[1] = i11 + nVertices / 2;
-				m_triangles[iTriangle + nTriangles / 2].m_vertexIndices[2] = i10 + nVertices / 2;
+				triangle = &triangle[3];
 
-				m_triangles[iTriangle + 1 + nTriangles / 2].m_vertexIndices[0] = i00 + nVertices / 2;
-				m_triangles[iTriangle + 1 + nTriangles / 2].m_vertexIndices[1] = i01 + nVertices / 2;
-				m_triangles[iTriangle + 1 + nTriangles / 2].m_vertexIndices[2] = i11 + nVertices / 2;
+				triangle[0] = i00;
+				triangle[1] = i01;
+				triangle[2] = i11;
+
+				triangle = &m_triangles[(iTriangle + nTriangles / 2) * 3];
+
+				triangle[0] = i00 + nVertices / 2;
+				triangle[1] = i10 + nVertices / 2;
+				triangle[2] = i11 + nVertices / 2;
+
+				triangle = &triangle[3];
+
+				triangle[0] = i00 + nVertices / 2;
+				triangle[1] = i11 + nVertices / 2;
+				triangle[2] = i01 + nVertices / 2;
 
 				iTriangle += 2;
 			}
 		}
 	}
+
+	for (int i = 0; i < nVertices; ++i)
+	{
+		m_colors[3 * i + 0] = 1.0f;
+		m_colors[3 * i + 1] = 1.0f;
+		m_colors[3 * i + 2] = 1.0f;
+	}
+	GenerateGLBufferObjects();
 }

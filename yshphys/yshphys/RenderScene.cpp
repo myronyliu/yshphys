@@ -55,8 +55,10 @@ void RenderNode::AppendTo(RenderNode* prev)
 		if (RenderNode* next = prev->m_next)
 		{
 			next->m_prev = this;
+			m_next = next;
 		}
 		prev->m_next = this;
+		m_prev = prev;
 	}
 }
 void RenderNode::PrependTo(RenderNode* next)
@@ -74,8 +76,10 @@ void RenderNode::PrependTo(RenderNode* next)
 		if (RenderNode* prev = next->m_prev)
 		{
 			prev->m_next = this;
+			m_prev = prev;
 		}
 		next->m_prev = this;
+		m_next = next;
 	}
 }
 
@@ -98,7 +102,7 @@ RenderScene::RenderScene()
 		buffer[i].PrependTo(&buffer[i + 1]);
 	}
 
-	for (int i = MAX_RENDER_MESHES - 1; i > 0; ++i)
+	for (int i = MAX_RENDER_MESHES - 1; i > 0; --i)
 	{
 		FreeRenderNode freeNode;
 		freeNode.m_node = &buffer[i];
@@ -108,6 +112,7 @@ RenderScene::RenderScene()
 	FreeRenderNode freeNode;
 	freeNode.m_node = &buffer[0];
 	freeNode.m_precedingNode = nullptr;
+	m_freeNodeStack.push_back(freeNode);
 }
 
 
@@ -155,6 +160,8 @@ void RenderScene::RemoveRenderObject(RenderObject* renderObject)
 
 void RenderScene::DrawScene() const
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
 
@@ -180,4 +187,9 @@ void RenderScene::DrawScene() const
 
 		node = node->GetNext();
 	}
+
+	glUseProgram(0);
+	glBindVertexArray(0);
+
+	m_window->UpdateGLRender();
 }

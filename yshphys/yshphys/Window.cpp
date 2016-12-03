@@ -16,12 +16,17 @@ Window::~Window()
 void Window::CreateWindow()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
+	m_window = SDL_CreateWindow("yshphys", 88, 88, 888, 888, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	m_screenSurface = SDL_GetWindowSurface(m_window);
+	InitGL();
+}
+
+void Window::InitGL()
+{
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	m_window = SDL_CreateWindow("yshphys", 88, 88, 888, 888, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-	m_screenSurface = SDL_GetWindowSurface(m_window);
 	m_glContext = SDL_GL_CreateContext(m_window);
 	if (m_glContext == NULL)
 	{
@@ -30,6 +35,11 @@ void Window::CreateWindow()
 	}
 	glewExperimental = GL_TRUE;
 	glewInit();
+
+	glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 }
 
-
+void Window::UpdateGLRender()
+{
+	SDL_GL_SwapWindow(m_window);
+}

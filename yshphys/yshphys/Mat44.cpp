@@ -105,7 +105,7 @@ Mat44_t<T> Mat44_t<T>::operator * (const Mat44_t& B) const
 	Mat44_t<T> product;
 	for (int i = 0; i < 4; ++i)
 	{
-		for (int j = 0; j < 4; ++i)
+		for (int j = 0; j < 4; ++j)
 		{
 			T contraction(0.0);
 			for (int k = 0; k < 4; ++k)

@@ -112,7 +112,7 @@ Mat44_t<T> HomogeneousTransformation_t<T>::CreateProjection(T fov, T aspect, T n
 	Mat44_t<T> P;
 
 	const T dProjPlane(1.0f / tan((T)0.5*fov));
-	const T dNearToFar(far - near);
+	const T near_far(near - far);
 
 	P(0, 0) = dProjPlane / aspect;
 	P(0, 1) = (T)0.0;
@@ -126,12 +126,12 @@ Mat44_t<T> HomogeneousTransformation_t<T>::CreateProjection(T fov, T aspect, T n
 
 	P(2, 0) = (T)0.0;
 	P(2, 1) = (T)0.0;
-	P(2, 2) = (near + far) / dNearToFar;
-	P(2, 3) = (T)2.0*near*far / dNearToFar;
+	P(2, 2) = (near + far) / near_far;
+	P(2, 3) = (T)2.0*near*far / near_far;
 
 	P(3, 0) = (T)0.0;
 	P(3, 1) = (T)0.0;
-	P(3, 2) = (T)1.0;
+	P(3, 2) = (T)-1.0;
 	P(3, 3) = (T)0.0;
 
 	return P;

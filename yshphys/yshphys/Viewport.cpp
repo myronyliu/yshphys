@@ -2,12 +2,12 @@
 #include "Viewport.h"
 
 Viewport::Viewport() :
-	m_fov(60.0f),
+	m_fov(fPI*0.33f),
 	m_aspect(1.5),
 	m_near(0.25f),
 	m_far(64.0f),
-	m_pos(fVec3(0.0f, 0.0f, 0.0f)),
-	m_rot(fQuat(0.0f, 0.0f, 0.0f, 1.0f))
+	m_pos(0.0f, 0.0f, 0.0f),
+	m_rot(0.0f, 0.0f, 0.0f, 1.0f)
 {
 }
 

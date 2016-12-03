@@ -10,15 +10,12 @@ public:
 	virtual ~Window();
 
 	void CreateWindow();
+	void InitGL();
+	void UpdateGLRender();
 
 	SDL_Window* m_window;
 	SDL_Surface* m_screenSurface;
 	SDL_GLContext m_glContext;
 	GLuint m_defaultShader;
 
-};
-
-class ShaderLoader
-{
-	static GLuint LoadShader(const char* vertex_path, const char* fragment_path);
 };

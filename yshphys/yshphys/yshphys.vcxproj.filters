@@ -114,6 +114,9 @@
     <ClInclude Include="RenderScene.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -188,10 +191,18 @@
     <ClCompile Include="RenderScene.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DefaultVertShader.glsl" />
     <None Include="packages.config" />
+    <None Include="DefaultFragmentShader.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
+    <None Include="DefaultVertexShader.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="yshphys.rc">

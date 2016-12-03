@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Projects\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\lib\x64;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -159,6 +159,7 @@
     <ClInclude Include="Box.h" />
     <ClInclude Include="BV.h" />
     <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="BV.cpp" />
     <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="HomogeneousTransformation.cpp" />
     <ClCompile Include="Mat33.cpp" />
@@ -215,7 +217,8 @@
     <ClCompile Include="yshphys.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DefaultVertShader.glsl" />
+    <None Include="DefaultFragmentShader.glsl" />
+    <None Include="DefaultVertexShader.glsl" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

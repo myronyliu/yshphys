@@ -3,6 +3,7 @@
 #include "RenderObject.h"
 #include "Shader.h"
 #include "Viewport.h"
+#include "Window.h"
 #include <glew.h>
 
 class RenderNode
@@ -56,6 +57,8 @@ public:
 
 	void DrawScene() const;
 
+
+	Window* m_window; // The window into which the rendered scene is displayed
 protected:
 
 	std::vector<FreeRenderNode> m_freeNodeStack;
