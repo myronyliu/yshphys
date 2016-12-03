@@ -10,6 +10,8 @@ public:
 	fMat44 CreateViewMatrix() const;
 	fMat44 CreateProjectionMatrix() const;
 
+	void SetViewDir(const fVec3& viewDir, const fVec3& upDir);
+
 	fVec3 m_pos;
 	fQuat m_rot; // NEGATIVE z-axis of the rotation matrix defines the viewing direction. y is up, x is right (OpenGL convention)
 	float m_fov; // field of view in the y direction (following OpenGL's convention)

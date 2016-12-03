@@ -18,6 +18,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <stack>
 #include <algorithm>
 
 // Returns (-1, 0 , 1). See http://stackoverflow.com/a/4609795

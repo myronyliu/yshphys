@@ -8,6 +8,9 @@ public:
 	Mat44_t();
 	virtual ~Mat44_t();
 
+	void SetRow(int i, const Vec4_t<T>& v);
+	void SetColumn(int j, const Vec4_t<T>& v);
+
 	Mat44_t<T> Transpose() const;
 	T Determinant() const;
 	Mat44_t<T> Inverse() const;

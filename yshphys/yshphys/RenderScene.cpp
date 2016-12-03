@@ -2,8 +2,6 @@
 #include "RenderScene.h"
 #include <freeglut.h>
 
-#define MAX_RENDER_MESHES 1024
-
 RenderNode::RenderNode() : m_renderObject(nullptr), m_prev(nullptr), m_next(nullptr)
 {
 }
@@ -83,36 +81,32 @@ void RenderNode::PrependTo(RenderNode* next)
 	}
 }
 
-FreeRenderNode::FreeRenderNode() : m_node(nullptr), m_precedingNode(nullptr)
+FreedRenderNode::FreedRenderNode() : m_node(nullptr), m_precedingNode(nullptr)
 {
 }
-FreeRenderNode::~FreeRenderNode()
+FreedRenderNode::~FreedRenderNode()
 {
 }
 
 RenderScene::RenderScene()
 	: m_rootNode(nullptr)
 {
-	m_freeNodeStack.reserve(MAX_RENDER_MESHES);
-
-	RenderNode* buffer = new RenderNode[MAX_RENDER_MESHES];
-
-	for (int i = 0; i < MAX_RENDER_MESHES - 1; ++i)
+	for (int i = 0; i < MAX_RENDER_NODES- 1; ++i)
 	{
-		buffer[i].PrependTo(&buffer[i + 1]);
+		m_renderNodes[i].PrependTo(&m_renderNodes[i + 1]);
 	}
 
-	for (int i = MAX_RENDER_MESHES - 1; i > 0; --i)
+	for (int i = MAX_RENDER_NODES- 1; i > 0; --i)
 	{
-		FreeRenderNode freeNode;
-		freeNode.m_node = &buffer[i];
-		freeNode.m_precedingNode = &buffer[i - 1];
-		m_freeNodeStack.push_back(freeNode);
+		FreedRenderNode freeNode;
+		freeNode.m_node = &m_renderNodes[i];
+		freeNode.m_precedingNode = &m_renderNodes[i - 1];
+		m_freedNodeStack.push(freeNode);
 	}
-	FreeRenderNode freeNode;
-	freeNode.m_node = &buffer[0];
+	FreedRenderNode freeNode;
+	freeNode.m_node = &m_renderNodes[0];
 	freeNode.m_precedingNode = nullptr;
-	m_freeNodeStack.push_back(freeNode);
+	m_freedNodeStack.push(freeNode);
 }
 
 
@@ -122,9 +116,9 @@ RenderScene::~RenderScene()
 
 void RenderScene::AddRenderObject(RenderObject* renderObject)
 {
-	if (!m_freeNodeStack.empty())
+	if (!m_freedNodeStack.empty())
 	{
-		FreeRenderNode& freeNode = m_freeNodeStack.back();
+		FreedRenderNode& freeNode = m_freedNodeStack.top();
 		freeNode.m_node->BindRenderObject(renderObject);
 
 		if (freeNode.m_precedingNode)
@@ -137,7 +131,7 @@ void RenderScene::AddRenderObject(RenderObject* renderObject)
 			m_rootNode = freeNode.m_node;
 		}
 
-		m_freeNodeStack.pop_back();
+		m_freedNodeStack.pop();
 	}
 }
 
@@ -150,11 +144,11 @@ void RenderScene::RemoveRenderObject(RenderObject* renderObject)
 			m_rootNode = node->GetNext();
 		}
 		node->BindRenderObject(nullptr);
-		FreeRenderNode freeNode;
+		FreedRenderNode freeNode;
 		freeNode.m_precedingNode = node->GetPrev();
 		freeNode.m_node = node;
 		node->Remove();
-		m_freeNodeStack.push_back(freeNode);
+		m_freedNodeStack.push(freeNode);
 	}
 }
 
@@ -168,28 +162,39 @@ void RenderScene::DrawScene() const
 	const RenderNode* node = m_rootNode;
 	while (node)
 	{
-		const RenderObject* obj = node->GetRenderObject();
-		const fMat44 modelMatrix = obj->CreateModelMatrix();
-		const GLuint program = obj->GetShader()->GetProgram();
-		const GLuint vao = obj->GetRenderMesh()->GetVAO();
-		const unsigned int nTriangles = obj->GetRenderMesh()->GetNTriangles();
-		glUseProgram(program);
-		glBindVertexArray(vao);
-		const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
-		const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
-		const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
-		// Pass in the transpose because OpenGL likes to be all edgy with its
-		// column major matrices while we are row major like everybody else.
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
-		glDrawArrays(GL_TRIANGLES, 0, 3 * nTriangles);
+		if (RenderObject* obj = node->GetRenderObject())
+		{
+			RenderMesh* mesh = obj->GetRenderMesh();
+			Shader* shader = obj->GetShader();
+			if (mesh != nullptr && shader != nullptr)
+			{
+				const RenderObject* obj = node->GetRenderObject();
+				const fMat44 modelMatrix = obj->CreateModelMatrix();
+				const GLuint program = obj->GetShader()->GetProgram();
+				const GLuint vao = mesh->GetVAO();
+				const GLuint ibo = mesh->GetIBO();
+				const unsigned int nTriangles = obj->GetRenderMesh()->GetNTriangles();
+				glUseProgram(program);
+				glBindVertexArray(vao);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+				const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
+				const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
+				const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
+				// Pass in the transpose because OpenGL likes to be all edgy with its
+				// column major matrices while we are row major like everybody else.
+				glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
+				glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
+				glDrawElements(GL_TRIANGLES, 3 * nTriangles, GL_UNSIGNED_INT, 0);
+			}
+		}
 
 		node = node->GetNext();
 	}
 
 	glUseProgram(0);
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	m_window->UpdateGLRender();
 }

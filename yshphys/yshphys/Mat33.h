@@ -9,6 +9,9 @@ public:
 	Mat33_t(const Quat_t<T>& q);
 	virtual ~Mat33_t();
 
+	void SetRow(int i, const Vec3_t<T>& v);
+	void SetColumn(int j, const Vec3_t<T>& v);
+
 	Mat33_t<T> Transpose() const;
 	T Determinant() const;
 	Mat33_t<T> Inverse() const;

@@ -6,6 +6,8 @@
 #include "Window.h"
 #include <glew.h>
 
+#define MAX_RENDER_NODES 1024
+
 class RenderNode
 {
 	// Only the render manager can instantiate RenderNodes. This way it is safe to assume that all nodes come from the RenderScene's free list.
@@ -30,11 +32,11 @@ private:
 	RenderNode* m_prev;
 };
 
-class FreeRenderNode
+class FreedRenderNode
 {
 public:
-	FreeRenderNode();
-	virtual ~FreeRenderNode();
+	FreedRenderNode();
+	virtual ~FreedRenderNode();
 
 	RenderNode* m_node;
 
@@ -61,7 +63,8 @@ public:
 	Window* m_window; // The window into which the rendered scene is displayed
 protected:
 
-	std::vector<FreeRenderNode> m_freeNodeStack;
+	std::stack<FreedRenderNode> m_freedNodeStack;
+	RenderNode m_renderNodes[MAX_RENDER_NODES];
 	RenderNode* m_rootNode;
 
 	Viewport m_viewport;

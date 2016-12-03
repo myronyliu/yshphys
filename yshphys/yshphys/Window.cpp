@@ -16,7 +16,7 @@ Window::~Window()
 void Window::CreateWindow()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	m_window = SDL_CreateWindow("yshphys", 88, 88, 888, 888, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	m_window = SDL_CreateWindow("yshphys", 88, 88, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	m_screenSurface = SDL_GetWindowSurface(m_window);
 	InitGL();
 }
@@ -24,7 +24,7 @@ void Window::CreateWindow()
 void Window::InitGL()
 {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	m_glContext = SDL_GL_CreateContext(m_window);

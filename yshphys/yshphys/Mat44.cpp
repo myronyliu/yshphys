@@ -14,6 +14,24 @@ Mat44_t<T>::~Mat44_t()
 }
 
 template <class T>
+void Mat44_t<T>::SetRow(int i, const Vec4_t<T>& v)
+{
+	M_ij[i][0] = v.x;
+	M_ij[i][1] = v.y;
+	M_ij[i][2] = v.z;
+	M_ij[i][3] = v.w;
+}
+
+template <class T>
+void Mat44_t<T>::SetColumn(int j, const Vec4_t<T>& v)
+{
+	M_ij[0][j] = v.x;
+	M_ij[1][j] = v.y;
+	M_ij[2][j] = v.z;
+	M_ij[3][j] = v.w;
+}
+
+template <class T>
 Mat44_t<T> Mat44_t<T>::Transpose() const
 {
 	Mat44_t<T> transpose;

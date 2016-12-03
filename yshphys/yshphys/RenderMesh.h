@@ -12,11 +12,15 @@ public:
 
 	unsigned int GetNTriangles() const;
 	GLuint GetVAO() const;
+	GLuint GetIBO() const;
 
 	void GetMeshData(
 		unsigned int& nVertices, const float* positions, const float* normals, const float* colors,
 		unsigned int& nTriangles, const unsigned int* indices
 	) const;
+
+	void SetVertex(unsigned int i, const fVec3& position, const fVec3& normal, const fVec3& color);
+	void SetTriangleIndices(unsigned int iTriangle, unsigned int iVertexA, unsigned int iVertexB, unsigned int iVertexC);
 
 	// FACTORY
 	void CreateTriangle();

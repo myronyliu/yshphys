@@ -41,6 +41,22 @@ Mat33_t<T>::~Mat33_t()
 }
 
 template <class T>
+void Mat33_t<T>::SetRow(int i, const Vec3_t<T>& v)
+{
+	M_ij[i][0] = v.x;
+	M_ij[i][1] = v.y;
+	M_ij[i][2] = v.z;
+}
+
+template <class T>
+void Mat33_t<T>::SetColumn(int j, const Vec3_t<T>& v)
+{
+	M_ij[0][j] = v.x;
+	M_ij[1][j] = v.y;
+	M_ij[2][j] = v.z;
+}
+
+template <class T>
 Mat33_t<T> Mat33_t<T>::Transpose() const
 {
 	Mat33_t<T> transpose;
