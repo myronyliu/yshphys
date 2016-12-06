@@ -14,6 +14,18 @@ Mat44_t<T>::~Mat44_t()
 }
 
 template <class T>
+Vec4_t<T> Mat44_t<T>::GetRow(int i) const
+{
+	return Vec4_t<T>(M_ij[i][0], M_ij[i][1], M_ij[i][2], M_ij[i][3]);
+}
+
+template <class T>
+Vec4_t<T> Mat44_t<T>::GetColumn(int j) const
+{
+	return Vec4_t<T>(M_ij[0][j], M_ij[1][j], M_ij[2][j], M_ij[3][j]);
+}
+
+template <class T>
 void Mat44_t<T>::SetRow(int i, const Vec4_t<T>& v)
 {
 	M_ij[i][0] = v.x;

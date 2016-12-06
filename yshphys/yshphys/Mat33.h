@@ -9,6 +9,9 @@ public:
 	Mat33_t(const Quat_t<T>& q);
 	virtual ~Mat33_t();
 
+	Vec3_t<T> GetRow(int i) const;
+	Vec3_t<T> GetColumn(int j) const;
+
 	void SetRow(int i, const Vec3_t<T>& v);
 	void SetColumn(int j, const Vec3_t<T>& v);
 

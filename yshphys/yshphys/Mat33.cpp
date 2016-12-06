@@ -41,6 +41,18 @@ Mat33_t<T>::~Mat33_t()
 }
 
 template <class T>
+Vec3_t<T> Mat33_t<T>::GetRow(int i) const
+{
+	return Vec3_t<T>(M_ij[i][0], M_ij[i][1], M_ij[i][2]);
+}
+
+template <class T>
+Vec3_t<T> Mat33_t<T>::GetColumn(int j) const
+{
+	return Vec3_t<T>(M_ij[0][j], M_ij[1][j], M_ij[2][j]);
+}
+
+template <class T>
 void Mat33_t<T>::SetRow(int i, const Vec3_t<T>& v)
 {
 	M_ij[i][0] = v.x;

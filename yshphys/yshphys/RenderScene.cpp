@@ -163,7 +163,7 @@ void RenderScene::DrawScene() const
 
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
-
+	
 	const RenderNode* node = m_rootNode;
 	while (node)
 	{

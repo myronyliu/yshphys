@@ -8,6 +8,9 @@ public:
 	Mat44_t();
 	virtual ~Mat44_t();
 
+	Vec4_t<T> GetRow(int i) const;
+	Vec4_t<T> GetColumn(int j) const;
+
 	void SetRow(int i, const Vec4_t<T>& v);
 	void SetColumn(int j, const Vec4_t<T>& v);
 

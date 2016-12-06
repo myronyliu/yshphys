@@ -19,11 +19,11 @@ T MathUtils_t<T>::Determinant(const T* A, int n)
 
 		for (int k = 0; k < i; ++k)
 		{
-			std::memcpy(&a[k*(n - 1)], &A[k*n + 1], n - 1);
+			std::memcpy(&a[k*(n - 1)], &A[k*n + 1], (n - 1) * sizeof(T));
 		}
 		for (int k = i + 1; k < n; ++k)
 		{
-			std::memcpy(&a[(k - 1)*(n - 1)], &A[k*n + 1], n - 1);
+			std::memcpy(&a[(k - 1)*(n - 1)], &A[k*n + 1], (n - 1) * sizeof(T));
 		}
 
 		det += (T)parity * A[i*n] * Determinant(a, n - 1);
