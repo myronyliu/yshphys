@@ -152,6 +152,11 @@ void RenderScene::RemoveRenderObject(RenderObject* renderObject)
 	}
 }
 
+void RenderScene::AttachCamera(Camera* camera)
+{
+	camera->SetViewport(&m_viewport);
+}
+
 void RenderScene::DrawScene() const
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

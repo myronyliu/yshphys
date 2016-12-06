@@ -9,6 +9,9 @@
 #include "Window.h"
 #include "RenderScene.h"
 #include "Shader_Default.h"
+#include "Camera.h"
+#include "InputHandler.h"
+#include "Game.h"
 
 int main(int argc, char *args[])
 {
@@ -19,21 +22,25 @@ int main(int argc, char *args[])
 	scene.m_window = &window;
 
 	RenderMesh mesh;
-	mesh.CreateBox(1.0f, 1.0f, 1.0f, 0, 0, 0);
+	mesh.CreateBox(1.0f, 1.0f, 1.0f, 10, 10, 10);
 //	mesh.CreateTriangle();
 	Shader_Default shader;
 	RenderObject obj;
 	obj.SetRenderMesh(&mesh);
 	obj.SetShader(&shader);
-	obj.SetPosition(fVec3(0.0f, 0.0f, -10.0f));
+	obj.SetPosition(fVec3(0.0f, 10.0f, 0.0f));
 
 	scene.AddRenderObject(&obj);
 
-	while (true)
-	{
-		scene.DrawScene();
-		SDL_Delay(16);
-	}
+	Camera camera;
+	scene.AttachCamera(&camera);
+
+	Game game;
+	game.m_inputHandler.AddMouseMotionHandler(&camera);
+	game.m_inputHandler.AddKeyHandler(&camera);
+	game.m_renderScene = &scene;
+
+	game.Run();
 
 	Box box1;
 	Box box2;

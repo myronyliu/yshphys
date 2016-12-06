@@ -12,7 +12,7 @@ out vec3 ex_color;
 
 void main(void)
 {
-	const mat4 projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
+	mat4 projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
 	gl_Position = projectionViewModelMatrix * vec4(in_position, 1.0f);
 	ex_color = vec3(in_color);
 }

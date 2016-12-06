@@ -51,7 +51,7 @@ void RenderObject::SetShader(Shader* shader)
 }
 fMat44 RenderObject::CreateModelMatrix() const
 {
-	const fMat44 R(fHomogeneousTransformation::CreateRotation(m_rot));
 	const fMat44 T(fHomogeneousTransformation::CreateTranslation(m_pos));
-	return R*T;
+	const fMat44 R(fHomogeneousTransformation::CreateRotation(m_rot));
+	return T*R;
 }

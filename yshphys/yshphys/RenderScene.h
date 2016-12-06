@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Viewport.h"
 #include "Window.h"
+#include "Camera.h"
 #include <glew.h>
 
 #define MAX_RENDER_NODES 1024
@@ -59,6 +60,7 @@ public:
 
 	void DrawScene() const;
 
+	void AttachCamera(Camera* camera);
 
 	Window* m_window; // The window into which the rendered scene is displayed
 protected:

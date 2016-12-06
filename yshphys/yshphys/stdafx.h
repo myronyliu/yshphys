@@ -20,6 +20,7 @@
 #include <vector>
 #include <stack>
 #include <algorithm>
+#include <map>
 
 // Returns (-1, 0 , 1). See http://stackoverflow.com/a/4609795
 template <typename T> int sgn(T val)

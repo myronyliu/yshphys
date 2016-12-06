@@ -7,7 +7,7 @@ Viewport::Viewport() :
 	m_near(0.25f),
 	m_far(64.0f),
 	m_pos(0.0f, 0.0f, 0.0f),
-	m_rot(0.0f, 0.0f, 0.0f, 1.0f)
+	m_rot(fVec3(1.0f, 0.0f, 0.0f), fPI * 0.5f)
 {
 }
 
@@ -15,11 +15,16 @@ Viewport::~Viewport()
 {
 }
 
+void Viewport::SetPos(const fVec3& pos)
+{
+	m_pos = pos;
+}
+
 fMat44 Viewport::CreateViewMatrix() const
 {
-	const fMat44 T_inv(fHomogeneousTransformation::CreateTranslation(-m_pos));
 	const fMat44 R_inv(fHomogeneousTransformation::CreateRotation(-m_rot));
-	return T_inv*R_inv;
+	const fMat44 T_inv(fHomogeneousTransformation::CreateTranslation(-m_pos));
+	return R_inv*T_inv;
 }
 
 fMat44 Viewport::CreateProjectionMatrix() const
