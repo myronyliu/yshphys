@@ -38,9 +38,9 @@ void Viewport::SetViewDir(const fVec3& viewDir, const fVec3& upDir)
 	fVec3 x(upDir.Cross(z));
 	fVec3 y(z.Cross(x));
 
-	x.Scale(1.0f / sqrt(x.Dot(x)));
-	y.Scale(1.0f / sqrt(y.Dot(y)));
-	z.Scale(1.0f / sqrt(z.Dot(z)));
+	x = x.Scale(1.0f / sqrt(x.Dot(x)));
+	y = y.Scale(1.0f / sqrt(y.Dot(y)));
+	z = z.Scale(1.0f / sqrt(z.Dot(z)));
 
 	fMat33 R;
 	R.SetColumn(0, x);
