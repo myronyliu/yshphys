@@ -34,6 +34,9 @@
     <Filter Include="Input">
       <UniqueIdentifier>{2c645f9b-4222-43a8-9dad-a83a7dd9b07d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Geometry">
+      <UniqueIdentifier>{bf1bdf3f-da54-40de-b343-ee940acb5222}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -54,19 +57,7 @@
     <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Cylinder.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Geometry.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Simplex3D.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
       <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="PhysicsObject.h">
@@ -132,6 +123,24 @@
     <ClInclude Include="KeyHandler.h">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="Box.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Cylinder.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Capsule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -146,19 +155,7 @@
     <ClCompile Include="Quat.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Cylinder.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Geometry.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
     <ClCompile Include="Simplex3D.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Sphere.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="PhysicsObject.cpp">
@@ -220,6 +217,24 @@
     </ClCompile>
     <ClCompile Include="KeyHandler.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Cylinder.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBody.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Capsule.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

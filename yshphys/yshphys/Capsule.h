@@ -1,11 +1,11 @@
 #pragma once
 #include "Geometry.h"
-class Cylinder :
+class Capsule :
 	public Geometry
 {
 public:
-	Cylinder();
-	~Cylinder();
+	Capsule();
+	virtual ~Capsule();
 
 	void SetHalfHeight(double halfHeight);
 	void SetRadius(double radius);

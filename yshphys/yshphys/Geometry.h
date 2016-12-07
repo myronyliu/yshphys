@@ -3,6 +3,12 @@
 #include "Quat.h"
 #include "Simplex3D.h"
 
+struct BoundingBox
+{
+	fVec3 min;
+	fVec3 max;
+};
+
 class Geometry
 {
 public:
@@ -25,12 +31,9 @@ public:
 protected:
 	double ComputePenetration(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom, Simplex3D tetrahedron) const;
 
-	dVec3 m_pos; // position
-	dQuat m_rot; // rotation
+	dVec3 m_pos; // position relative to linked RigidBody
+	dQuat m_rot; // rotation relative to linked RigidBody 
 
-	unsigned int m_nChildren;
-
-	Geometry* m_parent;
-	Geometry* m_children[16];
+	BoundingBox m_localOOBB; // assuming m_pos and m_rot are both zero
 };
 

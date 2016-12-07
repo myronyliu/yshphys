@@ -159,12 +159,14 @@
     <ClInclude Include="Box.h" />
     <ClInclude Include="BV.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Capsule.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyHandler.h" />
     <ClInclude Include="MouseMotionHandler.h" />
+    <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
     <ClInclude Include="Utils.h" />
@@ -192,6 +194,7 @@
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="BV.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Geometry.cpp" />
@@ -207,6 +210,7 @@
     <ClCompile Include="RenderScene.cpp" />
     <ClCompile Include="RenderMesh.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shader_Default.cpp" />
     <ClCompile Include="Simplex3D.cpp" />

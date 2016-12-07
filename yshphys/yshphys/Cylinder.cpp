@@ -11,6 +11,22 @@ Cylinder::~Cylinder()
 {
 }
 
+void Cylinder::SetHalfHeight(double halfHeight)
+{
+	m_halfHeight = abs(halfHeight);
+	m_localOOBB.min.z = -m_halfHeight;
+	m_localOOBB.max.z = m_halfHeight;
+}
+
+void Cylinder::SetRadius(double radius)
+{
+	m_radius = abs(radius);
+	m_localOOBB.max.x = -m_radius;
+	m_localOOBB.max.y = -m_radius;
+	m_localOOBB.max.x = m_radius;
+	m_localOOBB.max.y = m_radius;
+}
+
 dVec3 Cylinder::Support(const dVec3& v) const
 {
 	dVec3 vLocal = (-m_rot).Transform(v);
