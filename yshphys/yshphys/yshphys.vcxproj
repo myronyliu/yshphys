@@ -156,8 +156,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Box.h" />
-    <ClInclude Include="BV.h" />
+    <ClInclude Include="BVNode.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Capsule.h" />
     <ClInclude Include="Cylinder.h" />
@@ -192,7 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Box.cpp" />
-    <ClCompile Include="BV.cpp" />
+    <ClCompile Include="BVNode.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="Cylinder.cpp" />

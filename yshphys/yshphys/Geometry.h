@@ -2,12 +2,7 @@
 #include "Vec3.h"
 #include "Quat.h"
 #include "Simplex3D.h"
-
-struct BoundingBox
-{
-	fVec3 min;
-	fVec3 max;
-};
+#include "BoundingBox.h"
 
 class Geometry
 {
