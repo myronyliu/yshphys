@@ -13,6 +13,6 @@ public:
 	dVec3 Support(const dVec3& v) const;
 
 protected:
-	fVec3 m_halfDim;
+	dVec3 m_halfDim;
 };
 

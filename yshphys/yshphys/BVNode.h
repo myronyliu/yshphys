@@ -1,27 +1,37 @@
 #pragma once
 #include "BoundingBox.h"
+#include "RigidBody.h"
+
+class BVNode;
+
+struct BVNodePair
+{
+	BVNode* nodes[2];
+};
 
 // Bounding Volume Class
-template <class T> class BVNode_t
+class BVNode
 {
 public:
-	BVNode_t();
-	virtual ~BVNode_t();
+	BVNode();
+	virtual ~BVNode();
 
-	BoundingBox GetAABB() const;
+	AABB GetAABB() const;
 
-	BVNode_t<T>* Root();
-	BVNode_t<T>* LeftMostLeaf();
+	BVNode* Root();
+	BVNode* LeftMostLeaf();
 
-	std::vector<std::pair<BVNode_t<T>*, BVNode_t<T>*>> IntersectingLeaves() const;
+	std::vector<BVNode*> FindLeftToRightLeafOrder();
+	std::vector<BVNodePair> FindIntersectingLeaves();
 
 protected:
 
-	BVNode_t<T>* m_parent;
-	BVNode_t<T>* m_children[2];
+	BVNode* m_parent;
+	BVNode* m_left;
+	BVNode* m_right;
 
-	BoundingBox m_AABB;
+	AABB m_AABB;
 
-	T* m_content; // if not null then this BVNode is a leaf node
+	RigidBody* m_content; // if not null then this BVNode is a leaf node
 };
 

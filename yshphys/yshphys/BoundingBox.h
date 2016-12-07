@@ -3,6 +3,11 @@
 
 struct BoundingBox
 {
-	fVec3 min;
-	fVec3 max;
+	dVec3 min;
+	dVec3 max;
+};
+
+struct AABB : public BoundingBox
+{
+	bool Overlaps(const AABB& aabb) const;
 };
