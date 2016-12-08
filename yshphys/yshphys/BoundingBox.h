@@ -10,4 +10,6 @@ struct BoundingBox
 struct AABB : public BoundingBox
 {
 	bool Overlaps(const AABB& aabb) const;
+	AABB Aggregate(const AABB& aabb) const;
+	double Area() const;
 };

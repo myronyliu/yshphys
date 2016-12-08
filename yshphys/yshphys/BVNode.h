@@ -20,9 +20,12 @@ public:
 
 	BVNode* Root();
 	BVNode* LeftMostLeaf();
+	BVNode* Sibling() const;
 
 	std::vector<BVNode*> FindLeftToRightLeafOrder();
 	std::vector<BVNodePair> FindIntersectingLeaves();
+
+	bool SetAABB(const AABB& aabb);
 
 protected:
 

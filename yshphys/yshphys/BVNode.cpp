@@ -40,6 +40,22 @@ BVNode* BVNode::LeftMostLeaf()
 	return current;
 }
 
+BVNode* BVNode::Sibling() const
+{
+	if (m_parent)
+	{
+		if (m_parent->m_left == this)
+		{
+			return m_parent->m_right;
+		}
+		else
+		{
+			return m_parent->m_left;
+		}
+	}
+	return nullptr;
+}
+
 std::vector<BVNode*> BVNode::FindLeftToRightLeafOrder()
 {
 	std::vector<BVNode*> leaves(0);
@@ -121,4 +137,100 @@ std::vector<BVNodePair> BVNode::FindIntersectingLeaves()
 		}
 	}
 	return intersectingLeaves;
+}
+
+bool BVNode::SetAABB(const AABB& aabb)
+{
+	// Check that we aren't stupidly downsizing an internal (nonleaf) node such that the children are no longer contained
+	if (m_left != nullptr)
+	{
+		const AABB childrenAABB = m_left->m_AABB.Aggregate(m_right->m_AABB);
+		if (
+			childrenAABB.min.x < aabb.min.x ||
+			childrenAABB.min.y < aabb.min.y ||
+			childrenAABB.min.z < aabb.min.z ||
+
+			childrenAABB.max.x > aabb.max.x ||
+			childrenAABB.max.y > aabb.max.y ||
+			childrenAABB.max.z > aabb.max.z
+			)
+		{
+			return false;
+		}
+	}
+	m_AABB = aabb;
+
+	if (m_parent == nullptr)
+	{
+		return true; // We validly resized the root. There is nothing else to do.
+	}
+
+	BVNode* d = m_parent;
+	BVNode* root = Root();
+
+	while (true)
+	{
+		BVNode* a = d->m_left;
+		BVNode* b = d->m_right;
+		BVNode* c = d->Sibling();
+		BVNode* e = d->m_parent;
+
+		//      ____e____
+		//     |         |
+		//   __d__       c
+		//  |     |
+		//  a     b
+
+		const AABB ab = a->m_AABB.Aggregate(b->m_AABB);
+		const AABB bc = b->m_AABB.Aggregate(c->m_AABB);
+		const AABB ca = c->m_AABB.Aggregate(a->m_AABB);
+
+		const double abArea = ab.Area();
+		const double bcArea = bc.Area();
+		const double caArea = ca.Area();
+
+		if (abArea <= bcArea && abArea <= caArea)
+		{
+			d->m_AABB = ab;
+		}
+		else if (bcArea <= caArea && bcArea <= abArea)
+		{
+			d->m_AABB = bc;
+			d->m_left = b;
+			d->m_right = c;
+			e->m_left = d;
+			e->m_right = a;
+		}
+		else
+		{
+			d->m_AABB = ca;
+			d->m_left = c;
+			d->m_right = a;
+			e->m_left = d;
+			e->m_right = b;
+		}
+
+		const AABB abc = ab.Aggregate(bc);
+		const AABB& eAABB = e->m_AABB;
+
+		// If e's provisional new AABB exceeds its old AABB, then we have to do the tree rotation for the next level up as well.
+		if (abc.min.x < eAABB.min.x || abc.min.y < eAABB.min.y || abc.min.z < eAABB.min.z ||
+			abc.max.x > eAABB.max.x || abc.max.y > eAABB.max.z || abc.max.z > eAABB.max.z)
+		{
+			if (e == root)
+			{
+				e->m_AABB = abc;
+				return true;
+			}
+			else
+			{
+				d = e;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
+	return true;
 }
