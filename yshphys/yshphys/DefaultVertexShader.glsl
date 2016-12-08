@@ -12,7 +12,9 @@ out vec3 ex_color;
 
 void main(void)
 {
-	mat4 projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
+	mat4 viewModelMatrix = viewMatrix * modelMatrix;
+	mat4 projectionViewModelMatrix = projectionMatrix * viewModelMatrix;
+	float colorScale = (mat3(viewModelMatrix) * in_normal).z;
 	gl_Position = projectionViewModelMatrix * vec4(in_position, 1.0f);
-	ex_color = vec3(in_color);
+	ex_color = vec3(in_color) * colorScale;
 }

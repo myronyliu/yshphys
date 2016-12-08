@@ -138,11 +138,14 @@
     <ClInclude Include="Capsule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BVNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BoundingBox.h">
       <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="BVTree.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="BVNode.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -236,11 +239,14 @@
     <ClCompile Include="Capsule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BVNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BoundingBox.cpp">
       <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="BVTree.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="BVNode.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

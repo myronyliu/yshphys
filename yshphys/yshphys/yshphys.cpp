@@ -22,7 +22,7 @@ int main(int argc, char *args[])
 	scene.m_window = &window;
 
 	RenderMesh mesh;
-	mesh.CreateBox(1.0f, 1.0f, 1.0f, 10, 10, 10);
+	mesh.CreateBox(1.0f, 1.0f, 1.0f, 1, 1, 1);
 //	mesh.CreateTriangle();
 	Shader_Default shader;
 	RenderObject obj;

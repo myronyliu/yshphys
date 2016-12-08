@@ -159,6 +159,7 @@
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Box.h" />
     <ClInclude Include="BVNode.h" />
+    <ClInclude Include="BVTree.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Capsule.h" />
     <ClInclude Include="Cylinder.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="BVNode.cpp" />
+    <ClCompile Include="BVTree.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="Cylinder.cpp" />
