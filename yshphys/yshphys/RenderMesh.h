@@ -23,12 +23,14 @@ public:
 	void SetTriangleIndices(unsigned int iTriangle, unsigned int iVertexA, unsigned int iVertexB, unsigned int iVertexC);
 
 	// FACTORY
-	void CreateTriangle();
+	void CreateTriangle(const fVec3& v0, const fVec3 v1, const fVec3& v2, const fVec3& color);
 	void CreateBox(
 		float halfDimX, float halfDimY, float halfDimZ,
-		unsigned int divisionsX, unsigned int divisionsY, unsigned int divisionsZ
+		unsigned int divisionsX, unsigned int divisionsY, unsigned int divisionsZ,
+		const fVec3& color
 		);
-//	void CreateCylinder(float radius, float halfHeight);
+	void CreateCylinder(float radius, float halfHeight, const fVec3& color);
+	void CreateCapsule(float radius, float halfHeight, const fVec3& color);
 
 private:
 

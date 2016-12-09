@@ -153,35 +153,18 @@ void RenderMesh::GenerateGLBufferObjects()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RenderMesh::CreateTriangle()
+void RenderMesh::CreateTriangle(const fVec3& v0, const fVec3 v1, const fVec3& v2, const fVec3& color)
 {
 	AllocateMesh(3, 1);
-	m_nTriangles = 1;
-	m_nVertices = 3;
 
-	m_positions[0] = -1.0f;
-	m_positions[1] = -1.0f;
-	m_positions[2] = 0.0f;
-	m_positions[3] = 1.0f;
-	m_positions[4] = -1.0f;
-	m_positions[5] = 0.0f;
-	m_positions[6] = 0.0f;
-	m_positions[7] = 1.0f;
-	m_positions[8] = 0.0f;
+	fVec3 n = (v1 - v0).Cross(v2 - v0);
+	n.Scale(sqrtf(1.0f / n.Dot(n)));
 
-	m_triangles[0] = 0;
-	m_triangles[1] = 1;
-	m_triangles[2] = 2;
+	SetVertex(0, v0, n, color);
+	SetVertex(1, v1, n, color);
+	SetVertex(2, v2, n, color);
 
-	m_colors[0] = 1.0f;
-	m_colors[1] = 1.0f;
-	m_colors[2] = 1.0f;
-	m_colors[3] = 1.0f;
-	m_colors[4] = 1.0f;
-	m_colors[5] = 1.0f;
-	m_colors[6] = 1.0f;
-	m_colors[7] = 1.0f;
-	m_colors[8] = 1.0f;
+	SetTriangleIndices(0, 0, 1, 2);
 
 	GenerateGLBufferObjects();
 }
@@ -189,7 +172,8 @@ void RenderMesh::CreateTriangle()
 void RenderMesh::CreateBox
 (
 	float halfDimX, float halfDimY, float halfDimZ,
-	unsigned int divisionsX, unsigned int divisionsY, unsigned int divisionsZ
+	unsigned int divisionsX, unsigned int divisionsY, unsigned int divisionsZ,
+	const fVec3& color
 )
 {
 	const unsigned int nVertices(2 * (
@@ -235,7 +219,6 @@ void RenderMesh::CreateBox
 
 				fVec3 position;
 				fVec3 normal;
-				fVec3 color(1.0f, 1.0f, 1.0f);
 
 				position[iDimX] = -halfDimX;
 				position[iDimY] = y;
@@ -279,6 +262,114 @@ void RenderMesh::CreateBox
 				iTriangle += 2;
 			}
 		}
+	}
+	GenerateGLBufferObjects();
+}
+
+void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& color)
+{
+}
+void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& color)
+{
+	const int nRadiusPts = 32; // also the number of segments
+	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nRadiusPts) + 1;
+	const int nHeightSegs = nHeightPts - 1;
+
+	const int nTheta = nRadiusPts / 2;
+	const int nStripPts = 2 * (nTheta - 2) + nHeightPts;
+
+	const int nVertices = nStripPts*nRadiusPts + 2;
+	const int nTriangles = 2 * nStripPts *nRadiusPts;
+	AllocateMesh(nVertices, nTriangles);
+
+	const int iTipBot = 0;
+	const int iTipTop = nVertices - 1;
+
+	int iVertex = 0;
+
+	SetVertex(iTipBot, fVec3(0.0f, 0.0f, -halfHeight - radius), fVec3(0.0f, 0.0f, -1.0f), color);
+	iVertex++;
+
+	for (int j = 0; j < nRadiusPts; ++j)
+	{
+		const float phi = (float)j * 2.0f *fPI / nRadiusPts;
+		const float cosPhi = cos(phi);
+		const float sinPhi = sin(phi);
+		
+		for (int i = 1; i < nTheta - 1; ++i, ++iVertex)
+		{
+			float theta = (float)i / ((float)nTheta - 1.0f)*(fPI*0.5f);
+			const float cosTheta = cos(theta);
+			const float sinTheta = sin(theta);
+			fVec3 position;
+			position.x = radius*sinTheta*cosPhi;
+			position.y = radius*sinTheta*sinPhi;
+			position.z = -halfHeight - radius*cosTheta;
+			fVec3 normal;
+			normal.x = sinTheta*cosPhi;
+			normal.y = sinTheta*sinPhi;
+			normal.z = -cosTheta;
+			SetVertex(iVertex, position, normal, color);
+		}
+		for (int i = 0; i < nHeightPts; ++i, ++iVertex)
+		{
+			fVec3 position;
+			position.x = radius*cosPhi;
+			position.y = radius*sinPhi;
+			position.z = ((float)i*2.0f / (float)nHeightSegs - 1.0f) * halfHeight;
+			fVec3 normal;
+			normal.x = cosPhi;
+			normal.y = sinPhi;
+			normal.z = 0.0f;
+			SetVertex(iVertex, position, normal, color);
+		}
+		for (int i = 1; i < nTheta - 1; ++i, ++iVertex)
+		{
+			float theta = (float)(nTheta - 1 - i) / ((float)nTheta - 1.0f)*(fPI*0.5f);
+			const float cosTheta = cos(theta);
+			const float sinTheta = sin(theta);
+			fVec3 position;
+			position.x = radius*sinTheta*cosPhi;
+			position.y = radius*sinTheta*sinPhi;
+			position.z = halfHeight + radius*cosTheta;
+			fVec3 normal;
+			normal.x = sinTheta*cosPhi;
+			normal.y = sinTheta*sinPhi;
+			normal.z = cosTheta;
+			SetVertex(iVertex, position, normal, color);
+		}
+	}
+
+	SetVertex(iTipTop, fVec3(0.0f, 0.0f, halfHeight + radius), fVec3(0.0f, 0.0f, 1.0f), color);
+	iVertex++;
+
+	int iTriangle = 0;
+
+	for (int j = 0; j < nRadiusPts; ++j)
+	{
+		const int j0 = (j + 0) % nRadiusPts;
+		const int j1 = (j + 1) % nRadiusPts;
+
+		int a(1 + nStripPts * j0);
+		int b(1 + nStripPts * j1);
+		SetTriangleIndices(iTriangle, iTipBot, b, a);
+		iTriangle += 1;
+
+		for (int i = 0; i < nStripPts - 1; ++i)
+		{
+			const int i00 = 1 + (i + 0) + nStripPts*j0;
+			const int i10 = 1 + (i + 1) + nStripPts*j0;
+			const int i11 = 1 + (i + 1) + nStripPts*j1;
+			const int i01 = 1 + (i + 0) + nStripPts*j1;
+			SetTriangleIndices(iTriangle + 0, i00, i01, i11);
+			SetTriangleIndices(iTriangle + 1, i00, i11, i10);
+			iTriangle += 2;
+		}
+
+		a = 1 + (nStripPts - 1) + nStripPts*j0;
+		b = 1 + (nStripPts - 1) + nStripPts*j1;
+		SetTriangleIndices(iTriangle, iTipTop, a, b);
+		iTriangle += 1;
 	}
 	GenerateGLBufferObjects();
 }
