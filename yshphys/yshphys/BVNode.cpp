@@ -1,10 +1,22 @@
 #include "stdafx.h"
 #include "BVNode.h"
+#include "BVTree.h"
 #include "RigidBody.h"
 
-BVNode::BVNode()
-	: m_parent(nullptr), m_left(nullptr), m_right(nullptr), m_content(nullptr)
+BVNodeContent::BVNodeContent() : m_bvNode(nullptr)
 {
+}
+
+BVNode* BVNodeContent::GetBVNode() const
+{
+	return m_bvNode;
+}
+
+BVNode::BVNode()
+	: m_parent(nullptr), m_left(nullptr), m_right(nullptr), m_content(nullptr), m_tree(nullptr), m_index(INVALID_BVNODEINDEX)
+{
+	m_AABB.min = dVec3(0.0, 0.0, 0.0);
+	m_AABB.max = dVec3(0.0, 0.0, 0.0);
 }
 
 BVNode::~BVNode()
@@ -16,28 +28,39 @@ AABB BVNode::GetAABB() const
 	return m_AABB;
 }
 
-BVNode* BVNode::Root()
+bool BVNode::IsLeaf() const
 {
-	BVNode* current = this;
-	BVNode* parent = m_parent;
-	while (parent != nullptr)
-	{
-		current = parent;
-		parent = current->m_parent;
-	}
-	return current;
+	return m_left == nullptr;
 }
 
-BVNode* BVNode::LeftMostLeaf()
+BVNodeContent* BVNode::GetContent() const
 {
-	BVNode* current = this;
-	BVNode* child = m_left;
-	while (child != nullptr)
+	return IsLeaf() ? m_content : nullptr;
+}
+
+BVNode* BVNode::Root() const
+{
+	return &m_tree->m_nodes[m_tree->m_iRoot];
+}
+
+BVNode* BVNode::LeftMostLeaf() const
+{
+	if (IsLeaf())
 	{
-		current = child;
-		child = current->m_left;
+		return nullptr;
 	}
-	return current;
+	else
+	{
+		BVNode* current = m_left;
+		BVNode* child = current->m_left;
+
+		while (child != nullptr)
+		{
+			current = child;
+			child = current->m_left;
+		}
+		return current;
+	}
 }
 
 BVNode* BVNode::Sibling() const
@@ -55,37 +78,40 @@ BVNode* BVNode::Sibling() const
 	}
 	return nullptr;
 }
-
-std::vector<BVNode*> BVNode::FindLeftToRightLeafOrder()
+std::vector<BVNode*> BVNode::FindLeftToRightLeafOrder() const
 {
 	std::vector<BVNode*> leaves(0);
 
-	std::stack<BVNode*> nodeStack;
-
-	nodeStack.push(this);
-
-	while (!nodeStack.empty())
+	if (!IsLeaf())
 	{
-		BVNode* node = nodeStack.top();
-		nodeStack.pop();
+		std::stack<BVNode*> nodeStack;
 
-		BVNode* left = node->m_left;
-		BVNode* right = node->m_right;
+		nodeStack.push(m_right);
+		nodeStack.push(m_left);
 
-		if (left == nullptr) // no need to check right child, since this is a BVH
+		while (!nodeStack.empty())
 		{
-			leaves.push_back(node);
+			BVNode* node = nodeStack.top();
+			nodeStack.pop();
+
+			BVNode* left = node->m_left;
+			BVNode* right = node->m_right;
+
+			if (IsLeaf())
+			{
+				leaves.push_back(node);
+			}
+			else
+			{
+				nodeStack.push(right);
+				nodeStack.push(left);
+			}
 		}
-		else
-		{
-			nodeStack.push(right);
-			nodeStack.push(left);
-		}
+		return leaves;
 	}
-	return leaves;
 }
 
-std::vector<BVNodePair> BVNode::FindIntersectingLeaves()
+std::vector<BVNodePair> BVNode::FindIntersectingLeaves() const
 {
 	std::vector<BVNodePair> intersectingLeaves(0);
 
@@ -114,7 +140,7 @@ std::vector<BVNodePair> BVNode::FindIntersectingLeaves()
 					BVNode* left = node->m_left;
 					BVNode* right = node->m_right;
 
-					if (left == nullptr)
+					if (IsLeaf())
 					{
 						BVNodePair pair;
 						pair.nodes[0] = leaf;
@@ -139,10 +165,84 @@ std::vector<BVNodePair> BVNode::FindIntersectingLeaves()
 	return intersectingLeaves;
 }
 
+void BVNode::RefitAndRotateTree()
+{
+	if (m_parent != nullptr)
+	{
+		BVNode* d = m_parent;
+		BVNode* root = Root();
+
+		while (true)
+		{
+			BVNode* a = d->m_left;
+			BVNode* b = d->m_right;
+			BVNode* c = d->Sibling();
+			BVNode* e = d->m_parent;
+
+			//      ____e____
+			//     |         |
+			//   __d__       c
+			//  |     |
+			//  a     b
+
+			const AABB ab = a->m_AABB.Aggregate(b->m_AABB);
+			const AABB bc = b->m_AABB.Aggregate(c->m_AABB);
+			const AABB ca = c->m_AABB.Aggregate(a->m_AABB);
+
+			const double abArea = ab.Area() + c->m_AABB.Area(); // Minimize the sum of surface areas
+			const double bcArea = bc.Area() + a->m_AABB.Area();
+			const double caArea = ca.Area() + b->m_AABB.Area();
+
+			if (abArea <= bcArea && abArea <= caArea)
+			{
+				d->m_AABB = ab;
+			}
+			else if (bcArea <= caArea && bcArea <= abArea)
+			{
+				d->m_AABB = bc;
+				d->m_left = b;
+				d->m_right = c;
+				e->m_left = d;
+				e->m_right = a;
+			}
+			else
+			{
+				d->m_AABB = ca;
+				d->m_left = c;
+				d->m_right = a;
+				e->m_left = d;
+				e->m_right = b;
+			}
+
+			const AABB abc = ab.Aggregate(bc);
+			const AABB& eAABB = e->m_AABB;
+
+			// If e's provisional new AABB exceeds its old AABB, then we have to do the tree rotation for the next level up as well.
+			if (abc.min.x < eAABB.min.x || abc.min.y < eAABB.min.y || abc.min.z < eAABB.min.z ||
+				abc.max.x > eAABB.max.x || abc.max.y > eAABB.max.z || abc.max.z > eAABB.max.z)
+			{
+				if (e == root)
+				{
+					e->m_AABB = abc;
+					return;
+				}
+				else
+				{
+					d = e;
+				}
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+}
+
 bool BVNode::SetAABB(const AABB& aabb)
 {
 	// Check that we aren't stupidly downsizing an internal (nonleaf) node such that the children are no longer contained
-	if (m_left != nullptr)
+	if (!IsLeaf())
 	{
 		const AABB childrenAABB = m_left->m_AABB.Aggregate(m_right->m_AABB);
 		if (
@@ -160,77 +260,62 @@ bool BVNode::SetAABB(const AABB& aabb)
 	}
 	m_AABB = aabb;
 
-	if (m_parent == nullptr)
+	if (m_parent != nullptr)
 	{
-		return true; // We validly resized the root. There is nothing else to do.
-	}
-
-	BVNode* d = m_parent;
-	BVNode* root = Root();
-
-	while (true)
-	{
-		BVNode* a = d->m_left;
-		BVNode* b = d->m_right;
-		BVNode* c = d->Sibling();
-		BVNode* e = d->m_parent;
-
-		//      ____e____
-		//     |         |
-		//   __d__       c
-		//  |     |
-		//  a     b
-
-		const AABB ab = a->m_AABB.Aggregate(b->m_AABB);
-		const AABB bc = b->m_AABB.Aggregate(c->m_AABB);
-		const AABB ca = c->m_AABB.Aggregate(a->m_AABB);
-
-		const double abArea = ab.Area();
-		const double bcArea = bc.Area();
-		const double caArea = ca.Area();
-
-		if (abArea <= bcArea && abArea <= caArea)
-		{
-			d->m_AABB = ab;
-		}
-		else if (bcArea <= caArea && bcArea <= abArea)
-		{
-			d->m_AABB = bc;
-			d->m_left = b;
-			d->m_right = c;
-			e->m_left = d;
-			e->m_right = a;
-		}
-		else
-		{
-			d->m_AABB = ca;
-			d->m_left = c;
-			d->m_right = a;
-			e->m_left = d;
-			e->m_right = b;
-		}
-
-		const AABB abc = ab.Aggregate(bc);
-		const AABB& eAABB = e->m_AABB;
-
-		// If e's provisional new AABB exceeds its old AABB, then we have to do the tree rotation for the next level up as well.
-		if (abc.min.x < eAABB.min.x || abc.min.y < eAABB.min.y || abc.min.z < eAABB.min.z ||
-			abc.max.x > eAABB.max.x || abc.max.y > eAABB.max.z || abc.max.z > eAABB.max.z)
-		{
-			if (e == root)
-			{
-				e->m_AABB = abc;
-				return true;
-			}
-			else
-			{
-				d = e;
-			}
-		}
-		else
-		{
-			return true;
-		}
+		RefitAndRotateTree();
 	}
 	return true;
+}
+
+bool BVNode::Detach()
+{
+	if (IsLeaf() && m_parent != nullptr)
+	{
+		// Add this node and the parent on the free list
+		m_tree->PushFreeNode(m_index);
+		m_tree->PushFreeNode(m_parent->m_index);
+
+		BVNode* sibling = (this == m_parent->m_left) ? m_parent->m_right : m_parent->m_left;
+
+		// merge the sibling with the parent (if there is no grandparent set the root to the sibling)
+		BVNode* grandparent = m_parent->m_parent;
+		sibling->m_parent = grandparent;
+		if (grandparent == nullptr)
+		{
+			m_tree->m_iRoot = sibling->m_index;
+		}
+
+		// remove the parent from the tree
+		m_parent->m_left = nullptr;
+		m_parent->m_right = nullptr;
+		m_parent->m_parent = nullptr;
+
+		// detach this node
+		m_parent = nullptr;
+		m_content->m_bvNode = nullptr;
+		m_content = nullptr;
+
+		return true;
+	}
+	return false;
+}
+
+bool BVNode::SetContent(BVNodeContent* content)
+{
+	if (IsLeaf())
+	{
+		if (content->m_bvNode != nullptr)
+		{
+			content->m_bvNode->Detach(); // content no longer has an associated node
+		}
+		m_content->m_bvNode = nullptr;
+		m_content = content;
+		content->m_bvNode = this;
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

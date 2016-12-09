@@ -168,6 +168,7 @@
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyHandler.h" />
     <ClInclude Include="MouseMotionHandler.h" />
+    <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="MouseMotionHandler.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
+    <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="RenderScene.cpp" />
     <ClCompile Include="RenderMesh.cpp" />

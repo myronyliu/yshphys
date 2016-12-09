@@ -20,6 +20,8 @@ public:
 	Mat33_t<T> Inverse() const;
 	Vec3_t<T> Transform(const Vec3_t<T>& v) const;
 	Mat33_t<T> Scale(T scalar) const;
+
+	Mat33_t<T> Abs() const;
 	
 	T operator () (unsigned int i, unsigned int j) const;
 	T& operator () (unsigned int i, unsigned int j);

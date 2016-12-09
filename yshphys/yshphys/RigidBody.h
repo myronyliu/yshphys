@@ -1,8 +1,9 @@
 #pragma once
 #include "YshMath.h"
 #include "Geometry.h"
+#include "BVNode.h"
 
-class RigidBody
+class RigidBody : public BVNodeContent
 {
 public:
 	RigidBody();

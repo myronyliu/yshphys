@@ -141,6 +141,20 @@ Mat33_t<T> Mat33_t<T>::Scale(T scalar) const
 }
 
 template <class T>
+Mat33_t<T> Mat33_t<T>::Abs() const
+{
+	Mat33_t<T> A;
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			A.M_ij[i][j] = abs(M_ij[i][j]);
+		}
+	}
+	return A;
+}
+
+template <class T>
 T Mat33_t<T>::operator () (unsigned int i, unsigned int j) const
 {
 	return M_ij[i][j];

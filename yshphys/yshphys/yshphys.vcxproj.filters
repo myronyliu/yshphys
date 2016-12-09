@@ -132,9 +132,6 @@
     <ClInclude Include="Sphere.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="RigidBody.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Capsule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -146,6 +143,12 @@
     </ClInclude>
     <ClInclude Include="BVNode.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsScene.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +236,6 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>Physics\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="RigidBody.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Capsule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -247,6 +247,12 @@
     </ClCompile>
     <ClCompile Include="BVNode.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBody.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsScene.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
