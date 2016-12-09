@@ -104,6 +104,9 @@ bool BVTree::LeftInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 	oldRoot->m_parent = newRoot;
 	newLeaf->m_parent = newRoot;
 	
+	newLeaf->m_left = nullptr;
+	newLeaf->m_right = nullptr;
+
 	// NOTE: newLeaf must be inserted on the LEFT, since we traverse from the leftmost leaf when checking for collisions.
 	// If we were to put it on the right and the new leaf's AABB is actually enclosed in the oldRoot's AABB, then we will miss collisions.
 	newRoot->m_left = newLeaf;
@@ -114,5 +117,55 @@ bool BVTree::LeftInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 	newRoot->m_AABB = newRoot->m_AABB.Aggregate(aabb);
 
 	m_iRoot = iNewRoot;
+	return true;
+}
+
+bool BVTree::DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
+{
+	if (m_iFreeNodes.empty() || content == nullptr)
+	{
+		return false;
+	}
+
+	BVNode* fork = &m_nodes[m_iRoot];
+
+	while (!fork->IsLeaf())
+	{
+		fork->m_AABB = fork->m_AABB.Aggregate(aabb);
+
+		BVNode* L = fork->m_left;
+		BVNode* R = fork->m_right;
+
+		double A_mergeL = L->m_AABB.Aggregate(aabb).Area() + R->m_AABB.Area();
+		double A_mergeR = R->m_AABB.Aggregate(aabb).Area() + L->m_AABB.Area();
+
+		if (A_mergeL < A_mergeR)
+		{
+			fork = L;
+		}
+		else
+		{
+			fork = R;
+		}
+	}
+
+	const unsigned int iNewLeaf = m_iFreeNodes.top().m_iNode;
+	PopFreeNode();
+	const unsigned int iNewParent = m_iFreeNodes.top().m_iNode;
+	PopFreeNode();
+
+	BVNode* newLeaf = &m_nodes[iNewLeaf];
+	BVNode* newParent = &m_nodes[iNewParent];
+
+	newLeaf->m_left = nullptr;
+	newLeaf->m_right = nullptr;
+
+	fork->m_parent = newParent;
+	newLeaf->m_parent = newParent;
+
+	newLeaf->m_AABB = aabb;
+	newLeaf->SetContent(content);
+	newParent->m_AABB = fork->m_AABB.Aggregate(aabb);
+
 	return true;
 }

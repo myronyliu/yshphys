@@ -1,11 +1,10 @@
 #pragma once
 #include "BVTree.h"
-class PhysicsScene
+class PhysicsScene : public BVTree
 {
 public:
 	PhysicsScene();
 	virtual ~PhysicsScene();
 protected:
-	BVTree* asdf;
 };
 

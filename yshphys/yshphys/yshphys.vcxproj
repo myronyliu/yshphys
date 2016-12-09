@@ -164,6 +164,7 @@
     <ClInclude Include="Capsule.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyHandler.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="HomogeneousTransformation.cpp" />
     <ClCompile Include="InputHandler.cpp" />
