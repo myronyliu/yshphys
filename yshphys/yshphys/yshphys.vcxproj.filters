@@ -132,9 +132,6 @@
     <ClInclude Include="Sphere.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="Capsule.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BoundingBox.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
@@ -155,6 +152,15 @@
     </ClInclude>
     <ClInclude Include="Shader_FlatUniformColor.h">
       <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Capsule.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="LineSegment.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -215,9 +221,6 @@
     <ClCompile Include="RenderScene.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InputHandler.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -242,9 +245,6 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>Physics\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="Capsule.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BoundingBox.cpp">
       <Filter>Physics\Geometry</Filter>
     </ClCompile>
@@ -265,6 +265,18 @@
     </ClCompile>
     <ClCompile Include="Shader_FlatUniformColor.cpp">
       <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Capsule.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="LineSegment.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Ray.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

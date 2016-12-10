@@ -170,6 +170,8 @@
     <ClInclude Include="KeyHandler.h" />
     <ClInclude Include="MouseMotionHandler.h" />
     <ClInclude Include="PhysicsScene.h" />
+    <ClInclude Include="LineSegment.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
@@ -216,6 +218,8 @@
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Quat.cpp" />
+    <ClCompile Include="LineSegment.cpp" />
+    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderScene.cpp" />
     <ClCompile Include="RenderMesh.cpp" />
     <ClCompile Include="RenderObject.cpp" />

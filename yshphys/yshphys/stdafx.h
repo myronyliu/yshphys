@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <map>
 
+#include <limits>
+
 // Returns (-1, 0 , 1). See http://stackoverflow.com/a/4609795
 template <typename T> int sgn(T val)
 {
