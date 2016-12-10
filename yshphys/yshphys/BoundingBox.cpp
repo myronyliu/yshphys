@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "BoundingBox.h"
 
+
+
 bool AABB::Overlaps(const AABB& aabb) const
 {
 	if (max.x < aabb.min.x) { return false; }

@@ -13,6 +13,8 @@ public:
 	dVec3 GetPosition() const;
 	dQuat GetRotation() const;
 
+	BoundingBox GetLocalOOBB() const;
+
 	void SetPosition(const dVec3& pos);
 	void SetRotation(const dQuat& rot);
 

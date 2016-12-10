@@ -22,6 +22,10 @@ dQuat Geometry::GetRotation() const
 {
 	return m_rot;
 }
+BoundingBox Geometry::GetLocalOOBB() const
+{
+	return m_localOOBB;
+}
 
 void Geometry::SetPosition(const dVec3& pos)
 {

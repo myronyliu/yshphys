@@ -8,6 +8,10 @@ class RigidBody : public BVNodeContent
 public:
 	RigidBody();
 	virtual ~RigidBody();
+
+	AABB GetAABB() const;
+	void UpdateAABB();
+
 protected:
 
 	double m_mass;
@@ -22,5 +26,9 @@ protected:
 
 	dVec3 m_pos; // relative to GLOBAL frame
 	dQuat m_rot; // relative to GLOBAL frame
+
+	// CACHED DATA
+
+	AABB m_AABB;
 };
 

@@ -107,8 +107,8 @@ std::vector<BVNode*> BVNode::FindLeftToRightLeafOrder() const
 				nodeStack.push(left);
 			}
 		}
-		return leaves;
 	}
+	return leaves;
 }
 
 std::vector<BVNodePair> BVNode::FindIntersectingLeaves() const
