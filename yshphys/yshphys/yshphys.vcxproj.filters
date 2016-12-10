@@ -153,6 +153,9 @@
     <ClInclude Include="GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shader_FlatUniformColor.h">
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -260,6 +263,9 @@
     <ClCompile Include="GameObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shader_FlatUniformColor.cpp">
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -267,6 +273,12 @@
       <Filter>Rendering\Shaders</Filter>
     </None>
     <None Include="DefaultVertexShader.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
+    <None Include="FlatUniformColorFragmentShader.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
+    <None Include="FlatUniformColorVertexShader.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
   </ItemGroup>

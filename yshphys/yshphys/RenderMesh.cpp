@@ -272,14 +272,14 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& color)
 {
 	const int nRadiusPts = 32; // also the number of segments
-	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nRadiusPts) + 1;
-	const int nHeightSegs = nHeightPts - 1;
+	const int nTheta = 16;
 
-	const int nTheta = nRadiusPts / 2;
+	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nRadiusPts) + 1;
 	const int nStripPts = 2 * (nTheta - 2) + nHeightPts;
 
 	const int nVertices = nStripPts*nRadiusPts + 2;
 	const int nTriangles = 2 * nStripPts *nRadiusPts;
+
 	AllocateMesh(nVertices, nTriangles);
 
 	const int iTipBot = 0;
@@ -316,7 +316,7 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 			fVec3 position;
 			position.x = radius*cosPhi;
 			position.y = radius*sinPhi;
-			position.z = ((float)i*2.0f / (float)nHeightSegs - 1.0f) * halfHeight;
+			position.z = ((float)i*2.0f / (float)(nHeightPts - 1) - 1.0f) * halfHeight;
 			fVec3 normal;
 			normal.x = cosPhi;
 			normal.y = sinPhi;

@@ -173,6 +173,7 @@
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
+    <ClInclude Include="Shader_FlatUniformColor.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="YshMath.h" />
     <ClInclude Include="HomogeneousTransformation.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shader_Default.cpp" />
+    <ClCompile Include="Shader_FlatUniformColor.cpp" />
     <ClCompile Include="Simplex3D.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -239,6 +241,8 @@
   <ItemGroup>
     <None Include="DefaultFragmentShader.glsl" />
     <None Include="DefaultVertexShader.glsl" />
+    <None Include="FlatUniformColorFragmentShader.glsl" />
+    <None Include="FlatUniformColorVertexShader.glsl" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

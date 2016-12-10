@@ -22,13 +22,15 @@ int main(int argc, char *args[])
 	scene.m_window = &window;
 
 	RenderMesh mesh;
-	mesh.CreateBox(1.0f, 1.0f, 1.0f, 1, 1, 1);
+//	mesh.CreateBox(1.0f, 1.0f, 1.0f, 10, 10, 10, fVec3(1.0f, 1.0f, 1.0f));
+	mesh.CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
 //	mesh.CreateTriangle();
 	Shader_Default shader;
 	RenderObject obj;
 	obj.SetRenderMesh(&mesh);
 	obj.SetShader(&shader);
 	obj.SetPosition(fVec3(0.0f, 10.0f, 0.0f));
+	obj.SetRotation(fQuat(fVec3(1.0f, 1.0f, 1.0f).Scale(sqrtf(1.0f/3.0f)), fPI / 6.0f));
 
 	scene.AddRenderObject(&obj);
 
