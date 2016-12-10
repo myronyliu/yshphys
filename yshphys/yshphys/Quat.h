@@ -17,6 +17,8 @@ public:
 	Quat_t<T> operator * (const Quat_t<T>& q) const;
 	Quat_t<T> operator - () const; // conjugate http://mathworld.wolfram.com/QuaternionConjugate.html
 	
+	static Quat_t<T> Identity();
+
 	///////////////
 	// VARIABLES //
 	///////////////

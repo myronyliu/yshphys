@@ -15,7 +15,7 @@ public:
 	// Intended for debugging and should be used sparingly as these shuttle memory to the GPU each time they are called.
 	void DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame);
 	void DrawLine(const fVec3& start, const fVec3& end, const fVec3& color);
-	void DrawBVTree(const BVTree& tree);
+	void DrawBVTree(const BVTree& tree, const fVec3& color);
 protected:
 
 	DebugRenderer();

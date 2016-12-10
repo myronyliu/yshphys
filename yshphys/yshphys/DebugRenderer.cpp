@@ -190,7 +190,25 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 	m_objects.push_back(data);
 }
 
-void DebugRenderer::DrawBVTree(const BVTree& tree)
+void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 {
+	const BVNode* root = tree.Root();
+	if (!root)
+	{
+		return;
+	}
 
+	std::stack<const BVNode*> nodeStack;
+	nodeStack.push(root);
+	while (!nodeStack.empty())
+	{
+		const BVNode* node = nodeStack.top();
+		nodeStack.pop();
+
+		const AABB aabb = node->GetAABB();
+		DrawBox(aabb.max.x - aabb.min.x, aabb.max.y - aabb.min.y, aabb.max.z - aabb.min.z, fVec3(0.0f, 0.0f, 0.0f), fQuat::Identity(), color, true);
+
+		nodeStack.push(node->GetLeftChild());
+		nodeStack.push(node->GetRightChild());
+	}
 }

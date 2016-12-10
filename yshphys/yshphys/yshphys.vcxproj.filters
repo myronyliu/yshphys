@@ -43,6 +43,9 @@
     <Filter Include="Physics\BV">
       <UniqueIdentifier>{9c3bd789-098b-48f7-8e9c-587b8710310f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math\Quat">
+      <UniqueIdentifier>{a008c759-4737-40c3-9418-313b07feda5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -53,9 +56,6 @@
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Quat.h">
-      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
@@ -171,6 +171,9 @@
     <ClInclude Include="DebugRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Quat.h">
+      <Filter>Math\Quat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -178,9 +181,6 @@
     </ClCompile>
     <ClCompile Include="yshphys.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Quat.cpp">
-      <Filter>Math</Filter>
     </ClCompile>
     <ClCompile Include="Simplex3D.cpp">
       <Filter>Physics</Filter>
@@ -289,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="DebugRenderer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Quat.cpp">
+      <Filter>Math\Quat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -70,5 +70,11 @@ Quat_t<T> Quat_t<T>::operator - () const
 	return Quat_t<T>(-x, -y, -z, w);
 }
 
+template <class T>
+Quat_t<T> Quat_t<T>::Identity()
+{
+	return Quat_t<T>((T)0.0, (T)0.0, (T)0.0, (T)1.0);
+}
+
 template class Quat_t<float>;
 template class Quat_t<double>;
