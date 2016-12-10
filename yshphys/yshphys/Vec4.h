@@ -21,6 +21,7 @@ public:
 	Vec4_t<T> operator - (const Vec4_t<T>& v) const;
 	Vec4_t<T> operator - () const;
 	bool operator == (const Vec4_t<T>& v) const;
+	bool operator != (const Vec4_t<T>& v) const;
 
 	T operator [] (int i) const;
 	T& operator [] (int i);

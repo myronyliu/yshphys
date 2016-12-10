@@ -258,11 +258,20 @@ bool BVNode::SetAABB(const AABB& aabb)
 			return false;
 		}
 	}
+	AABB oldAABB = m_AABB;
 	m_AABB = aabb;
 
 	if (m_parent != nullptr)
 	{
-		RefitAndRotateTree();
+		if (m_AABB.min.x < oldAABB.min.x ||
+			m_AABB.min.y < oldAABB.min.y ||
+			m_AABB.min.z < oldAABB.min.z ||
+			m_AABB.max.x > oldAABB.max.x ||
+			m_AABB.max.y > oldAABB.max.y ||
+			m_AABB.max.z > oldAABB.max.z)
+		{
+			RefitAndRotateTree();
+		}
 	}
 	return true;
 }

@@ -68,6 +68,12 @@ bool Vec4_t<T>::operator == (const Vec4_t<T>& v) const
 }
 
 template <class T>
+bool Vec4_t<T>::operator != (const Vec4_t<T>& v) const
+{
+	return x != v.x || y != v.y || z != v.z || w != v.w;
+}
+
+template <class T>
 T Vec4_t<T>::operator [] (int i) const
 {
 	switch (i)
