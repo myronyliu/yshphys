@@ -34,9 +34,16 @@ class BVNode
 public:
 	AABB GetAABB() const;
 	BVNodeContent* GetContent() const;
+
+	// Our getters should return const pointers. A BVNode should be able to traverse the tree and query data. However, it should not be able to "directly" manipulate the data
+	// on any node other than itself, for instance, by traversing the tree and calling SetAABB. SetAABB does manipulate the tree, but "indirectly" under the hood, which is okay.
+	const BVNode* GetParent() const;
+	const BVNode* GetLeftChild() const;
+	const BVNode* GetRightChild() const;
+	
 	bool IsLeaf() const;
 
-	BVNode* Root() const;
+	const BVNode* Root() const;
 	BVNode* LeftMostLeaf() const;
 	BVNode* Sibling() const;
 

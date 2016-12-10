@@ -108,35 +108,16 @@ RenderScene::RenderScene()
 	freeNode.m_node = &m_renderNodes[0];
 	freeNode.m_precedingNode = nullptr;
 	m_freedNodeStack.push(freeNode);
-
-	// Do some Single Draw mumbo jumbo
-	glGenVertexArrays(1, &m_singleDrawVAO);
-	glGenBuffers(1, &m_singleDrawVBO);
-	glGenBuffers(1, &m_singleDrawIBO);
-
-	glBindVertexArray(m_singleDrawVAO);
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_singleDrawVBO);
-		{
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		glEnableVertexAttribArray(0);
-	}
-	glBindVertexArray(0);
 }
 
 
 RenderScene::~RenderScene()
 {
-	glBindVertexArray(m_singleDrawVAO);
-	glDisableVertexAttribArray(0);
-	glBindVertexArray(0);
+}
 
-	glDeleteVertexArrays(1, &m_singleDrawVAO);
-	glDeleteBuffers(1, &m_singleDrawVBO);
-	glDeleteBuffers(1, &m_singleDrawIBO);
+DebugRenderer& RenderScene::DebugDrawSystem()
+{
+	return m_debugRenderer;
 }
 
 void RenderScene::AddRenderObject(RenderObject* renderObject)
@@ -181,51 +162,6 @@ void RenderScene::AttachCamera(Camera* camera)
 {
 	camera->SetViewport(&m_viewport);
 }
-
-void RenderScene::DrawAndEvictSingles()
-{
-	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
-	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
-
-	const GLuint program = m_singleDrawShader.GetProgram();
-	glUseProgram(program);
-	glBindVertexArray(m_singleDrawVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_singleDrawVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_singleDrawIBO);
-
-	for (int i = 0; i < m_singleDraws.size(); ++i)
-	{
-		SingleDrawData& data = m_singleDraws[i];
-
-		const fMat44 modelMatrix =
-			HomogeneousTransformation_t<float>::CreateTranslation(data.pos)*
-			HomogeneousTransformation_t<float>::CreateRotation(data.rot);
-
-		glBufferData(GL_ARRAY_BUFFER, 3 * data.nVertices * sizeof(GL_FLOAT), data.vertices, GL_DYNAMIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.nIndices * sizeof(GL_UNSIGNED_INT), data.indices, GL_DYNAMIC_DRAW);
-
-		const GLint colorLoc = glGetUniformLocation(program, "color");
-		const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
-		const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
-		const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
-		// Pass in the transpose because OpenGL likes to be all edgy with its
-		// column major matrices while we are row major like everybody else.
-		glUniform3fv(colorLoc, 1, data.color);
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
-		glDrawElements(data.polygonType, data.nIndices, GL_UNSIGNED_INT, 0);
-	}
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	glUseProgram(0);
-
-	m_singleDraws.clear();
-}
-
 void RenderScene::DrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -270,92 +206,8 @@ void RenderScene::DrawScene()
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	DrawAndEvictSingles();
+	m_debugRenderer.DrawObjects(m_viewport);
+	m_debugRenderer.EvictObjects();
 
 	m_window->UpdateGLRender();
-}
-
-void RenderScene::DrawBox(const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame, float halfDimX, float halfDimY, float halfDimZ)
-{
-	SingleDrawData data;
-	data.pos = pos;
-	data.rot = rot;
-	data.color[0] = color.x;
-	data.color[1] = color.y;
-	data.color[2] = color.z;
-
-	auto iVertex = [](int i, int j, int k)
-	{
-		return i + 2 * j + 4 * k;
-	};
-
-	data.nVertices = 8;
-
-	for (int k = 0; k < 2; ++k)
-	{
-		for (int j = 0; j < 2; ++j)
-		{
-			for (int i = 0; i < 2; ++i)
-			{
-				const int idx = iVertex(i, j, k);
-				data.vertices[idx][0] = float(2 * i - 1)*halfDimX;
-				data.vertices[idx][1] = float(2 * j - 1)*halfDimY;
-				data.vertices[idx][2] = float(2 * k - 1)*halfDimZ;
-			}
-		}
-	}
-
-	if (wireFrame)
-	{
-		data.polygonType = GL_LINES;
-		data.nVertsPerPoly = 2;
-		data.nIndices = 24;
-
-		data.indices[0] = iVertex(0, 0, 0);
-		data.indices[1] = iVertex(1, 0, 0);
-
-		data.indices[2] = iVertex(1, 0, 0);
-		data.indices[3] = iVertex(1, 1, 0);
-
-		data.indices[4] = iVertex(1, 1, 0);
-		data.indices[5] = iVertex(0, 1, 0);
-
-		data.indices[6] = iVertex(0, 1, 0);
-		data.indices[7] = iVertex(0, 0, 0);
-
-		///////////////////////////////////
-
-		data.indices[8] = iVertex(0, 0, 1);
-		data.indices[9] = iVertex(1, 0, 1);
-
-		data.indices[10] = iVertex(1, 0, 1);
-		data.indices[11] = iVertex(1, 1, 1);
-
-		data.indices[12] = iVertex(1, 1, 1);
-		data.indices[13] = iVertex(0, 1, 1);
-
-		data.indices[14] = iVertex(0, 1, 1);
-		data.indices[15] = iVertex(0, 0, 1);
-
-		////////////////////////////////////
-
-		data.indices[16] = iVertex(0, 0, 0);
-		data.indices[17] = iVertex(0, 0, 1);
-
-		data.indices[18] = iVertex(1, 0, 0);
-		data.indices[19] = iVertex(1, 0, 1);
-
-		data.indices[20] = iVertex(1, 1, 0);
-		data.indices[21] = iVertex(1, 1, 1);
-
-		data.indices[22] = iVertex(0, 1, 0);
-		data.indices[23] = iVertex(0, 1, 1);
-	}
-	else
-	{
-		data.polygonType = GL_TRIANGLES;
-		data.nVertsPerPoly = 3;
-		data.nIndices = 36;
-	}
-	m_singleDraws.push_back(data);
 }

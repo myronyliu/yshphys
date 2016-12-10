@@ -38,7 +38,20 @@ BVNodeContent* BVNode::GetContent() const
 	return IsLeaf() ? m_content : nullptr;
 }
 
-BVNode* BVNode::Root() const
+const BVNode* BVNode::GetParent() const
+{
+	return m_parent;
+}
+const BVNode* BVNode::GetLeftChild() const
+{
+	return m_left;
+}
+const BVNode* BVNode::GetRightChild() const
+{
+	return m_right;
+}
+
+const BVNode* BVNode::Root() const
 {
 	return &m_tree->m_nodes[m_tree->m_iRoot];
 }
@@ -170,7 +183,7 @@ void BVNode::RefitAndRotateTree()
 	if (m_parent != nullptr)
 	{
 		BVNode* d = m_parent;
-		BVNode* root = Root();
+		BVNode* root = &m_tree->m_nodes[m_tree->m_iRoot];
 
 		while (true)
 		{

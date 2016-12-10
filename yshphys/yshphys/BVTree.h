@@ -16,6 +16,8 @@ public:
 	BVTree();
 	virtual ~BVTree();
 
+	const BVNode* Root() const;
+
 protected:
 
 	// Adds a new root, adds a leaf as the sibling of the old root, and sets the old root and the new leaf as the children of the new root.

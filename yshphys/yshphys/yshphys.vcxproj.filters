@@ -37,6 +37,12 @@
     <Filter Include="Physics\Geometry">
       <UniqueIdentifier>{bf1bdf3f-da54-40de-b343-ee940acb5222}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{e6630c33-4012-469e-b7d7-1cbffd344246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\BV">
+      <UniqueIdentifier>{9c3bd789-098b-48f7-8e9c-587b8710310f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -56,9 +62,6 @@
     </ClInclude>
     <ClInclude Include="Simplex3D.h">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsObject.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
@@ -105,9 +108,6 @@
     <ClInclude Include="RenderScene.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InputHandler.h">
       <Filter>Input</Filter>
     </ClInclude>
@@ -132,23 +132,8 @@
     <ClInclude Include="Sphere.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="BoundingBox.h">
-      <Filter>Physics\Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="BVTree.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="BVNode.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="RigidBody.h">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Shader_FlatUniformColor.h">
       <Filter>Rendering\Shaders</Filter>
@@ -159,7 +144,31 @@
     <ClInclude Include="LineSegment.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsScene.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsObject.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Game</Filter>
+    </ClInclude>
     <ClInclude Include="Ray.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>Physics\BV</Filter>
+    </ClInclude>
+    <ClInclude Include="BVNode.h">
+      <Filter>Physics\BV</Filter>
+    </ClInclude>
+    <ClInclude Include="BVTree.h">
+      <Filter>Physics\BV</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -175,9 +184,6 @@
     </ClCompile>
     <ClCompile Include="Simplex3D.cpp">
       <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsObject.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Vec3.cpp">
       <Filter>Math\Vec</Filter>
@@ -245,29 +251,11 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>Physics\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="BoundingBox.cpp">
-      <Filter>Physics\Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="BVTree.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="BVNode.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
     <ClCompile Include="RigidBody.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
-    <ClCompile Include="PhysicsScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Shader_FlatUniformColor.cpp">
       <Filter>Rendering\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Capsule.cpp">
       <Filter>Physics\Geometry</Filter>
@@ -275,7 +263,31 @@
     <ClCompile Include="LineSegment.cpp">
       <Filter>Physics\Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsObject.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsScene.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="Ray.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>Physics\BV</Filter>
+    </ClCompile>
+    <ClCompile Include="BVNode.cpp">
+      <Filter>Physics\BV</Filter>
+    </ClCompile>
+    <ClCompile Include="BVTree.cpp">
+      <Filter>Physics\BV</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

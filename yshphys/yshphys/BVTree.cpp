@@ -22,6 +22,11 @@ BVTree::BVTree() : m_iRoot(INVALID_BVNODEINDEX), m_iFirst(INVALID_BVNODEINDEX)
 	m_iFreeNodes.push(freed);
 }
 
+const BVNode* BVTree::Root() const
+{
+	return &m_nodes[m_iRoot];
+}
+
 void BVTree::PopFreeNode()
 {
 	FreedBVNode freed = m_iFreeNodes.top();
