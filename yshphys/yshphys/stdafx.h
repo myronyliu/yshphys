@@ -24,10 +24,5 @@
 
 #include <limits>
 
-// Returns (-1, 0 , 1). See http://stackoverflow.com/a/4609795
-template <typename T> int sgn(T val)
-{
-	return (T(0) < val) - (val < T(0));
-}
 
 // TODO: reference additional headers your program requires here

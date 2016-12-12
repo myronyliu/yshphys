@@ -60,7 +60,7 @@ Mat44_t<T> Mat44_t<T>::Transpose() const
 template <class T>
 T Mat44_t<T>::Determinant() const
 {
-	return MathUtils_t<T>::Determinant(&M_ij[0][0], 4);
+	return MathUtils::Determinant(&M_ij[0][0], 4);
 }
 
 template <class T>

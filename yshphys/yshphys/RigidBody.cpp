@@ -32,8 +32,8 @@ void RigidBody::UpdateAABB()
 	const dVec3 oobbCenter = (oobb.min + oobb.max).Scale(0.5); // center of the OOBB in geom's local frame
 	const dVec3 oobbSpan = (oobb.max - oobb.min).Scale(0.5); // span of the OOBB
 
-	const dVec3 aabbCenter = m_pos + m_rot.Transform(m_geometry->GetPosition() + oobbCenter);
-	const dQuat geomRot = m_rot*m_geometry->GetRotation();
+	const dVec3 aabbCenter = m_x + m_q.Transform(m_geometry->GetPosition() + oobbCenter);
+	const dQuat geomRot = m_q*m_geometry->GetRotation();
 
 	const dVec3 aabbSpan = dMat33(geomRot).Abs().Transform(oobbSpan);
 
@@ -43,4 +43,14 @@ void RigidBody::UpdateAABB()
 	QuantizeAABB(m_AABB);
 
 	m_bvNode->SetAABB(m_AABB);
+}
+
+void RigidBody::Step(double dt)
+{
+	dVec3 a = m_F.Scale(1.0 / m_m);
+	m_x = m_x + m_v.Scale(dt) + a.Scale(0.5*dt*dt);
+	m_v = m_v + a.Scale(dt);
+
+
+//	m_w = m_vAng + m_aAng.Scale(dt);
 }

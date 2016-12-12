@@ -3,6 +3,9 @@
 #include "Geometry.h"
 #include "BVNode.h"
 
+// See http://www.cs.cmu.edu/~baraff/sigcourse/notesd1.pdf
+// and http://www.cs.cmu.edu/~baraff/sigcourse/notesd2.pdf
+
 class RigidBody : public BVNodeContent
 {
 public:
@@ -12,23 +15,33 @@ public:
 	AABB GetAABB() const;
 	void UpdateAABB();
 
-protected:
+	void Step(double dt);
 
-	double m_mass;
-	fMat33 m_inertia; // in the local frame of itself
+protected:
 	Geometry* m_geometry;
 
-	dVec3 m_aLin;
-	dVec3 m_vLin;
+	// CONSTANTS
+	double m_m;
+	fMat33 m_Ibody; // in the local frame of itself
+	fMat33 m_Ibodyinv;
 
-	dVec3 m_aAng;
-	dVec3 m_vAng;
+	// STATE VARIABLES
+	dVec3 m_x; // position
+	dQuat m_q; // orientation
 
-	dVec3 m_pos; // relative to GLOBAL frame
-	dQuat m_rot; // relative to GLOBAL frame
+	dVec3 m_P; // linear  momentum
+	dVec3 m_L; // angular momentum
+
+	// DERIVED STATE VARIABLES
+	fMat33 m_Iinv;
+	dVec3 m_v; // linear  velocity
+	dVec3 m_w; // angular velocity
+
+	// COMPUTED
+	dVec3 m_F; // force
+	dVec3 m_T; // torque
 
 	// CACHED DATA
-
 	AABB m_AABB;
 };
 

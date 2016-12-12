@@ -22,10 +22,6 @@ template <typename> class Mat44_t;
 typedef Mat44_t<float> fMat44;
 typedef Mat44_t<double> dMat44;
 
-template <typename> class MathUtils_t;
-typedef MathUtils_t<float> fMathUtils;
-typedef MathUtils_t<double> dMathUtils;
-
 template <typename> class HomogeneousTransformation_t;
 typedef HomogeneousTransformation_t<float> fHomogeneousTransformation;
 typedef HomogeneousTransformation_t<double> dHomogeneousTransformation;
