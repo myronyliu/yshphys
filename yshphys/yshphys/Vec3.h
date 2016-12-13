@@ -13,6 +13,9 @@ public:
 	Vec3_t(const Vec4_t<T>& v4);
 	virtual ~Vec3_t();
 
+	void GetData(T* const components) const;
+	void SetData(const T* const components);
+
 	T Dot(const Vec3_t<T>& v) const;
 	Vec3_t<T> Cross(const Vec3_t<T>& v) const;
 	Vec3_t<T> Scale(T x) const;

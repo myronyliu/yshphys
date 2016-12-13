@@ -25,6 +25,23 @@ Vec3_t<T>::~Vec3_t()
 {
 }
 
+
+template <class T>
+void Vec3_t<T>::GetData(T* const components) const
+{
+	components[0] = x;
+	components[1] = y;
+	components[2] = z;
+}
+
+template <class T>
+void Vec3_t<T>::SetData(const T* const components)
+{
+	x = components[0];
+	y = components[1];
+	z = components[2];
+}
+
 template <class T>
 T Vec3_t<T>::Dot(const Vec3_t<T>& v) const
 {

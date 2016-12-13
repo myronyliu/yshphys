@@ -53,6 +53,12 @@ Vec3_t<T> Mat33_t<T>::GetColumn(int j) const
 }
 
 template <class T>
+void Mat33_t<T>::GetData(T* const rowMajorElementArray) const
+{
+	std::memcpy(rowMajorElementArray, M_ij, 9 * sizeof(T));
+}
+
+template <class T>
 void Mat33_t<T>::SetRow(int i, const Vec3_t<T>& v)
 {
 	M_ij[i][0] = v.x;
@@ -66,6 +72,12 @@ void Mat33_t<T>::SetColumn(int j, const Vec3_t<T>& v)
 	M_ij[0][j] = v.x;
 	M_ij[1][j] = v.y;
 	M_ij[2][j] = v.z;
+}
+
+template <class T>
+void Mat33_t<T>::SetData(const T* const rowMajorElementArray)
+{
+	std::memcpy(M_ij, rowMajorElementArray, 9 * sizeof(T));
 }
 
 template <class T>

@@ -44,9 +44,31 @@ Quat_t<T>::~Quat_t()
 }
 
 template <class T>
+void Quat_t<T>::GetData(T* const components) const
+{
+	components[0] = x;
+	components[1] = y;
+	components[2] = z;
+	components[3] = w;
+}
+
+template <class T>
+void Quat_t<T>::SetData(const T* const components)
+{
+	x = components[0];
+	y = components[1];
+	z = components[2];
+	w = components[3];
+}
+
+template <class T>
 Vec3_t<T> Quat_t<T>::Transform(const Vec3_t<T>& v) const
 {
-	Quat_t<T> p(v.x, v.y, v.z, 0.0);
+	Quat_t<T> p;
+	p.x = v.x;
+	p.y = v.y;
+	p.z = v.z;
+	p.w = (T)0.0;
 	const Quat_t<T>& q = *this;
 	Quat_t<T> pRotated = q*p*(-q);
 	return Vec3_t<T>(pRotated.x, pRotated.y, pRotated.z);
@@ -68,6 +90,18 @@ template <class T>
 Quat_t<T> Quat_t<T>::operator - () const
 {
 	return Quat_t<T>(-x, -y, -z, w);
+}
+
+template <class T>
+Quat_t<T> Quat_t<T>::Normalize() const
+{
+	T nInv = (T)1.0 / (w*w + x*x + y*y + z*z);
+	Quat_t<T> q;
+	q.w = w * nInv;
+	q.x = x * nInv;
+	q.y = y * nInv;
+	q.z = z * nInv;
+	return q;
 }
 
 template <class T>

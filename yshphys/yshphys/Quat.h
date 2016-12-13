@@ -12,7 +12,11 @@ public:
 	Quat_t(const Mat33_t<T>& R);
 	virtual ~Quat_t();
 
+	void GetData(T* const components) const;
+	void SetData(const T* const components);
+
 	Vec3_t<T> Transform(const Vec3_t<T>& v) const;
+	Quat_t<T> Normalize() const;
 
 	Quat_t<T> operator * (const Quat_t<T>& q) const;
 	Quat_t<T> operator - () const; // conjugate http://mathworld.wolfram.com/QuaternionConjugate.html

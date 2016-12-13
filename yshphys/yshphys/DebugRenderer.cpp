@@ -84,7 +84,7 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 {
 	DebugDrawData data;
 	data.pos = fVec3(0.0f, 0.0f, 0.0f);
-	data.rot = fQuat(0.0f, 0.0f, 0.0f, 1.0f);
+	data.rot = fQuat::Identity();
 	data.color[0] = color.x;
 	data.color[1] = color.y;
 	data.color[2] = color.z;

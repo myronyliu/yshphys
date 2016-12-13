@@ -18,12 +18,16 @@ public:
 	void Step(double dt);
 
 protected:
+
+	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const; // no need to compute LDot; we know that it's equal to m_T
+
 	Geometry* m_geometry;
 
 	// CONSTANTS
 	double m_m;
-	fMat33 m_Ibody; // in the local frame of itself
-	fMat33 m_Ibodyinv;
+	double m_minv;
+	dMat33 m_Ibody; // in the local frame of itself
+	dMat33 m_Ibodyinv;
 
 	// STATE VARIABLES
 	dVec3 m_x; // position
@@ -33,7 +37,7 @@ protected:
 	dVec3 m_L; // angular momentum
 
 	// DERIVED STATE VARIABLES
-	fMat33 m_Iinv;
+	dMat33 m_Iinv;
 	dVec3 m_v; // linear  velocity
 	dVec3 m_w; // angular velocity
 

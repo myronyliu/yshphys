@@ -45,12 +45,89 @@ void RigidBody::UpdateAABB()
 	m_bvNode->SetAABB(m_AABB);
 }
 
+void RigidBody::Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const
+{
+	const dMat33 R(q);
+	const dMat33 Iinv = R*m_Ibodyinv*R.Transpose();
+	const dVec3 w = Iinv.Transform(L);
+
+	dQuat wQuat;
+	wQuat.x = w.x;
+	wQuat.y = w.y;
+	wQuat.z = w.z;
+	wQuat.w = 0.0;
+
+	qDot = wQuat*q;
+	qDot.x *= 0.5;
+	qDot.y *= 0.5;
+	qDot.z *= 0.5;
+	qDot.w *= 0.5;
+}
+
 void RigidBody::Step(double dt)
 {
-	dVec3 a = m_F.Scale(1.0 / m_m);
+	////////////
+	// LINEAR //
+	////////////
+
+	dVec3 a = m_F.Scale(m_minv);
 	m_x = m_x + m_v.Scale(dt) + a.Scale(0.5*dt*dt);
-	m_v = m_v + a.Scale(dt);
+	m_P = m_P + m_F.Scale(dt);
+	m_v = m_P.Scale(m_minv);
 
+	/////////////
+	// ANGULAR //
+	/////////////
 
-//	m_w = m_vAng + m_aAng.Scale(dt);
+	auto ScaleQuat = [](const dQuat& quat, double scale)
+	{
+		dQuat scaled;
+		scaled.x = quat.x * scale;
+		scaled.y = quat.y * scale;
+		scaled.z = quat.z * scale;
+		scaled.w = quat.w * scale;
+		return scaled;
+	};
+	auto AddQuats = [](const dQuat& q0, const dQuat& q1)
+	{
+		dQuat sum;
+		sum.x = q0.x + q1.x;
+		sum.y = q0.y + q1.y;
+		sum.z = q0.z + q1.z;
+		sum.w = q0.w + q1.w;
+		return sum;
+	};
+
+	dQuat qDot[4];
+
+	dQuat q(m_q);
+	dVec3 L(m_L);
+	Compute_qDot(q, L, qDot[0]);
+
+	q = AddQuats(m_q, ScaleQuat(qDot[0], 0.5*dt)).Normalize(); // Must normalize, since we construct orthogonal R to transform Ibodyinv at each step
+	L = m_L + m_T.Scale(0.5*dt);
+	Compute_qDot(q, L, qDot[1]);
+
+	q = AddQuats(m_q, ScaleQuat(qDot[1], 0.5*dt)).Normalize();
+	L = m_L + m_T.Scale(0.5*dt);
+	Compute_qDot(q, L, qDot[2]);
+
+	q = AddQuats(m_q, ScaleQuat(qDot[2], dt)).Normalize();
+	L = m_w + m_T.Scale(dt);
+	Compute_qDot(q, L, qDot[3]);
+
+	dQuat dq = qDot[0];
+	dq = AddQuats(dq, ScaleQuat(qDot[1], 2.0));
+	dq = AddQuats(dq, ScaleQuat(qDot[2], 2.0));
+	dq = AddQuats(dq, qDot[3]);
+	dq = ScaleQuat(dq, dt / 6.0);
+	m_q = AddQuats(m_q, dq).Normalize();
+
+	m_L = m_L + m_T.Scale(dt);
+
+	// UPDATE DERIVED QUANTITIES
+
+	dMat33 R(q);
+	m_Iinv = R*m_Ibodyinv*R.Transpose();
+	m_w = m_Iinv.Transform(m_L);
 }

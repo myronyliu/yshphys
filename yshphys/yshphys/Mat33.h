@@ -15,6 +15,9 @@ public:
 	void SetRow(int i, const Vec3_t<T>& v);
 	void SetColumn(int j, const Vec3_t<T>& v);
 
+	void SetData(const T* const rowMajorElementArray);
+	void GetData(T* const rowMajorElementArray) const;
+
 	Mat33_t<T> Transpose() const;
 	T Determinant() const;
 	Mat33_t<T> Inverse() const;
