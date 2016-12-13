@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "InputHandler.h"
 #include "Game.h"
+#include "Capsule.h"
 
 int main(int argc, char *args[])
 {
@@ -24,7 +25,7 @@ int main(int argc, char *args[])
 	Game game;
 	game.m_inputHandler.AddMouseMotionHandler(&camera);
 	game.m_inputHandler.AddKeyHandler(&camera);
-
+	game.m_renderScene.AttachCamera(&camera);
 	game.m_renderScene.m_window = &window;
 
 	RenderMesh mesh;
@@ -36,11 +37,17 @@ int main(int argc, char *args[])
 	obj.SetPosition(fVec3(0.0f, 10.0f, 0.0f));
 	obj.SetRotation(fQuat(fVec3(1.0f, 1.0f, 1.0f).Scale(sqrtf(1.0f/3.0f)), fPI / 6.0f));
 
-	RigidBody rigidbody;
+	RigidBody rigidBody;
+	Capsule capsule;
+	capsule.SetRadius(1.0);
+	capsule.SetHalfHeight(1.0);
+	rigidBody.SetGeometry(&capsule);
+	
+	GameObject gameObject;
+	gameObject.SetPhysicsObject(&rigidBody);
+	gameObject.SetRenderObject(&obj);
 
-	game.m_renderScene.AddRenderObject(&obj);
-
-	game.m_renderScene.AttachCamera(&camera);
+	game.AddGameObject(&gameObject);
 
 
 	game.Run();

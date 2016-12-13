@@ -43,8 +43,8 @@ Quat_t<T>::Quat_t(const Quat_t<S>& q)
 {
 	w = (T)q.w;
 	x = (T)q.x;
-	w = (T)q.y;
-	x = (T)q.z;
+	y = (T)q.y;
+	z = (T)q.z;
 }
 
 template <class T>

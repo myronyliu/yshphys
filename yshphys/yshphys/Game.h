@@ -14,6 +14,9 @@ public:
 
 	void Run();
 
+	void AddGameObject(GameObject* gameObject);
+	void RemoveGameObject(GameObject* gameObject);
+
 	InputHandler m_inputHandler;
 
 	PhysicsScene m_physicsScene;

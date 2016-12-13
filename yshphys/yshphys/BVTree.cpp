@@ -39,8 +39,11 @@ void BVTree::PopFreeNode()
 
 	if (iPrev == INVALID_BVNODEINDEX) // The popped node is the first element in the linked list of active nodes
 	{
-		m_nodes[m_iFirst].m_iPrev = iCurr;
-		curr.m_iNext = m_iFirst;
+		if (m_iFirst != INVALID_BVNODEINDEX)
+		{
+			m_nodes[m_iFirst].m_iPrev = iCurr;
+			curr.m_iNext = m_iFirst;
+		}
 		m_iFirst = iCurr;
 	}
 	else
@@ -132,45 +135,56 @@ bool BVTree::DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 		return false;
 	}
 
-	BVNode* fork = &m_nodes[m_iRoot];
-
-	while (!fork->IsLeaf())
-	{
-		fork->m_AABB = fork->m_AABB.Aggregate(aabb);
-
-		BVNode* L = fork->m_left;
-		BVNode* R = fork->m_right;
-
-		double A_mergeL = L->m_AABB.Aggregate(aabb).Area() + R->m_AABB.Area();
-		double A_mergeR = R->m_AABB.Aggregate(aabb).Area() + L->m_AABB.Area();
-
-		if (A_mergeL < A_mergeR)
-		{
-			fork = L;
-		}
-		else
-		{
-			fork = R;
-		}
-	}
-
 	const unsigned int iNewLeaf = m_iFreeNodes.top().m_iNode;
-	PopFreeNode();
-	const unsigned int iNewParent = m_iFreeNodes.top().m_iNode;
 	PopFreeNode();
 
 	BVNode* newLeaf = &m_nodes[iNewLeaf];
-	BVNode* newParent = &m_nodes[iNewParent];
 
 	newLeaf->m_left = nullptr;
 	newLeaf->m_right = nullptr;
 
-	fork->m_parent = newParent;
-	newLeaf->m_parent = newParent;
+	if (m_iRoot == INVALID_BVNODEINDEX)
+	{
+		newLeaf->m_parent = nullptr;
+		m_iRoot = iNewLeaf;
+	}
+	else
+	{
+		BVNode* fork = &m_nodes[m_iRoot];
+
+		while (!fork->IsLeaf())
+		{
+			fork->m_AABB = fork->m_AABB.Aggregate(aabb);
+
+			BVNode* L = fork->m_left;
+			BVNode* R = fork->m_right;
+
+			double A_mergeL = L->m_AABB.Aggregate(aabb).Area() + R->m_AABB.Area();
+			double A_mergeR = R->m_AABB.Aggregate(aabb).Area() + L->m_AABB.Area();
+
+			if (A_mergeL < A_mergeR)
+			{
+				fork = L;
+			}
+			else
+			{
+				fork = R;
+			}
+		}
+
+		const unsigned int iNewParent = m_iFreeNodes.top().m_iNode;
+		PopFreeNode();
+
+		BVNode* newParent = &m_nodes[iNewParent];
+
+		fork->m_parent = newParent;
+		newLeaf->m_parent = newParent;
+
+		newParent->m_AABB = fork->m_AABB.Aggregate(aabb);
+	}
 
 	newLeaf->m_AABB = aabb;
 	newLeaf->SetContent(content);
-	newParent->m_AABB = fork->m_AABB.Aggregate(aabb);
 
 	return true;
 }

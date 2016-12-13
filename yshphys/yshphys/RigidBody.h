@@ -15,6 +15,8 @@ public:
 	dVec3 GetPosition() const;
 	dQuat GetRotation() const;
 
+	void SetGeometry(Geometry* geometry);
+
 	virtual void UpdateAABB();
 
 	virtual void Step(double dt);

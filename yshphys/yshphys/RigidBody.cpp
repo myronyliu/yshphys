@@ -52,7 +52,10 @@ dQuat RigidBody::GetRotation() const
 {
 	return m_q;
 }
-
+void RigidBody::SetGeometry(Geometry* geometry)
+{
+	m_geometry = geometry;
+}
 void RigidBody::UpdateAABB()
 {
 	const BoundingBox oobb = m_geometry->GetLocalOOBB();

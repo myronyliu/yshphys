@@ -4,13 +4,15 @@
 #include "PhysicsObject.h"
 
 
-GameObject::GameObject()
+GameObject::GameObject() : m_renderPosOffset(0.0, 0.0, 0.0), m_renderRotOffset(fQuat::Identity())
 {
 }
-
-
 GameObject::~GameObject()
 {
+}
+GameNode* GameObject::GetGameNode() const
+{
+	return m_node;
 }
 void GameObject::SetRenderObject(RenderObject* renderObject)
 {
@@ -35,8 +37,8 @@ void GameObject::PropagatePhysicsTransform() const
 	{
 		const dQuat q0 = m_physicsObject->GetRotation();
 		const dVec3 x0 = m_physicsObject->GetPosition();
-		const fQuat q1 = m_renderObject->GetRotation();
-		const fVec3 x1 = m_renderObject->GetPosition();
+		const fQuat& q1 = m_renderRotOffset;
+		const fVec3& x1 = m_renderPosOffset;
 		m_renderObject->SetRotation(q0*q1);
 		m_renderObject->SetPosition(x0 + q0.Transform(x1));
 	}

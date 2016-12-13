@@ -24,8 +24,8 @@ template <class T> template <class S>
 Vec3_t<T>::Vec3_t(const Vec3_t<S>& v)
 {
 	x = (T)v.x;
-	x = (T)v.y;
-	x = (T)v.z;
+	y = (T)v.y;
+	z = (T)v.z;
 }
 
 template <class T>

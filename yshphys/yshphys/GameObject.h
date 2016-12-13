@@ -14,6 +14,8 @@ public:
 	GameObject();
 	virtual ~GameObject();
 
+	GameNode* GetGameNode() const;
+
 	void SetRenderObject(RenderObject* renderObject);
 	void SetPhysicsObject(PhysicsObject* physicsObject);
 

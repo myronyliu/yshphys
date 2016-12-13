@@ -330,7 +330,10 @@ bool BVNode::SetContent(BVNodeContent* content)
 		{
 			content->m_bvNode->Detach(); // content no longer has an associated node
 		}
-		m_content->m_bvNode = nullptr;
+		if (m_content != nullptr)
+		{
+			m_content->m_bvNode = nullptr;
+		}
 		m_content = content;
 		content->m_bvNode = this;
 
