@@ -1,21 +1,20 @@
 #pragma once
 #include "YshMath.h"
 #include "Geometry.h"
-#include "BVNode.h"
+#include "PhysicsObject.h"
 
 // See http://www.cs.cmu.edu/~baraff/sigcourse/notesd1.pdf
 // and http://www.cs.cmu.edu/~baraff/sigcourse/notesd2.pdf
 
-class RigidBody : public BVNodeContent
+class RigidBody : public PhysicsObject
 {
 public:
 	RigidBody();
 	virtual ~RigidBody();
 
-	AABB GetAABB() const;
-	void UpdateAABB();
+	virtual void UpdateAABB();
 
-	void Step(double dt);
+	virtual void Step(double dt);
 
 protected:
 
@@ -44,8 +43,5 @@ protected:
 	// COMPUTED
 	dVec3 m_F; // force
 	dVec3 m_T; // torque
-
-	// CACHED DATA
-	AABB m_AABB;
 };
 

@@ -13,17 +13,35 @@ void QuantizeAABB(AABB& aabb)
 	aabb.max.z = std::ceil(aabb.max.z / AABB_QUANTIZATION) * AABB_QUANTIZATION;
 }
 
-RigidBody::RigidBody()
+RigidBody::RigidBody() :
+	m_F(0.0,0.0,0.0),
+	m_T(0.0,0.0,0.0),
+	m_P(0.0,0.0,0.0),
+	m_L(0.0,0.0,0.0),
+	m_x(0.0,0.0,0.0),
+	m_v(0.0,0.0,0.0),
+	m_w(0.0,0.0,0.0),
+	m_q(dQuat::Identity()),
+	m_m(0.0),
+	m_minv(0.0),
+	m_geometry(nullptr)
 {
+	m_Ibody.SetRow(0, dVec3(0.0, 0.0, 0.0));
+	m_Ibody.SetRow(1, dVec3(0.0, 0.0, 0.0));
+	m_Ibody.SetRow(2, dVec3(0.0, 0.0, 0.0));
+
+	m_Ibodyinv.SetRow(0, dVec3(0.0, 0.0, 0.0));
+	m_Ibodyinv.SetRow(1, dVec3(0.0, 0.0, 0.0));
+	m_Ibodyinv.SetRow(2, dVec3(0.0, 0.0, 0.0));
+
+	m_Iinv.SetRow(0, dVec3(0.0, 0.0, 0.0));
+	m_Iinv.SetRow(1, dVec3(0.0, 0.0, 0.0));
+	m_Iinv.SetRow(2, dVec3(0.0, 0.0, 0.0));
+
 }
 
 RigidBody::~RigidBody()
 {
-}
-
-AABB RigidBody::GetAABB() const
-{
-	return m_AABB;
 }
 
 void RigidBody::UpdateAABB()

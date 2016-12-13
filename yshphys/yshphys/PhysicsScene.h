@@ -2,6 +2,9 @@
 #include "BVTree.h"
 #include "RigidBody.h"
 #include "PhysicsObject.h"
+
+#define MAX_PHYSICS_NODES 1024
+
 class PhysicsNode
 {
 	friend class PhysicsScene;
@@ -40,8 +43,14 @@ class PhysicsScene
 public:
 	PhysicsScene();
 	virtual ~PhysicsScene();
+
+	void AddPhysicsObject(PhysicsObject* physicsObject);
+	void RemovePhysicsObject(PhysicsObject* physicsObject);
 protected:
-	RigidBody m_rigidBodies[MAX_BV_NODES];
+
+	std::stack<FreedPhysicsNode> m_freedNodeStack;
+	PhysicsNode m_physicsNodes[MAX_PHYSICS_NODES];
+	PhysicsNode* m_firstNode;
 
 	BVTree m_bvTree;
 };
