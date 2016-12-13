@@ -1,6 +1,9 @@
 #pragma once
 #include "Geometry.h"
 #include "BVNode.h"
+#include "GameObject.h"
+
+class GameObject;
 
 class PhysicsNode;
 
@@ -10,6 +13,9 @@ class PhysicsObject : public BVNodeContent
 public:
 	PhysicsObject();
 	virtual ~PhysicsObject();
+
+	virtual dVec3 GetPosition() const = 0;
+	virtual dQuat GetRotation() const = 0;
 
 	PhysicsNode* GetPhysicsNode() const;
 
@@ -22,5 +28,9 @@ protected:
 
 	// CACHED DATA
 	AABB m_AABB;
+
+	bool m_awake;
+
+	GameObject* m_gameObject;
 };
 

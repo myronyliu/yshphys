@@ -10,6 +10,7 @@ public:
 	Quat_t(T x_, T y_, T z_, T w_);
 	Quat_t(const Vec3_t<T>& axis, T angle);
 	Quat_t(const Mat33_t<T>& R);
+	template <class S> Quat_t(const Quat_t<S>& q);
 	virtual ~Quat_t();
 
 	void GetData(T* const components) const;

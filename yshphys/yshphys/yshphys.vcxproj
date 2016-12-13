@@ -165,11 +165,13 @@
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameNode.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyHandler.h" />
     <ClInclude Include="MouseMotionHandler.h" />
+    <ClInclude Include="PhysicsNode.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="LineSegment.h" />
     <ClInclude Include="Ray.h" />
@@ -208,6 +210,7 @@
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameNode.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="HomogeneousTransformation.cpp" />
@@ -217,6 +220,7 @@
     <ClCompile Include="Mat44.cpp" />
     <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="MouseMotionHandler.cpp" />
+    <ClCompile Include="PhysicsNode.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Quat.cpp" />

@@ -46,6 +46,9 @@
     <Filter Include="Math\Quat">
       <UniqueIdentifier>{a008c759-4737-40c3-9418-313b07feda5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Scene">
+      <UniqueIdentifier>{1076a568-54b3-4bc5-ae62-d07e399762d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -174,6 +177,12 @@
     <ClInclude Include="Quat.h">
       <Filter>Math\Quat</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsNode.h">
+      <Filter>Physics\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GameNode.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -292,6 +301,12 @@
     </ClCompile>
     <ClCompile Include="Quat.cpp">
       <Filter>Math\Quat</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsNode.cpp">
+      <Filter>Physics\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameNode.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

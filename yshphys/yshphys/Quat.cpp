@@ -38,6 +38,15 @@ Quat_t<T>::Quat_t(const Mat33_t<T>& R)
 	z = (R(1, 0) - R(0, 1))*s;
 }
 
+template <class T> template <class S>
+Quat_t<T>::Quat_t(const Quat_t<S>& q)
+{
+	w = (T)q.w;
+	x = (T)q.x;
+	w = (T)q.y;
+	x = (T)q.z;
+}
+
 template <class T>
 Quat_t<T>::~Quat_t()
 {
@@ -111,4 +120,9 @@ Quat_t<T> Quat_t<T>::Identity()
 }
 
 template class Quat_t<float>;
+template Quat_t<float>::Quat_t(const Quat_t<double>&);
+template Quat_t<float>::Quat_t(const Quat_t<float>&);
+
 template class Quat_t<double>;
+template Quat_t<double>::Quat_t(const Quat_t<float>&);
+template Quat_t<double>::Quat_t(const Quat_t<double>&);

@@ -12,6 +12,9 @@ public:
 	RigidBody();
 	virtual ~RigidBody();
 
+	dVec3 GetPosition() const;
+	dQuat GetRotation() const;
+
 	virtual void UpdateAABB();
 
 	virtual void Step(double dt);

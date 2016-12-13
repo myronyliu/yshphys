@@ -44,6 +44,15 @@ RigidBody::~RigidBody()
 {
 }
 
+dVec3 RigidBody::GetPosition() const
+{
+	return m_x;
+}
+dQuat RigidBody::GetRotation() const
+{
+	return m_q;
+}
+
 void RigidBody::UpdateAABB()
 {
 	const BoundingBox oobb = m_geometry->GetLocalOOBB();
@@ -60,7 +69,10 @@ void RigidBody::UpdateAABB()
 
 	QuantizeAABB(m_AABB);
 
-	m_bvNode->SetAABB(m_AABB);
+	if (m_bvNode != nullptr)
+	{
+		m_bvNode->SetAABB(m_AABB);
+	}
 }
 
 void RigidBody::Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const
@@ -84,6 +96,11 @@ void RigidBody::Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const
 
 void RigidBody::Step(double dt)
 {
+	if (!m_awake)
+	{
+		return;
+	}
+
 	////////////
 	// LINEAR //
 	////////////

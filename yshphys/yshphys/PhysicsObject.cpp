@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "PhysicsObject.h"
+#include "PhysicsScene.h"
 
 
-PhysicsObject::PhysicsObject() : m_node(nullptr)
+PhysicsObject::PhysicsObject() : m_node(nullptr), m_awake(false)
 {
 	m_AABB.min = dVec3(0.0, 0.0, 0.0);
 	m_AABB.max = dVec3(0.0, 0.0, 0.0);

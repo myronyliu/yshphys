@@ -11,6 +11,7 @@ public:
 	Vec3_t();
 	Vec3_t(T x_, T y_, T z_);
 	Vec3_t(const Vec4_t<T>& v4);
+	template <class S> Vec3_t(const Vec3_t<S>& v);
 	virtual ~Vec3_t();
 
 	void GetData(T* const components) const;

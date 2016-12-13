@@ -53,6 +53,9 @@ public:
 	void RefitAndRotateTree();
 	bool SetAABB(const AABB& aabb);
 
+	// returns false if this is not a leaf. Internal nodes cannot be detached because we would just have to create a new one anyways.
+	bool Detach();
+
 protected:
 	//
 	// ALL FUNCTIONS THAT CHANGE THE ROOT OR REMOVE NODES (I.E. LEAF NODES, SINCE WE CANNOT REMOVE INTERNAL NODES FROM A BVH)
@@ -65,9 +68,6 @@ protected:
 	// If the content is already linked to a BVNode, then the previously linked BVNode is cleared of content.
 	// After all each BVNodeContent object only has a pointer to a single BVNode.
 	bool SetContent(BVNodeContent*  content);
-
-	// returns false if this is not a leaf. Internal nodes cannot be detached because we would just have to create a new one anyways.
-	bool Detach();
 
 	BVNode* m_parent;
 

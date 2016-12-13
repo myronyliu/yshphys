@@ -18,12 +18,12 @@ public:
 
 	const BVNode* Root() const;
 
-protected:
-
 	// Adds a new root, adds a leaf as the sibling of the old root, and sets the old root and the new leaf as the children of the new root.
 	// Return value is false if we are out of freeNodes
 	bool LeftInsertNewLeaf(const AABB& aabb, BVNodeContent* content);
 	bool DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content);
+
+protected:
 
 	void PopFreeNode();
 	void PushFreeNode(unsigned int iNode);

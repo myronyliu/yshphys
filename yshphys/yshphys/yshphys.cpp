@@ -8,6 +8,7 @@
 #include <glew.h>
 #include "Window.h"
 #include "RenderScene.h"
+#include "RigidBody.h"
 #include "Shader_Default.h"
 #include "Camera.h"
 #include "InputHandler.h"
@@ -18,13 +19,16 @@ int main(int argc, char *args[])
 	Window window;
 	window.CreateWindow();
 
-	RenderScene scene;
-	scene.m_window = &window;
+	Camera camera;
+
+	Game game;
+	game.m_inputHandler.AddMouseMotionHandler(&camera);
+	game.m_inputHandler.AddKeyHandler(&camera);
+
+	game.m_renderScene.m_window = &window;
 
 	RenderMesh mesh;
-//	mesh.CreateBox(1.0f, 1.0f, 1.0f, 10, 10, 10, fVec3(1.0f, 1.0f, 1.0f));
 	mesh.CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
-//	mesh.CreateTriangle();
 	Shader_Default shader;
 	RenderObject obj;
 	obj.SetRenderMesh(&mesh);
@@ -32,15 +36,12 @@ int main(int argc, char *args[])
 	obj.SetPosition(fVec3(0.0f, 10.0f, 0.0f));
 	obj.SetRotation(fQuat(fVec3(1.0f, 1.0f, 1.0f).Scale(sqrtf(1.0f/3.0f)), fPI / 6.0f));
 
-	scene.AddRenderObject(&obj);
+	RigidBody rigidbody;
 
-	Camera camera;
-	scene.AttachCamera(&camera);
+	game.m_renderScene.AddRenderObject(&obj);
 
-	Game game;
-	game.m_inputHandler.AddMouseMotionHandler(&camera);
-	game.m_inputHandler.AddKeyHandler(&camera);
-	game.m_renderScene = &scene;
+	game.m_renderScene.AttachCamera(&camera);
+
 
 	game.Run();
 

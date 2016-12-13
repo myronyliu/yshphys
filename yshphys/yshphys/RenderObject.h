@@ -5,6 +5,8 @@
 #include "Shader.h"
 #include <glew.h>
 
+class GameObject;
+
 class RenderObject
 {
 	friend class RenderNode;
@@ -38,5 +40,7 @@ protected:
 
 	RenderMesh* m_mesh;
 	Shader* m_shader;
+
+	GameObject* m_gameObject;
 };
 

@@ -20,6 +20,14 @@ Vec3_t<T>::Vec3_t(const Vec4_t<T>& v4)
 {
 }
 
+template <class T> template <class S>
+Vec3_t<T>::Vec3_t(const Vec3_t<S>& v)
+{
+	x = (T)v.x;
+	x = (T)v.y;
+	x = (T)v.z;
+}
+
 template <class T>
 Vec3_t<T>::~Vec3_t()
 {
@@ -136,4 +144,9 @@ T& Vec3_t<T>::operator [] (int i)
 }
 
 template class Vec3_t<float>;
+template Vec3_t<float>::Vec3_t(const Vec3_t<double>&);
+template Vec3_t<float>::Vec3_t(const Vec3_t<float>&);
+
 template class Vec3_t<double>;
+template Vec3_t<double>::Vec3_t(const Vec3_t<float>&);
+template Vec3_t<double>::Vec3_t(const Vec3_t<double>&);
