@@ -71,7 +71,7 @@ protected:
 
 	std::stack<FreedRenderNode> m_freedNodeStack;
 	RenderNode m_renderNodes[MAX_RENDER_NODES];
-	RenderNode* m_rootNode;
+	RenderNode* m_firstNode;
 
 	Viewport m_viewport;
 

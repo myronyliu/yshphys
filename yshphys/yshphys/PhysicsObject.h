@@ -1,16 +1,16 @@
 #pragma once
 #include "Geometry.h"
 
+class PhysicsNode;
+
 class PhysicsObject
 {
+	friend class PhysicsNode;
 public:
 	PhysicsObject();
 	virtual ~PhysicsObject();
 private:
 	
-	dVec3 m_pos;
-	dVec3 m_rot;
-
-	Geometry* m_rootGeom;
+	PhysicsNode* m_node;
 };
 

@@ -130,4 +130,6 @@ void RigidBody::Step(double dt)
 	dMat33 R(q);
 	m_Iinv = R*m_Ibodyinv*R.Transpose();
 	m_w = m_Iinv.Transform(m_L);
+
+	UpdateAABB();
 }

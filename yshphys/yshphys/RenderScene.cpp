@@ -90,7 +90,7 @@ FreedRenderNode::~FreedRenderNode()
 }
 
 RenderScene::RenderScene()
-	: m_rootNode(nullptr)
+	: m_firstNode(nullptr)
 {
 	for (int i = 0; i < MAX_RENDER_NODES- 1; ++i)
 	{
@@ -133,8 +133,8 @@ void RenderScene::AddRenderObject(RenderObject* renderObject)
 		}
 		else
 		{
-			freeNode.m_node->PrependTo(m_rootNode);
-			m_rootNode = freeNode.m_node;
+			freeNode.m_node->PrependTo(m_firstNode);
+			m_firstNode = freeNode.m_node;
 		}
 
 		m_freedNodeStack.pop();
@@ -147,7 +147,7 @@ void RenderScene::RemoveRenderObject(RenderObject* renderObject)
 	{
 		if (node->GetPrev() == nullptr && node->GetNext() != nullptr)
 		{
-			m_rootNode = node->GetNext();
+			m_firstNode = node->GetNext();
 		}
 		node->BindRenderObject(nullptr);
 		FreedRenderNode freeNode;
@@ -169,7 +169,7 @@ void RenderScene::DrawScene()
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
 	
-	const RenderNode* node = m_rootNode;
+	const RenderNode* node = m_firstNode;
 	while (node)
 	{
 		if (RenderObject* obj = node->GetRenderObject())
