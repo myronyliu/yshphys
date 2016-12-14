@@ -3,7 +3,7 @@
 #include "PhysicsScene.h"
 
 
-PhysicsObject::PhysicsObject() : m_node(nullptr), m_awake(false)
+PhysicsObject::PhysicsObject() : m_node(nullptr), m_awake(true)
 {
 	m_AABB.min = dVec3(0.0, 0.0, 0.0);
 	m_AABB.max = dVec3(0.0, 0.0, 0.0);

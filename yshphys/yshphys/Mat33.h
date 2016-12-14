@@ -24,6 +24,8 @@ public:
 	Vec3_t<T> Transform(const Vec3_t<T>& v) const;
 	Mat33_t<T> Scale(T scalar) const;
 
+	static Mat33_t<T> Identity();
+
 	Mat33_t<T> Abs() const;
 	
 	T operator () (unsigned int i, unsigned int j) const;

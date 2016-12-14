@@ -15,12 +15,18 @@ public:
 	dVec3 GetPosition() const;
 	dQuat GetRotation() const;
 
+	void SetPosition(const dVec3& x);
+	void SetRotation(const dQuat& q);
 	void SetGeometry(Geometry* geometry);
+	void SetMass(double m);
+	void SetInertia(dMat33 Ibody);
 
 	virtual void UpdateAABB();
 
 	virtual void Step(double dt);
 
+	dVec3 m_F; // force
+	dVec3 m_T; // torque
 protected:
 
 	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const; // no need to compute LDot; we know that it's equal to m_T
@@ -46,7 +52,7 @@ protected:
 	dVec3 m_w; // angular velocity
 
 	// COMPUTED
-	dVec3 m_F; // force
-	dVec3 m_T; // torque
+//	dVec3 m_F; // force
+//	dVec3 m_T; // torque
 };
 

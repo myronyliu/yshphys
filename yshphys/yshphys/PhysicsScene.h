@@ -15,6 +15,8 @@ public:
 	void AddPhysicsObject(PhysicsObject* physicsObject);
 	void RemovePhysicsObject(PhysicsObject* physicsObject);
 
+	const BVTree& GetBVTree() const;
+
 	void Step(double dt);
 
 protected:

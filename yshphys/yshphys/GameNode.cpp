@@ -14,11 +14,11 @@ GameObject* GameNode::GetGameObject() const
 }
 GameNode* GameNode::GetPrev() const
 {
-	return m_next;
+	return m_prev;
 }
 GameNode* GameNode::GetNext() const
 {
-	return m_prev;
+	return m_next;
 }
 void GameNode::BindGameObject(GameObject* gameObject)
 {

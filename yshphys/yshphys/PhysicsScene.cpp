@@ -26,6 +26,11 @@ PhysicsScene::~PhysicsScene()
 {
 }
 
+const BVTree& PhysicsScene::GetBVTree() const
+{
+	return m_bvTree;
+}
+
 void PhysicsScene::AddPhysicsObject(PhysicsObject* physicsObject)
 {
 	if (!m_freedNodeStack.empty())
@@ -75,6 +80,6 @@ void PhysicsScene::Step(double dt)
 	while (node != nullptr)
 	{
 		node->GetPhysicsObject()->Step(dt);
-		node = m_firstNode->GetNext();
+		node = node->GetNext();
 	}
 }

@@ -152,6 +152,8 @@ bool BVTree::DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 	{
 		BVNode* fork = &m_nodes[m_iRoot];
 
+		bool forkIsL = false;
+
 		while (!fork->IsLeaf())
 		{
 			fork->m_AABB = fork->m_AABB.Aggregate(aabb);
@@ -165,10 +167,12 @@ bool BVTree::DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 			if (A_mergeL < A_mergeR)
 			{
 				fork = L;
+				forkIsL = true;
 			}
 			else
 			{
 				fork = R;
+				forkIsL = false;
 			}
 		}
 
@@ -176,6 +180,26 @@ bool BVTree::DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 		PopFreeNode();
 
 		BVNode* newParent = &m_nodes[iNewParent];
+
+		BVNode* grandparent = fork->m_parent;
+		if (grandparent == nullptr)
+		{
+			m_iRoot = iNewParent;
+		}
+		else
+		{
+			if (forkIsL)
+			{
+				grandparent->m_left = newParent;
+			}
+			else
+			{
+				grandparent->m_right = newParent;
+			}
+		}
+		newParent->m_left = fork;
+		newParent->m_right = newLeaf;
+		newParent->m_parent = grandparent;
 
 		fork->m_parent = newParent;
 		newLeaf->m_parent = newParent;

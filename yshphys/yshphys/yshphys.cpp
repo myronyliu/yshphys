@@ -14,6 +14,7 @@
 #include "InputHandler.h"
 #include "Game.h"
 #include "Capsule.h"
+#include "Tests.h"
 
 int main(int argc, char *args[])
 {
@@ -34,20 +35,24 @@ int main(int argc, char *args[])
 	RenderObject obj;
 	obj.SetRenderMesh(&mesh);
 	obj.SetShader(&shader);
-	obj.SetPosition(fVec3(0.0f, 10.0f, 0.0f));
-	obj.SetRotation(fQuat(fVec3(1.0f, 1.0f, 1.0f).Scale(sqrtf(1.0f/3.0f)), fPI / 6.0f));
 
-	RigidBody rigidBody;
-	Capsule capsule;
-	capsule.SetRadius(1.0);
-	capsule.SetHalfHeight(1.0);
-	rigidBody.SetGeometry(&capsule);
-	
-	GameObject gameObject;
-	gameObject.SetPhysicsObject(&rigidBody);
-	gameObject.SetRenderObject(&obj);
+//	RigidBody rigidBody;
+//	Capsule capsule;
+//	capsule.SetRadius(1.0);
+//	capsule.SetHalfHeight(1.0);
+//	rigidBody.SetGeometry(&capsule);
+//	rigidBody.m_F = dVec3(0.0, 0.0, 0.1);
+//	rigidBody.m_T = dVec3(0.0, 0.1, 0.0);
+//	rigidBody.SetMass(1.0);
+//	rigidBody.SetInertia(dMat33::Identity());
+//	
+//	GameObject gameObject;
+//	gameObject.SetPhysicsObject(&rigidBody);
+//	gameObject.SetRenderObject(&obj);
+//
+//	game.AddGameObject(&gameObject);
 
-	game.AddGameObject(&gameObject);
+	Tests::CreateBVTest(&game);
 
 
 	game.Run();

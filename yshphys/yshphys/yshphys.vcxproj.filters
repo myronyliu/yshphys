@@ -183,6 +183,9 @@
     <ClInclude Include="GameNode.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Tests.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -306,6 +309,9 @@
       <Filter>Physics\Scene</Filter>
     </ClCompile>
     <ClCompile Include="GameNode.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>

@@ -206,14 +206,23 @@ void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 		nodeStack.pop();
 
 		const AABB aabb = node->GetAABB();
+
+		const fVec3 aabbCenter(
+			(aabb.max.x + aabb.min.x)*0.5f,
+			(aabb.max.y + aabb.min.y)*0.5f,
+			(aabb.max.z + aabb.min.z)*0.5f);
+
 		DrawBox(
-			float(aabb.max.x - aabb.min.x),
-			float(aabb.max.y - aabb.min.y),
-			float(aabb.max.z - aabb.min.z),
-			fVec3(0.0f, 0.0f, 0.0f), fQuat::Identity(), color, true
+			float(aabb.max.x - aabb.min.x)*0.5f,
+			float(aabb.max.y - aabb.min.y)*0.5f,
+			float(aabb.max.z - aabb.min.z)*0.5f,
+			aabbCenter, fQuat::Identity(), color, true
 		);
 
-		nodeStack.push(node->GetLeftChild());
-		nodeStack.push(node->GetRightChild());
+		if (!node->IsLeaf())
+		{
+			nodeStack.push(node->GetLeftChild());
+			nodeStack.push(node->GetRightChild());
+		}
 	}
 }

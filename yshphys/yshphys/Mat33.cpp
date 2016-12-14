@@ -153,6 +153,26 @@ Mat33_t<T> Mat33_t<T>::Scale(T scalar) const
 }
 
 template <class T>
+Mat33_t<T> Mat33_t<T>::Identity()
+{
+	Mat33_t<T> mat;
+
+	mat.M_ij[0][0] = (T)1.0;
+	mat.M_ij[0][1] = (T)0.0;
+	mat.M_ij[0][2] = (T)0.0;
+
+	mat.M_ij[1][0] = (T)0.0;
+	mat.M_ij[1][1] = (T)1.0;
+	mat.M_ij[1][2] = (T)0.0;
+
+	mat.M_ij[2][0] = (T)0.0;
+	mat.M_ij[2][1] = (T)0.0;
+	mat.M_ij[2][2] = (T)1.0;
+
+	return mat;
+}
+
+template <class T>
 Mat33_t<T> Mat33_t<T>::Abs() const
 {
 	Mat33_t<T> A;

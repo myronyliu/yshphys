@@ -15,11 +15,11 @@ PhysicsObject* PhysicsNode::GetPhysicsObject() const
 }
 PhysicsNode* PhysicsNode::GetPrev() const
 {
-	return m_next;
+	return m_prev;
 }
 PhysicsNode* PhysicsNode::GetNext() const
 {
-	return m_prev;
+	return m_next;
 }
 void PhysicsNode::BindPhysicsObject(PhysicsObject* physicsObject)
 {

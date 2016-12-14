@@ -24,12 +24,12 @@ public:
 
 	void PropagatePhysicsTransform() const;
 
+	fVec3 m_renderPosOffset;
+	fQuat m_renderRotOffset;
+
 protected:
 	RenderObject* m_renderObject;
 	PhysicsObject* m_physicsObject;
-
-	fVec3 m_renderPosOffset;
-	fQuat m_renderRotOffset;
 
 	GameNode* m_node;
 };

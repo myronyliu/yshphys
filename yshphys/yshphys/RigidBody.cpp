@@ -5,12 +5,15 @@
 
 void QuantizeAABB(AABB& aabb)
 {
-	aabb.min.x = std::floor(aabb.min.x / AABB_QUANTIZATION) * AABB_QUANTIZATION;
-	aabb.min.y = std::floor(aabb.min.y / AABB_QUANTIZATION) * AABB_QUANTIZATION;
-	aabb.min.z = std::floor(aabb.min.z / AABB_QUANTIZATION) * AABB_QUANTIZATION;
-	aabb.max.x = std::ceil(aabb.max.x / AABB_QUANTIZATION) * AABB_QUANTIZATION;
-	aabb.max.y = std::ceil(aabb.max.y / AABB_QUANTIZATION) * AABB_QUANTIZATION;
-	aabb.max.z = std::ceil(aabb.max.z / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+	if (AABB_QUANTIZATION != 0.0)
+	{
+		aabb.min.x = std::floor(aabb.min.x / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+		aabb.min.y = std::floor(aabb.min.y / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+		aabb.min.z = std::floor(aabb.min.z / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+		aabb.max.x = std::ceil(aabb.max.x / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+		aabb.max.y = std::ceil(aabb.max.y / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+		aabb.max.z = std::ceil(aabb.max.z / AABB_QUANTIZATION) * AABB_QUANTIZATION;
+	}
 }
 
 RigidBody::RigidBody() :
@@ -52,9 +55,41 @@ dQuat RigidBody::GetRotation() const
 {
 	return m_q;
 }
+void RigidBody::SetPosition(const dVec3& x)
+{
+	m_x = x;
+	UpdateAABB();
+}
+void RigidBody::SetRotation(const dQuat& q)
+{
+	m_q = q;
+	UpdateAABB();
+}
 void RigidBody::SetGeometry(Geometry* geometry)
 {
 	m_geometry = geometry;
+	UpdateAABB();
+}
+void RigidBody::SetMass(double m)
+{
+	if (m < 0.000001)
+	{
+		m_m = 0.0;
+		m_minv = 0.0;
+	}
+	else
+	{
+		m_m = m;
+		m_minv = 1.0 / m_m;
+	}
+}
+void RigidBody::SetInertia(dMat33 Ibody)
+{
+	m_Ibody = Ibody;
+	m_Ibodyinv = Ibody.Inverse();
+
+	dMat33 R(m_q);
+	m_Iinv = R*m_Ibodyinv*R.Transpose();
 }
 void RigidBody::UpdateAABB()
 {
