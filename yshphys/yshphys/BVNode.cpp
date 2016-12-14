@@ -183,6 +183,7 @@ void BVNode::RefitAndRotateTree()
 	if (m_parent != nullptr)
 	{
 		BVNode* d = m_parent;
+
 		BVNode* root = &m_tree->m_nodes[m_tree->m_iRoot];
 
 		while (true)
@@ -197,6 +198,12 @@ void BVNode::RefitAndRotateTree()
 			//   __d__       c
 			//  |     |
 			//  a     b
+
+			if (d->m_parent == nullptr) // d is the root. Aggregate child AABBs and we are done.
+			{
+				d->m_AABB = a->m_AABB.Aggregate(b->m_AABB);
+				return;
+			}
 
 			const AABB ab = a->m_AABB.Aggregate(b->m_AABB);
 			const AABB bc = b->m_AABB.Aggregate(c->m_AABB);
@@ -234,18 +241,11 @@ void BVNode::RefitAndRotateTree()
 			if (abc.min.x < eAABB.min.x || abc.min.y < eAABB.min.y || abc.min.z < eAABB.min.z ||
 				abc.max.x > eAABB.max.x || abc.max.y > eAABB.max.z || abc.max.z > eAABB.max.z)
 			{
-				if (e == root)
-				{
-					e->m_AABB = abc;
-					return;
-				}
-				else
-				{
-					d = e;
-				}
+				d = e;
 			}
 			else
 			{
+				d->m_AABB = abc;
 				return;
 			}
 		}

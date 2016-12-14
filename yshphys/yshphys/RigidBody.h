@@ -25,8 +25,12 @@ public:
 
 	virtual void Step(double dt);
 
+	dVec3 m_P; // linear  momentum
+	dVec3 m_L; // angular momentum
 	dVec3 m_F; // force
 	dVec3 m_T; // torque
+	dVec3 m_dP; // linear impulse
+	dVec3 m_dL; // angular impulse
 protected:
 
 	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const; // no need to compute LDot; we know that it's equal to m_T
@@ -43,8 +47,8 @@ protected:
 	dVec3 m_x; // position
 	dQuat m_q; // orientation
 
-	dVec3 m_P; // linear  momentum
-	dVec3 m_L; // angular momentum
+//	dVec3 m_P; // linear  momentum
+//	dVec3 m_L; // angular momentum
 
 	// DERIVED STATE VARIABLES
 	dMat33 m_Iinv;
@@ -54,5 +58,8 @@ protected:
 	// COMPUTED
 //	dVec3 m_F; // force
 //	dVec3 m_T; // torque
+
+//	dVec3 m_dP; // linear impulse
+//	dVec3 m_dL; // angular impulse
 };
 

@@ -17,7 +17,7 @@ void Tests::CreateBVTest(Game* game)
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
 		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
@@ -31,6 +31,7 @@ void Tests::CreateBVTest(Game* game)
 //		rigidBody->m_T = dVec3(0.0, 0.1, 0.0);
 		rigidBody->SetMass(1.0);
 		rigidBody->SetInertia(dMat33::Identity());
+		rigidBody->m_L = dVec3(0.0, 1.0, 0.0);
 
 		dVec3 alpha(
 			(double)std::rand() / (double)RAND_MAX,
