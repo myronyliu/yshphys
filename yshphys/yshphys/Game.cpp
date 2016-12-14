@@ -88,8 +88,13 @@ void Game::Run()
 
 		if (t - m_tInput > m_dtInput)
 		{
-			m_inputHandler.ProcessEvents(m_dtInput, quit);
+			m_inputHandler.ProcessEvents(m_dtInput);
 			m_tInput = t;
+
+			if (m_inputHandler.QuitRequested())
+			{
+				quit = true;
+			}
 		}
 		if (t - m_tPhysics > m_dtPhys)
 		{

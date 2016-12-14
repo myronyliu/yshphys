@@ -46,10 +46,10 @@ void Camera::UpdateView()
 	m_viewport->SetPos(m_pos);
 }
 
-void Camera::ProcessMouseRelativeMotion(float xRel, float yRel)
+void Camera::ProcessMouseRelativeMotion(int xRel, int yRel)
 {
-	PanRight(xRel * m_xSens);
-	PanUp(-yRel * m_ySens);
+	PanRight((float)xRel * m_xSens);
+	PanUp(-(float)yRel * m_ySens);
 	UpdateView();
 }
 
@@ -68,14 +68,14 @@ void Camera::ProcessKeyStates(KeyState* keyStates, int dt)
 	fVec3 dPos;
 
 	dPos.y =
-		float(keyStates[MOVE_FORWARD].m_state == KeyState::State::KEY_DOWN) -
-		float(keyStates[MOVE_BACKWARD].m_state == KeyState::State::KEY_DOWN);
+		float(keyStates[MOVE_FORWARD].m_state == KeyState::State::PRESSED) -
+		float(keyStates[MOVE_BACKWARD].m_state == KeyState::State::PRESSED);
 	dPos.x =
-		float(keyStates[MOVE_RIGHTWARD].m_state == KeyState::State::KEY_DOWN) -
-		float(keyStates[MOVE_LEFTWARD].m_state == KeyState::State::KEY_DOWN);
+		float(keyStates[MOVE_RIGHTWARD].m_state == KeyState::State::PRESSED) -
+		float(keyStates[MOVE_LEFTWARD].m_state == KeyState::State::PRESSED);
 	dPos.z =
-		float(keyStates[MOVE_UPWARD].m_state == KeyState::State::KEY_DOWN) -
-		float(keyStates[MOVE_DOWNWARD].m_state == KeyState::State::KEY_DOWN);
+		float(keyStates[MOVE_UPWARD].m_state == KeyState::State::PRESSED) -
+		float(keyStates[MOVE_DOWNWARD].m_state == KeyState::State::PRESSED);
 
 	dPos = dPos.Times(m_moveSpeed.Scale((float)dt*0.001f));
 	

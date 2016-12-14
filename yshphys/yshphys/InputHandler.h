@@ -3,16 +3,15 @@
 class KeyHandler;
 class MouseMotionHandler;
 
-class KeyState
+struct KeyState
 {
-public:
 	enum State
 	{
-		KEY_DOWN = 0,
-		KEY_UP
+		PRESSED = 0,
+		RELEASED	
 	};
 
-	KeyState() : m_state(State::KEY_UP), m_duration(0), m_prevDuration(0) {}
+	KeyState() : m_state(KeyState::State::RELEASED), m_duration(0), m_prevDuration(0) {}
 
 	State m_state;
 	int m_duration; // This is sufficient for determining whether a state was toggled. If m_duration == 0 then we know that the key was just pressed
@@ -22,24 +21,51 @@ public:
 	int m_prevDuration;
 };
 
+struct MouseState
+{
+	MouseState() : m_x(0), m_y(0), m_windowSpanX(0), m_windowSpanY(0), m_leftButtonState(), m_rightButtonState() {}
+
+	KeyState m_leftButtonState;
+	KeyState m_rightButtonState;
+
+	int m_x;
+	int m_y;
+
+	int m_windowSpanX;
+	int m_windowSpanY;
+};
+
 class InputHandler
 {
 public:
 	InputHandler();
 	virtual ~InputHandler();
 
-	void ProcessEvents(int dt_ms, bool& quitGameRequested);
+	void ProcessEvents(int dt_ms);
 
 	void AddMouseMotionHandler(MouseMotionHandler* mouseMotionHandler);
 	void AddKeyHandler(KeyHandler* keyhandler);
 
+	bool QuitRequested() const;
+
 protected:
 
+	void UpdateKeyStates(int dt_ms);
+	void UpdateMouseState(int dt_ms);
+	void UpdateRelativeMouseMotion();
+
 	void DispatchKeyStates(int dt_ms) const;
+	void DispatchMouseMotion(int dt_ms) const;
 
 	std::vector<MouseMotionHandler*> m_mouseMotionHandlers;
 	std::vector<KeyHandler*> m_keyHandlers;
 
+	int m_xRel;
+	int m_yRel;
+
 	std::map<int, KeyState> m_keyStates; // key: SDL keycode, value: duration for which the key was held down or up
+	MouseState m_mouseState;
+
+	bool m_quitRequested;
 };
 

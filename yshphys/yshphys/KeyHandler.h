@@ -4,7 +4,7 @@
 
 #define MAX_KEY_ACTIONS_PER_HANDLER 8
 
-class KeyState;
+struct KeyState;
 
 class KeyHandler
 {

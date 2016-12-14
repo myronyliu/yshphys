@@ -33,7 +33,7 @@ void CameraPickerToggle::ProcessKeyStates(KeyState* keyStates, int dt)
 		return;
 	}
 
-	if (keyStates[TOGGLE].m_state == KeyState::State::KEY_DOWN &&
+	if (keyStates[TOGGLE].m_state == KeyState::State::PRESSED &&
 		keyStates[TOGGLE].m_duration == 0)
 	{
 		if (m_cameraEnabled)

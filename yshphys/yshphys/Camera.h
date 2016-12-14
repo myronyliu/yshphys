@@ -32,7 +32,7 @@ public:
 
 private:
 
-	virtual void ProcessMouseRelativeMotion(float xRel, float yRel);
+	virtual void ProcessMouseRelativeMotion(int xRel, int yRel);
 	virtual unsigned int GetNumMappedKeys() const;
 
 	// We use physics conventions. m_theta is the angle from the z-axis. m_phi is the polar angle from the x-axis

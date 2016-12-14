@@ -33,7 +33,7 @@ void MouseMotionHandler::ConditionalProcessMouseRelativeMotion(float xRel, float
 	}
 }
 
-void MouseMotionHandler::ProcessMouseRelativeMotion(float xRel, float yRel)
+void MouseMotionHandler::ProcessMouseRelativeMotion(int xRel, int yRel)
 {
 }
 

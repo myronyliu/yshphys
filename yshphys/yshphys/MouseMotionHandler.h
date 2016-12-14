@@ -15,7 +15,7 @@ public:
 
 protected:
 
-	virtual void ProcessMouseRelativeMotion(float xRel, float yRel);
+	virtual void ProcessMouseRelativeMotion(int xRel, int yRel);
 
 	float m_xSens;
 	float m_ySens;
