@@ -15,6 +15,8 @@
 #include "Game.h"
 #include "Capsule.h"
 #include "Tests.h"
+#include "Picker.h"
+#include "CameraPickerToggle.h"
 
 int main(int argc, char *args[])
 {
@@ -22,11 +24,16 @@ int main(int argc, char *args[])
 	window.CreateWindow();
 
 	Camera camera;
+	Picker picker;
+	CameraPickerToggle toggle;
+	toggle.SetCamera(&camera);
+	toggle.SetPicker(&picker);
 
 	Game game;
 	game.m_inputHandler.AddMouseMotionHandler(&camera);
 	game.m_inputHandler.AddKeyHandler(&camera);
 	game.m_renderScene.AttachCamera(&camera);
+	game.m_inputHandler.AddKeyHandler(&toggle);
 	game.m_renderScene.m_window = &window;
 
 	RenderMesh mesh;

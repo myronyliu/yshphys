@@ -186,6 +186,12 @@
     <ClInclude Include="Tests.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="CameraPickerToggle.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Picker.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -313,6 +319,12 @@
     </ClCompile>
     <ClCompile Include="Tests.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraPickerToggle.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Picker.cpp">
+      <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

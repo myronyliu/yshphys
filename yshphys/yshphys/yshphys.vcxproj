@@ -161,6 +161,7 @@
     <ClInclude Include="BVNode.h" />
     <ClInclude Include="BVTree.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraPickerToggle.h" />
     <ClInclude Include="Capsule.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DebugRenderer.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="PhysicsNode.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="LineSegment.h" />
+    <ClInclude Include="Picker.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
@@ -207,6 +209,7 @@
     <ClCompile Include="BVNode.cpp" />
     <ClCompile Include="BVTree.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CameraPickerToggle.cpp" />
     <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
@@ -224,6 +227,7 @@
     <ClCompile Include="PhysicsNode.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
+    <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="LineSegment.cpp" />
     <ClCompile Include="Ray.cpp" />

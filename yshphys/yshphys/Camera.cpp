@@ -5,14 +5,14 @@
 #define MIN_CAMERA_THETA (fPI * 0.01f)
 #define MAX_CAMERA_THETA (fPI * 0.99f) 
 
-Camera::Camera() : m_theta(fPI * 0.5f), m_phi(fPI * 0.5f), m_pos(0.0f, 0.0f, 0.0f), m_moveSpeed(0.1f, 0.1f, 0.1f)
+Camera::Camera() : m_theta(fPI * 0.5f), m_phi(fPI * 0.5f), m_pos(0.0f, 0.0f, 0.0f), m_moveSpeed(8.0f, 8.0f, 8.0f)
 {
-	m_mappedKeys[MOVE_FORWARD] = SDLK_w;
-	m_mappedKeys[MOVE_BACKWARD] = SDLK_s;
-	m_mappedKeys[MOVE_RIGHTWARD] = SDLK_d;
-	m_mappedKeys[MOVE_LEFTWARD] = SDLK_a;
-	m_mappedKeys[MOVE_UPWARD] = SDLK_SPACE;
-	m_mappedKeys[MOVE_DOWNWARD] = SDLK_LSHIFT;
+	m_mappedKeys[MOVE_FORWARD] = SDL_SCANCODE_W;
+	m_mappedKeys[MOVE_BACKWARD] = SDL_SCANCODE_S;
+	m_mappedKeys[MOVE_RIGHTWARD] = SDL_SCANCODE_D;
+	m_mappedKeys[MOVE_LEFTWARD] = SDL_SCANCODE_A;
+	m_mappedKeys[MOVE_UPWARD] = SDL_SCANCODE_SPACE;
+	m_mappedKeys[MOVE_DOWNWARD] = SDL_SCANCODE_LSHIFT;
 }
 
 
@@ -63,7 +63,7 @@ unsigned int Camera::GetNumMappedKeys() const
 	return Camera::KeyActions::N_KEY_ACTIONS;
 }
 
-void Camera::ProcessKeyStates(KeyState* keyStates)
+void Camera::ProcessKeyStates(KeyState* keyStates, int dt)
 {
 	fVec3 dPos;
 
@@ -77,7 +77,7 @@ void Camera::ProcessKeyStates(KeyState* keyStates)
 		float(keyStates[MOVE_UPWARD].m_state == KeyState::State::KEY_DOWN) -
 		float(keyStates[MOVE_DOWNWARD].m_state == KeyState::State::KEY_DOWN);
 
-	dPos = dPos.Times(m_moveSpeed);
+	dPos = dPos.Times(m_moveSpeed.Scale((float)dt*0.001f));
 	
 	fMat33 basis; // not orthonormal
 	const fVec3 y(sin(m_theta)*cos(m_phi), sin(m_theta)*sin(m_phi), cos(m_theta));

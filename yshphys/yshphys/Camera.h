@@ -20,19 +20,20 @@ public:
 
 	Camera();
 	virtual ~Camera();
-	
+
 	void PanUp(float pitch);
 	void PanRight(float yaw);
 
 	void UpdateView();
 	
-	virtual void ProcessMouseRelativeMotion(float xRel, float yRel);
-	virtual unsigned int GetNumMappedKeys() const;
-	virtual void ProcessKeyStates(KeyState* keyStates);
+	virtual void ProcessKeyStates(KeyState* keyStates, int dt_ms);
 
 	void SetViewport(Viewport* viewport);
 
 private:
+
+	virtual void ProcessMouseRelativeMotion(float xRel, float yRel);
+	virtual unsigned int GetNumMappedKeys() const;
 
 	// We use physics conventions. m_theta is the angle from the z-axis. m_phi is the polar angle from the x-axis
 	float m_theta;
@@ -41,6 +42,6 @@ private:
 
 	fVec3 m_pos;
 
-	fVec3 m_moveSpeed;
+	fVec3 m_moveSpeed; // meters per second
 };
 

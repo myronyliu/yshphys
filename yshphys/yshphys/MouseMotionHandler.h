@@ -1,13 +1,25 @@
 #pragma once
+
 class MouseMotionHandler
 {
 public:
 	MouseMotionHandler();
 	virtual ~MouseMotionHandler();
 
-	virtual void ProcessMouseRelativeMotion(float xRel, float yRel);
+	void EnableMouseMotionProcessing();
+	void DisableMouseMotionProcessing();
+	
+	bool MouseMotionProcessingEnabled() const;
+
+	void ConditionalProcessMouseRelativeMotion(float xRel, float yRel);
+
 protected:
+
+	virtual void ProcessMouseRelativeMotion(float xRel, float yRel);
+
 	float m_xSens;
 	float m_ySens;
+
+	bool m_mouseMotionProcessingEnabled;
 };
 
