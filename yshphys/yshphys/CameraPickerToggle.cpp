@@ -2,7 +2,7 @@
 #include "CameraPickerToggle.h"
 
 
-CameraPickerToggle::CameraPickerToggle()
+CameraPickerToggle::CameraPickerToggle() : m_cameraEnabled(true)
 {
 	m_mappedKeys[TOGGLE] = SDL_SCANCODE_LCTRL;
 }
@@ -26,7 +26,7 @@ unsigned int CameraPickerToggle::GetNumMappedKeys() const
 	return CameraPickerToggle::KeyActions::N_KEY_ACTIONS;
 }
 
-void CameraPickerToggle::ProcessKeyStates(KeyState* keyStates, int dt)
+void CameraPickerToggle::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt)
 {
 	if (m_camera == nullptr || m_picker == nullptr)
 	{
@@ -38,14 +38,14 @@ void CameraPickerToggle::ProcessKeyStates(KeyState* keyStates, int dt)
 	{
 		if (m_cameraEnabled)
 		{
-			m_camera->DisableMouseMotionProcessing();
-			m_picker->EnableMouseMotionProcessing();
+			m_camera->DisableInput();
+			m_picker->EnableInput();
 			SDL_SetRelativeMouseMode(SDL_FALSE);
 		}
 		else
 		{
-			m_camera->EnableMouseMotionProcessing();
-			m_picker->DisableMouseMotionProcessing();
+			m_camera->EnableInput();
+			m_picker->DisableInput();
 			SDL_SetRelativeMouseMode(SDL_TRUE);
 		}
 		m_cameraEnabled = !m_cameraEnabled;

@@ -1,7 +1,7 @@
 #pragma once
-#include "MouseMotionHandler.h"
+#include "InputHandler.h"
 class Picker :
-	public MouseMotionHandler
+	public InputHandler
 {
 public:
 	Picker();

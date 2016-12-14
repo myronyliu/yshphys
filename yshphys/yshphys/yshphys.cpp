@@ -11,7 +11,7 @@
 #include "RigidBody.h"
 #include "Shader_Default.h"
 #include "Camera.h"
-#include "InputHandler.h"
+#include "InputManager.h"
 #include "Game.h"
 #include "Capsule.h"
 #include "Tests.h"
@@ -30,10 +30,9 @@ int main(int argc, char *args[])
 	toggle.SetPicker(&picker);
 
 	Game game;
-	game.m_inputHandler.AddMouseMotionHandler(&camera);
-	game.m_inputHandler.AddKeyHandler(&camera);
+	game.m_inputHandler.AddInputHandler(&camera);
 	game.m_renderScene.AttachCamera(&camera);
-	game.m_inputHandler.AddKeyHandler(&toggle);
+	game.m_inputHandler.AddInputHandler(&toggle);
 	game.m_renderScene.m_window = &window;
 
 	RenderMesh mesh;

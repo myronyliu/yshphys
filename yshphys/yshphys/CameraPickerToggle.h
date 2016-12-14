@@ -1,10 +1,10 @@
 #pragma once
-#include "KeyHandler.h"
+#include "InputHandler.h"
 #include "Camera.h"
 #include "Picker.h"
 
 class CameraPickerToggle :
-	public KeyHandler
+	public InputHandler
 {
 public:
 	enum KeyActions
@@ -19,11 +19,10 @@ public:
 	void SetCamera(Camera* camera);
 	void SetPicker(Picker* picker);
 
-	virtual unsigned int GetNumMappedKeys() const;
+	virtual void ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt_ms);
 
 protected:
-
-	virtual void ProcessKeyStates(KeyState* keyStates, int dt_ms);
+	virtual unsigned int GetNumMappedKeys() const;
 
 	bool m_cameraEnabled;
 

@@ -46,13 +46,6 @@ void Camera::UpdateView()
 	m_viewport->SetPos(m_pos);
 }
 
-void Camera::ProcessMouseRelativeMotion(int xRel, int yRel)
-{
-	PanRight((float)xRel * m_xSens);
-	PanUp(-(float)yRel * m_ySens);
-	UpdateView();
-}
-
 void Camera::SetViewport(Viewport* viewport)
 {
 	m_viewport = viewport;
@@ -63,8 +56,11 @@ unsigned int Camera::GetNumMappedKeys() const
 	return Camera::KeyActions::N_KEY_ACTIONS;
 }
 
-void Camera::ProcessKeyStates(KeyState* keyStates, int dt)
+void Camera::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt)
 {
+	PanRight((float)mouseState.m_xRel * m_xSens);
+	PanUp(-(float)mouseState.m_yRel * m_ySens);
+
 	fVec3 dPos;
 
 	dPos.y =

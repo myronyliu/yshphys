@@ -111,16 +111,7 @@
     <ClInclude Include="RenderScene.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="InputHandler.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseMotionHandler.h">
-      <Filter>Input</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyHandler.h">
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="Box.h">
@@ -192,6 +183,12 @@
     <ClInclude Include="Picker.h">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="InputHandler.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -245,16 +242,7 @@
     <ClCompile Include="RenderScene.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="InputHandler.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="MouseMotionHandler.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="KeyHandler.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="Box.cpp">
@@ -324,6 +312,12 @@
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="Picker.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="InputHandler.cpp">
       <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,5 +1,5 @@
 #pragma once
-#include "InputHandler.h"
+#include "InputManager.h"
 #include "RenderScene.h"
 #include "PhysicsScene.h"
 #include "GameNode.h"
@@ -17,7 +17,7 @@ public:
 	void AddGameObject(GameObject* gameObject);
 	void RemoveGameObject(GameObject* gameObject);
 
-	InputHandler m_inputHandler;
+	InputManager m_inputHandler;
 
 	PhysicsScene m_physicsScene;
 	RenderScene m_renderScene;
