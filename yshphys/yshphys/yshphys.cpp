@@ -77,8 +77,8 @@ int main(int argc, char *args[])
 	dVec3 pt2;
 	dVec3 pt3;
 	dVec3 pt4;
-	double asdf = box1.ComputeSeparation(&box2, pt1, pt2);
-	double qwer = box2.ComputeSeparation(&box1, pt3, pt4);
+//	double asdf = box1.ComputeSeparation(&box2, pt1, pt2);
+//	double qwer = box2.ComputeSeparation(&box1, pt3, pt4);
 	
 	SDL_Quit();
 

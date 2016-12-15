@@ -37,7 +37,12 @@ void Geometry::SetRotation(const dQuat& rot)
 	m_rot = rot;
 }
 
-dVec3 Geometry::Support(const dVec3& v) const
+dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
+{
+	return x + q.Transform(SupportLocal((-q).Transform(v)));
+}
+
+dVec3 Geometry::SupportLocal(const dVec3& v) const
 {
 	return dVec3(0.0, 0.0, 0.0);
 }
@@ -47,15 +52,17 @@ double Geometry::ComputePenetration(const Geometry* geom, dVec3& ptSelf, dVec3& 
 	return -1.0;
 }
 
-double Geometry::ComputeSeparation(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom) const
+double Geometry::ComputeSeparation(
+	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
+	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1)
 {
 	Simplex3D simplex;
 
 	// First pass is special. Don't check for termination since v is just a guess.
-	dVec3 v(m_pos - geom->m_pos);
-	ptSelf = Support(-v);
-	ptGeom = geom->Support(v);
-	dVec3 ptSimplex(ptSelf - ptGeom);
+	dVec3 v(pos0 - pos1);
+	pt0 = geom0->Support(pos0, rot0, -v);
+	pt1 = geom1->Support(pos1, rot1, v);
+	dVec3 ptSimplex(pt0 - pt1);
 	simplex.SetVertices(1, &ptSimplex);
 
 	int nIter = 0;
@@ -69,7 +76,7 @@ double Geometry::ComputeSeparation(const Geometry* geom, dVec3& ptSelf, dVec3& p
 
 		if (newSimplex.GetNumVertices() == 4)
 		{
-			return ComputePenetration(geom, ptSelf, ptGeom, newSimplex);
+//			return ComputePenetration(geom, ptSelf, ptGeom, newSimplex);
 		}
 
 		double vSqr = v.Dot(v);
@@ -77,9 +84,9 @@ double Geometry::ComputeSeparation(const Geometry* geom, dVec3& ptSelf, dVec3& p
 		{
 			return 0.0;
 		}
-		ptSelf = Support(-v);
-		ptGeom = geom->Support(v);
-		ptSimplex = ptSelf - ptGeom;
+		pt0 = geom0->Support(pos0, rot0, -v);
+		pt1 = geom1->Support(pos1, rot1, v);
+		ptSimplex = pt0 - pt1;
 		const double dSqr(ptSimplex.Dot(ptSimplex));
 
 		if (dSqr < MIN_SUPPORT_SQR)

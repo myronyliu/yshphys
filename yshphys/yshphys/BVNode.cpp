@@ -220,18 +220,34 @@ void BVNode::RefitAndRotateTree()
 			else if (bcArea <= caArea && bcArea <= abArea)
 			{
 				d->m_AABB = bc;
+
 				d->m_left = b;
+				d->m_parent = d;
+
 				d->m_right = c;
+				c->m_parent = d;
+
 				e->m_left = d;
+				d->m_parent = e;
+
 				e->m_right = a;
+				a->m_parent = e;
 			}
 			else
 			{
 				d->m_AABB = ca;
+
 				d->m_left = c;
+				c->m_parent = d;
+
 				d->m_right = a;
+				a->m_parent = d;
+
 				e->m_left = d;
+				d->m_parent = e;
+
 				e->m_right = b;
+				b->m_parent = e;
 			}
 
 			const AABB abc = ab.Aggregate(bc);

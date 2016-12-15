@@ -29,13 +29,13 @@ void Capsule::SetRadius(double radius)
 	m_localOOBB.min = -m_localOOBB.max;
 }
 
-dVec3 Capsule::Support(const dVec3& v) const
+dVec3 Capsule::SupportLocal(const dVec3& v) const
 {
 	double k = m_radius / sqrt(v.Dot(v));
-	dVec3 supportLocal = v.Scale(k);
+	dVec3 support = v.Scale(k);
 
 	double z = (-m_rot).Transform(v).z;
-	supportLocal.z += (double)((0.0 < z) - (z < 0.0)) * m_halfHeight;
+	support.z += MathUtils::sgn(v.z) * m_halfHeight;
 
-	return m_pos + m_rot.Transform(supportLocal);
+	return support;
 }

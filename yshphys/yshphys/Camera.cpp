@@ -5,7 +5,7 @@
 #define MIN_CAMERA_THETA (fPI * 0.01f)
 #define MAX_CAMERA_THETA (fPI * 0.99f) 
 
-Camera::Camera() : m_theta(fPI * 0.5f), m_phi(fPI * 0.5f), m_pos(0.0f, 0.0f, 0.0f), m_moveSpeed(8.0f, 8.0f, 8.0f)
+Camera::Camera() : m_theta(fPI * 0.5f), m_phi(fPI * 0.5f), m_pos(0.0f, 0.0f, 0.0f), m_moveSpeed(16.0f, 16.0f, 16.0f)
 {
 	m_mappedKeys[MOVE_FORWARD] = YSH_INPUT_W;
 	m_mappedKeys[MOVE_BACKWARD] = YSH_INPUT_S;

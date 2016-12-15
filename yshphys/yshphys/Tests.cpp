@@ -13,11 +13,11 @@ void Tests::CreateBVTest(Game* game)
 	geometry->SetHalfHeight(1.0);
 
 	dVec3 sceneCenter = dVec3(0.0, 32.0, 0.0);
-	dVec3 sceneHalfDim = dVec3(4.0, 4.0, 4.0);
+	dVec3 sceneHalfDim = dVec3(8.0, 8.0, 8.0);
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
 		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));

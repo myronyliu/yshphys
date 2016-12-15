@@ -27,23 +27,22 @@ void Cylinder::SetRadius(double radius)
 	m_localOOBB.max.y = m_radius;
 }
 
-dVec3 Cylinder::Support(const dVec3& v) const
+dVec3 Cylinder::SupportLocal(const dVec3& v) const
 {
-	dVec3 vLocal = (-m_rot).Transform(v);
-	dVec3 supportLocal;
-	double xySqr = vLocal.x*vLocal.x + vLocal.y*vLocal.y;
+	dVec3 support;
+	double xySqr = v.x*v.x + v.y*v.y;
 
 	if (xySqr > 0.0)
 	{
 		double xy = sqrt(xySqr);
-		supportLocal.x = vLocal.x / (xySqr);
-		supportLocal.y = vLocal.y / (xySqr);
+		support.x = v.x / (xySqr);
+		support.y = v.y / (xySqr);
 	}
 	else
 	{
-		supportLocal.x = 0.0;
-		supportLocal.y = 0.0;
+		support.x = 0.0;
+		support.y = 0.0;
 	}
-	supportLocal.z = m_halfHeight * (double)((0.0 < vLocal.z) - (vLocal.z < 0.0));
-	return m_pos + m_rot.Transform(supportLocal);
+	support.z = m_halfHeight * MathUtils::sgn(v.z);
+	return support;
 }

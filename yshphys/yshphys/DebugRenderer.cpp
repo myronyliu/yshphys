@@ -193,6 +193,7 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 {
 	const BVNode* root = tree.Root();
+	assert(root->GetParent() == nullptr);
 	if (!root)
 	{
 		return;
