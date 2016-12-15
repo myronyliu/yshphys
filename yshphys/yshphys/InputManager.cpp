@@ -81,8 +81,9 @@ void InputManager::UpdateKeyboardState(int dt)
 }
 void InputManager::UpdateMouseState(int dt)
 {
-	int x, y;
-	const Uint32 buttonMask = SDL_GetMouseState(&x, &y);
+	const Uint32 buttonMask = SDL_GetMouseState(&m_mouseState.m_x, &m_mouseState.m_y);
+
+	SDL_GetWindowSize(m_window->m_window, &m_mouseState.m_windowSpanX, &m_mouseState.m_windowSpanY);
 
 	KeyState* buttonState = &m_mouseState.m_leftButtonState;
 	buttonState->m_duration += dt;

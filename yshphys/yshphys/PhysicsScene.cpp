@@ -26,6 +26,68 @@ PhysicsScene::~PhysicsScene()
 {
 }
 
+PhysicsObject* PhysicsScene::RayCast(const Ray& ray) const
+{
+	dVec3 o = ray.GetOrigin();
+	dVec3 d = ray.GetDirection();
+
+	const BVNode* node = m_bvTree.Root();
+	if (!node)
+	{
+		return nullptr;
+	}
+	std::stack<const BVNode*> nodeStack;
+	nodeStack.push(node);
+
+	struct CandidateLeaf
+	{
+		double t;
+		const BVNode* node;
+
+		bool operator < (const CandidateLeaf& candidate)
+		{
+			return t < candidate.t;
+		}
+	};
+	std::vector<CandidateLeaf> candidateLeaves;
+
+	while (!nodeStack.empty())
+	{
+		node = nodeStack.top();
+		nodeStack.pop();
+
+		double tMin, tMax;
+		if (ray.IntersectAABB(node->GetAABB(), tMin, tMax))
+		{
+			if (node->IsLeaf())
+			{
+				CandidateLeaf candidate;
+				candidate.t = tMin;
+				candidate.node = node;
+				candidateLeaves.push_back(candidate);
+			}
+			else
+			{
+				nodeStack.push(node->GetLeftChild());
+				nodeStack.push(node->GetRightChild());
+			}
+		}
+	}
+
+	if (candidateLeaves.empty())
+	{
+		return nullptr;
+	}
+
+	std::sort(candidateLeaves.begin(), candidateLeaves.end());
+	for (int i = 0; i < candidateLeaves.size(); ++i)
+	{
+		// TODO: Add the actual intersection test
+	}
+
+	return (PhysicsObject*)candidateLeaves.begin()->node->GetContent();
+}
+
 const BVTree& PhysicsScene::GetBVTree() const
 {
 	return m_bvTree;

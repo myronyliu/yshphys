@@ -1,6 +1,7 @@
 #pragma once
 
 #include "KeyButtonRenamings.h"
+#include "Window.h"
 #include <SDL.h>
 
 class InputHandler;
@@ -51,6 +52,8 @@ public:
 	void AddInputHandler(InputHandler* inputHandler);
 
 	bool QuitRequested() const;
+
+	Window* m_window;
 
 protected:
 

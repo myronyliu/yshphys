@@ -3,6 +3,7 @@
 #include "RigidBody.h"
 #include "PhysicsObject.h"
 #include "PhysicsNode.h"
+#include "Ray.h"
 
 #define MAX_PHYSICS_NODES 1024
 
@@ -14,6 +15,8 @@ public:
 
 	void AddPhysicsObject(PhysicsObject* physicsObject);
 	void RemovePhysicsObject(PhysicsObject* physicsObject);
+
+	PhysicsObject* RayCast(const Ray& ray) const;
 
 	const BVTree& GetBVTree() const;
 

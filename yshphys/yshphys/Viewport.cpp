@@ -61,13 +61,13 @@ Ray Viewport::UnProject(int pixelX, int pixelY, int windowSpanX, int windowSpanY
 	float y = (0.5f*windowSpanY - pixelY) / (0.5f*windowSpanY);
 	float z = -1.0f / tan(0.5f*m_fov);
 
-	fVec3 v(m_rot.Transform(fVec4(x, y, y, 1.0f)));
+	fVec3 v(m_rot.Transform(fVec4(x, y, z, 1.0f)));
 	v = v.Scale(1.0f / sqrt(v.Dot(v)));
 
 	Ray ray;
 
 	ray.SetDirection(v);
-	ray.SetDirection(m_pos);
+	ray.SetOrigin(m_pos);
 
 	return ray;
 }

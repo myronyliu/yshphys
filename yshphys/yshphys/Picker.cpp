@@ -4,7 +4,7 @@
 
 Picker::Picker() : m_depth(1.0f)
 {
-	m_mappedKeys[PICK] = YSH_INPUT_RMOUSEBUTTON;
+	m_mappedKeys[PICK] = YSH_INPUT_LMOUSEBUTTON;
 }
 
 Picker::~Picker()
@@ -36,7 +36,11 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 
 		if (keyState.m_duration == 0)
 		{
-
+			if (m_pickedObject = (RigidBody*)m_game->m_physicsScene.RayCast(ray))
+			{
+				dVec3 x = m_pickedObject->GetPosition();
+				m_depth = (x - ray.GetOrigin()).Dot(viewDir);
+			}
 		}
 		else if (m_pickedObject != nullptr)
 		{

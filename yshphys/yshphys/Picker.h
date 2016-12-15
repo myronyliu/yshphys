@@ -12,6 +12,8 @@ public:
 
 	virtual void ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt_ms);
 
+	Game* m_game;
+
 private:
 
 	enum KeyActions
@@ -25,7 +27,6 @@ private:
 
 	float m_depth;
 
-	Game* m_game;
 	RigidBody* m_pickedObject;
 };
 

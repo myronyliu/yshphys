@@ -59,5 +59,5 @@ bool Ray::IntersectAABB(const AABB& aabb, double& tMin, double& tMax) const
 	tMin = std::max(tMin, std::min(tz0, tz1));
 	tMax = std::min(tMax, std::max(tz0, tz1));
 
-	return tMin < tMax;
+	return (tMin < tMax) && (tMin < m_length);
 }
