@@ -5,6 +5,9 @@
 Picker::Picker() : m_depth(1.0f)
 {
 	m_mappedKeys[PICK] = YSH_INPUT_LMOUSEBUTTON;
+
+	m_springCoeff.kOverM = 100.0f;
+	m_springCoeff.b = 2 * sqrt(m_springCoeff.kOverM);
 }
 
 Picker::~Picker()
@@ -54,7 +57,7 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 
 			dVec3 pickerPos = ray.GetOrigin() + rayDir.Scale(m_depth / rayDir.Dot(viewDir));
 
-			m_pickedObject->m_F = ((pickerPos - x) - v).Scale(m);
+			m_pickedObject->m_F = ((pickerPos - x).Scale(m_springCoeff.kOverM) - v.Scale(m_springCoeff.b)).Scale(m);
 		}
 	}
 }

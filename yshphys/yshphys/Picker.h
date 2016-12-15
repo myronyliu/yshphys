@@ -27,6 +27,14 @@ private:
 
 	float m_depth;
 
+	struct DampedOscillatorCoefficients
+	{
+		float kOverM;
+		float b;
+	};
+
+	DampedOscillatorCoefficients m_springCoeff;
+
 	RigidBody* m_pickedObject;
 };
 
