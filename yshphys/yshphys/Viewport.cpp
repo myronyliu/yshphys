@@ -32,6 +32,12 @@ fMat44 Viewport::CreateProjectionMatrix() const
 	return fHomogeneousTransformation::CreateProjection(m_fov, m_aspect, m_near, m_far);
 }
 
+fVec3 Viewport::GetViewDir() const
+{
+	const fVec3 v = -fMat33(m_rot).GetColumn(2);
+	return v.Scale(1.0f / sqrt(v.Dot(v)));
+}
+
 void Viewport::SetViewDir(const fVec3& viewDir, const fVec3& upDir)
 {
 	fVec3 z(-viewDir);
@@ -47,4 +53,21 @@ void Viewport::SetViewDir(const fVec3& viewDir, const fVec3& upDir)
 	R.SetColumn(1, y);
 	R.SetColumn(2, z);
 	m_rot = fQuat(R);
+}
+
+Ray Viewport::UnProject(int pixelX, int pixelY, int windowSpanX, int windowSpanY) const
+{
+	float x = m_aspect * (pixelX - 0.5f*windowSpanX) / (0.5f*windowSpanX);
+	float y = (0.5f*windowSpanY - pixelY) / (0.5f*windowSpanY);
+	float z = -1.0f / tan(0.5f*m_fov);
+
+	fVec3 v(m_rot.Transform(fVec4(x, y, y, 1.0f)));
+	v = v.Scale(1.0f / sqrt(v.Dot(v)));
+
+	Ray ray;
+
+	ray.SetDirection(v);
+	ray.SetDirection(m_pos);
+
+	return ray;
 }

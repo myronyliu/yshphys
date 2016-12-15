@@ -1,5 +1,6 @@
 #pragma once
 #include "YshMath.h"
+#include "Ray.h"
 
 class Viewport
 {
@@ -10,6 +11,9 @@ public:
 	fMat44 CreateViewMatrix() const;
 	fMat44 CreateProjectionMatrix() const;
 
+	Ray UnProject(int pixelX, int pixelY, int windowSpanX, int windowSpanY) const;
+
+	fVec3 GetViewDir() const;
 	void SetViewDir(const fVec3& viewDir, const fVec3& upDir);
 	void SetPos(const fVec3& pos);
 

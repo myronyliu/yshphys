@@ -12,14 +12,19 @@ public:
 	RigidBody();
 	virtual ~RigidBody();
 
+	double GetMass(double& inverseMass) const;
+
 	dVec3 GetPosition() const;
 	dQuat GetRotation() const;
+	dVec3 GetLinearVelocity() const;
+	dVec3 GetAngularVelocity() const;
 
 	void SetPosition(const dVec3& x);
 	void SetRotation(const dQuat& q);
 	void SetGeometry(Geometry* geometry);
 	void SetMass(double m);
 	void SetInertia(dMat33 Ibody);
+
 
 	virtual void UpdateAABB();
 

@@ -5,18 +5,6 @@
 class Camera : public InputHandler
 {
 public:
-	enum KeyActions
-	{
-		MOVE_FORWARD = 0,
-		MOVE_BACKWARD,
-		MOVE_LEFTWARD,
-		MOVE_RIGHTWARD,
-		MOVE_UPWARD,
-		MOVE_DOWNWARD,
-
-		N_KEY_ACTIONS
-	};
-
 	Camera();
 	virtual ~Camera();
 
@@ -30,6 +18,19 @@ public:
 	void SetViewport(Viewport* viewport);
 
 private:
+
+	enum KeyActions
+	{
+		MOVE_FORWARD = 0,
+		MOVE_BACKWARD,
+		MOVE_LEFTWARD,
+		MOVE_RIGHTWARD,
+		MOVE_UPWARD,
+		MOVE_DOWNWARD,
+
+		N_KEY_ACTIONS
+	};
+
 	virtual unsigned int GetNumMappedKeys() const;
 
 	// We use physics conventions. m_theta is the angle from the z-axis. m_phi is the polar angle from the x-axis

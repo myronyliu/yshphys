@@ -208,9 +208,9 @@ void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 		const AABB aabb = node->GetAABB();
 
 		const fVec3 aabbCenter(
-			(aabb.max.x + aabb.min.x)*0.5f,
-			(aabb.max.y + aabb.min.y)*0.5f,
-			(aabb.max.z + aabb.min.z)*0.5f);
+			float(aabb.max.x + aabb.min.x)*0.5f,
+			float(aabb.max.y + aabb.min.y)*0.5f,
+			float(aabb.max.z + aabb.min.z)*0.5f);
 
 		DrawBox(
 			float(aabb.max.x - aabb.min.x)*0.5f,

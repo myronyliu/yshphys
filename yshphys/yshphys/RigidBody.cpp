@@ -47,6 +47,12 @@ RigidBody::~RigidBody()
 {
 }
 
+double RigidBody::GetMass(double& inverseMass) const
+{
+	inverseMass = m_minv;
+	return m_m;
+}
+
 dVec3 RigidBody::GetPosition() const
 {
 	return m_x;
@@ -54,6 +60,14 @@ dVec3 RigidBody::GetPosition() const
 dQuat RigidBody::GetRotation() const
 {
 	return m_q;
+}
+dVec3 RigidBody::GetLinearVelocity() const
+{
+	return m_v;
+}
+dVec3 RigidBody::GetAngularVelocity() const
+{
+	return m_w;
 }
 void RigidBody::SetPosition(const dVec3& x)
 {

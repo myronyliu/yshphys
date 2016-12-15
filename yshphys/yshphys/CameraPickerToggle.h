@@ -7,12 +7,6 @@ class CameraPickerToggle :
 	public InputHandler
 {
 public:
-	enum KeyActions
-	{
-		TOGGLE = 0,
-
-		N_KEY_ACTIONS
-	};
 	CameraPickerToggle();
 	virtual ~CameraPickerToggle();
 
@@ -22,6 +16,14 @@ public:
 	virtual void ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt_ms);
 
 protected:
+
+	enum KeyActions
+	{
+		TOGGLE = 0,
+
+		N_KEY_ACTIONS
+	};
+
 	virtual unsigned int GetNumMappedKeys() const;
 
 	bool m_cameraEnabled;
