@@ -19,7 +19,7 @@ public:
 
 	// pointer argument is filled with SDL_keycodes
 	// return value is the number of keyhold actions
-	unsigned int GetMappedKeys(int* mappedKeys) const;
+	int GetMappedKeys(unsigned short* mappedKeys) const;
 
 	virtual void ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt_ms);
 
@@ -27,7 +27,9 @@ protected:
 
 	virtual unsigned int GetNumMappedKeys() const;
 	
-	int m_mappedKeys[MAX_KEY_ACTIONS_PER_HANDLER];
+	// For mappedKeys we use "short" since we don't want the InputHandler to distinguish between mouse button clicks and keyboard presses.
+	// Since SDL uses 8 bits to encode the keyboard, using 16 bits ensures that we can assign a unique "short" to each of the mouse buttons.
+	unsigned short m_mappedKeys[MAX_KEY_ACTIONS_PER_HANDLER];
 
 	float m_xSens;
 	float m_ySens;

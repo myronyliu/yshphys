@@ -22,9 +22,9 @@ bool InputHandler::InputEnabled() const
 {
 	return m_inputEnabled;
 }
-unsigned int InputHandler::GetMappedKeys(int* mappedKeys) const
+int InputHandler::GetMappedKeys(unsigned short* mappedKeys) const
 {
-	std::memcpy(mappedKeys, m_mappedKeys, MAX_KEY_ACTIONS_PER_HANDLER * sizeof(int));
+	std::memcpy(mappedKeys, m_mappedKeys, MAX_KEY_ACTIONS_PER_HANDLER * sizeof(unsigned short));
 	return GetNumMappedKeys();
 }
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "KeyButtonRenamings.h"
+#include <SDL.h>
+
 class InputHandler;
 
 struct KeyState
@@ -51,14 +54,14 @@ public:
 
 protected:
 
-	void UpdateKeyStates(int dt_ms);
+	void UpdateKeyboardState(int dt_ms);
 	void UpdateMouseState(int dt_ms);
 
 	void DispatchInputState(int dt_ms) const;
 
 	std::vector<InputHandler*> m_inputHandlers;
 
-	std::map<int, KeyState> m_keyStates; // key: SDL keycode, value: duration for which the key was held down or up
+	std::map<Uint8, KeyState> m_keyboardState; // key: SDL keycode, value: duration for which the key was held down or up
 	MouseState m_mouseState;
 
 	bool m_quitRequested;

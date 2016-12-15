@@ -189,6 +189,9 @@
     <ClInclude Include="InputHandler.h">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="KeyButtonRenamings.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -318,6 +321,9 @@
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="InputHandler.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyButtonRemappings.cpp">
       <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>

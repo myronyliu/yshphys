@@ -4,7 +4,7 @@
 
 CameraPickerToggle::CameraPickerToggle() : m_cameraEnabled(true)
 {
-	m_mappedKeys[TOGGLE] = SDL_SCANCODE_LCTRL;
+	m_mappedKeys[TOGGLE] = YSH_INPUT_LCTRL;
 }
 
 

@@ -18,20 +18,22 @@ bool InputManager::QuitRequested() const
 {
 	return m_quitRequested;
 }
-
 void InputManager::AddInputHandler(InputHandler* inputHandler)
 {
-	int mappedKeys[MAX_KEY_ACTIONS_PER_HANDLER];
+	unsigned short mappedKeys[MAX_KEY_ACTIONS_PER_HANDLER];
 	const int nMappedKeys = inputHandler->GetMappedKeys(mappedKeys);
 	for (int i = 0; i < nMappedKeys; ++i)
 	{
-		if (m_keyStates.find(mappedKeys[i]) == m_keyStates.end())
+		if (IsKeyboardInput(mappedKeys[i]))
 		{
-			KeyState defaultKeyState;
-			defaultKeyState.m_state = KeyState::State::RELEASED;
-			defaultKeyState.m_duration = 0;
-			defaultKeyState.m_prevDuration = 0;
-			m_keyStates[mappedKeys[i]] = defaultKeyState;
+			if (m_keyboardState.find((Uint8)mappedKeys[i]) == m_keyboardState.end())
+			{
+				KeyState defaultKeyState;
+				defaultKeyState.m_state = KeyState::State::RELEASED;
+				defaultKeyState.m_duration = 0;
+				defaultKeyState.m_prevDuration = 0;
+				m_keyboardState[(Uint8)mappedKeys[i]] = defaultKeyState;
+			}
 		}
 	}
 	m_inputHandlers.push_back(inputHandler);
@@ -41,16 +43,16 @@ void InputManager::ProcessEvents(int dt)
 {
 	SDL_PumpEvents();
 
-	UpdateKeyStates(dt);
+	UpdateKeyboardState(dt);
 	UpdateMouseState(dt);
 
 	// Now that we have populated the keystates, we can process the key and mouse-button presses/holds
 	DispatchInputState(dt);
 }
-void InputManager::UpdateKeyStates(int dt)
+void InputManager::UpdateKeyboardState(int dt)
 {
 	const Uint8* keyboard = SDL_GetKeyboardState(nullptr);
-	for (std::map<int, KeyState>::iterator it = m_keyStates.begin(); it != m_keyStates.end(); ++it)
+	for (std::map<Uint8, KeyState>::iterator it = m_keyboardState.begin(); it != m_keyboardState.end(); ++it)
 	{
 		const int& scanCode = it->first;
 		KeyState& keyState = it->second;
@@ -82,48 +84,48 @@ void InputManager::UpdateMouseState(int dt)
 	int x, y;
 	const Uint32 buttonMask = SDL_GetMouseState(&x, &y);
 
-	KeyState& buttonState = m_mouseState.m_leftButtonState;
-	buttonState.m_duration += dt;
+	KeyState* buttonState = &m_mouseState.m_leftButtonState;
+	buttonState->m_duration += dt;
 
 	if (buttonMask & SDL_BUTTON(SDL_BUTTON_LEFT))
 	{
-		if (buttonState.m_state == KeyState::State::RELEASED)
+		if (buttonState->m_state == KeyState::State::RELEASED)
 		{
-			buttonState.m_state = KeyState::State::PRESSED;
-			buttonState.m_prevDuration = buttonState.m_duration;
-			buttonState.m_duration = 0;
+			buttonState->m_state = KeyState::State::PRESSED;
+			buttonState->m_prevDuration = buttonState->m_duration;
+			buttonState->m_duration = 0;
 		}
 	}
 	else
 	{
-		if (buttonState.m_state == KeyState::State::PRESSED)
+		if (buttonState->m_state == KeyState::State::PRESSED)
 		{
-			buttonState.m_state = KeyState::State::RELEASED;
-			buttonState.m_prevDuration = buttonState.m_duration;
-			buttonState.m_duration = 0;
+			buttonState->m_state = KeyState::State::RELEASED;
+			buttonState->m_prevDuration = buttonState->m_duration;
+			buttonState->m_duration = 0;
 		}
 
 	}
 
-	buttonState = m_mouseState.m_rightButtonState;
-	buttonState.m_duration += dt;
+	buttonState = &m_mouseState.m_rightButtonState;
+	buttonState->m_duration += dt;
 
 	if (buttonMask & SDL_BUTTON(SDL_BUTTON_RIGHT))
 	{
-		if (buttonState.m_state == KeyState::State::RELEASED)
+		if (buttonState->m_state == KeyState::State::RELEASED)
 		{
-			buttonState.m_state = KeyState::State::PRESSED;
-			buttonState.m_prevDuration = buttonState.m_duration;
-			buttonState.m_duration = 0;
+			buttonState->m_state = KeyState::State::PRESSED;
+			buttonState->m_prevDuration = buttonState->m_duration;
+			buttonState->m_duration = 0;
 		}
 	}
 	else
 	{
-		if (buttonState.m_state == KeyState::State::PRESSED)
+		if (buttonState->m_state == KeyState::State::PRESSED)
 		{
-			buttonState.m_state = KeyState::State::RELEASED;
-			buttonState.m_prevDuration = buttonState.m_duration;
-			buttonState.m_duration = 0;
+			buttonState->m_state = KeyState::State::RELEASED;
+			buttonState->m_prevDuration = buttonState->m_duration;
+			buttonState->m_duration = 0;
 		}
 
 	}
@@ -152,24 +154,45 @@ void InputManager::DispatchInputState(int dt) const
 	for (std::vector<InputHandler*>::const_iterator it = m_inputHandlers.begin(); it != m_inputHandlers.end(); ++it)
 	{
 		InputHandler* handler = *it;
-		int mappedKeys[MAX_KEY_ACTIONS_PER_HANDLER];
+		unsigned short mappedKeys[MAX_KEY_ACTIONS_PER_HANDLER];
 		const unsigned int nMappedKeys = handler->GetMappedKeys(mappedKeys);
 
 		KeyState requestedStates[MAX_KEY_ACTIONS_PER_HANDLER];
 
 		for (unsigned int i = 0; i < nMappedKeys; ++i)
 		{
-			std::map<int, KeyState>::const_iterator keyStateIt = m_keyStates.find(mappedKeys[i]);
-			if (keyStateIt != m_keyStates.end())
+			if (IsKeyboardInput(mappedKeys[i]))
 			{
-				requestedStates[i] = keyStateIt->second;
+				std::map<Uint8, KeyState>::const_iterator keyStateIt = m_keyboardState.find((Uint8)mappedKeys[i]);
+				if (keyStateIt != m_keyboardState.end())
+				{
+					requestedStates[i] = keyStateIt->second;
+				}
+				else
+				{
+					KeyState defaultKeyState;
+					defaultKeyState.m_duration = 0;
+					defaultKeyState.m_state = KeyState::State::RELEASED;
+					requestedStates[i] = defaultKeyState;
+				}
 			}
 			else
 			{
-				KeyState defaultKeyState;
-				defaultKeyState.m_duration = 0;
-				defaultKeyState.m_state = KeyState::State::RELEASED;
-				requestedStates[i] = defaultKeyState;
+				switch (mappedKeys[i])
+				{
+				case YSH_INPUT_LMOUSEBUTTON:
+					requestedStates[i] = m_mouseState.m_leftButtonState;
+					break;
+				case YSH_INPUT_RMOUSEBUTTON:
+					requestedStates[i] = m_mouseState.m_rightButtonState;
+					break;
+				default:
+					KeyState defaultKeyState;
+					defaultKeyState.m_duration = 0;
+					defaultKeyState.m_state = KeyState::State::RELEASED;
+					requestedStates[i] = defaultKeyState;
+					break;
+				}
 			}
 		}
 

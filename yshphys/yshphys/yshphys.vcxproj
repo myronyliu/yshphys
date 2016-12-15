@@ -171,6 +171,7 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="KeyButtonRenamings.h" />
     <ClInclude Include="PhysicsNode.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="LineSegment.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="HomogeneousTransformation.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="KeyButtonRemappings.cpp" />
     <ClCompile Include="Mat33.cpp" />
     <ClCompile Include="Mat44.cpp" />
     <ClCompile Include="MathUtils.cpp" />

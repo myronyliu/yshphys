@@ -7,12 +7,12 @@
 
 Camera::Camera() : m_theta(fPI * 0.5f), m_phi(fPI * 0.5f), m_pos(0.0f, 0.0f, 0.0f), m_moveSpeed(8.0f, 8.0f, 8.0f)
 {
-	m_mappedKeys[MOVE_FORWARD] = SDL_SCANCODE_W;
-	m_mappedKeys[MOVE_BACKWARD] = SDL_SCANCODE_S;
-	m_mappedKeys[MOVE_RIGHTWARD] = SDL_SCANCODE_D;
-	m_mappedKeys[MOVE_LEFTWARD] = SDL_SCANCODE_A;
-	m_mappedKeys[MOVE_UPWARD] = SDL_SCANCODE_SPACE;
-	m_mappedKeys[MOVE_DOWNWARD] = SDL_SCANCODE_LSHIFT;
+	m_mappedKeys[MOVE_FORWARD] = YSH_INPUT_W;
+	m_mappedKeys[MOVE_BACKWARD] = YSH_INPUT_S;
+	m_mappedKeys[MOVE_RIGHTWARD] = YSH_INPUT_D;
+	m_mappedKeys[MOVE_LEFTWARD] = YSH_INPUT_A;
+	m_mappedKeys[MOVE_UPWARD] = YSH_INPUT_SPACE;
+	m_mappedKeys[MOVE_DOWNWARD] = YSH_INPUT_LSHIFT;
 }
 
 
