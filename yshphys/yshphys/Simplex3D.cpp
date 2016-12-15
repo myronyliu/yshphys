@@ -32,6 +32,11 @@ int Simplex3D::GetNumVertices() const
 {
 	return m_nVertices;
 }
+int Simplex3D::GetVertices(dVec3* const vertices) const
+{
+	std::memcpy(vertices, m_vertices, m_nVertices * sizeof(dVec3));
+	return m_nVertices;
+}
 
 dVec3 Simplex3D::ClosestPoint(const dVec3& x, Simplex3D& closestFeature) const
 {

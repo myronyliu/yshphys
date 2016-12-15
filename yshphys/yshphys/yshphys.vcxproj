@@ -176,6 +176,7 @@
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="LineSegment.h" />
     <ClInclude Include="Picker.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
@@ -228,6 +229,7 @@
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Picker.cpp" />
+    <ClCompile Include="Point.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="LineSegment.cpp" />
     <ClCompile Include="Ray.cpp" />

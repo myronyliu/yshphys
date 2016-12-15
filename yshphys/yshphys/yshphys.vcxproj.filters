@@ -192,6 +192,9 @@
     <ClInclude Include="KeyButtonRenamings.h">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -325,6 +328,9 @@
     </ClCompile>
     <ClCompile Include="KeyButtonRemappings.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>Physics\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

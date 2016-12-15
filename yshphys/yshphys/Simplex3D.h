@@ -12,6 +12,7 @@ public:
 	void AddVertex(const dVec3& vertex);
 
 	int GetNumVertices() const;
+	int GetVertices(dVec3* const vertices) const;
 
 	// Returns the closest point on this simplex to the point x.
 	// closestFeature is the feature on this simplex that is closest to x

@@ -47,9 +47,60 @@ dVec3 Geometry::SupportLocal(const dVec3& v) const
 	return dVec3(0.0, 0.0, 0.0);
 }
 
-double Geometry::ComputePenetration(const Geometry* geom, dVec3& ptSelf, dVec3& ptGeom, Simplex3D tetrahedron) const
+double Geometry::ComputePenetration(
+	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
+	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
+	const Simplex3D& tetrahedron)
 {
-	return -1.0;
+	dVec3 simplex[4];
+	if (tetrahedron.GetVertices(simplex) == 4)
+	{
+		int nIter = 0;
+
+		while (nIter < 16)
+		{
+			nIter++;
+
+			int iFace = 0;
+			dVec3 nFace(0.0, 0.0, 0.0);
+			double dFace = 88888888.0;
+
+			for (int i = 0; i < 4; ++i)
+			{
+				const dVec3& a = simplex[(i + 0) % 3];
+				const dVec3& b = simplex[(i + 1) % 3];
+				const dVec3& c = simplex[(i + 2) % 3];
+				const dVec3& d = simplex[(i + 3) % 3];
+
+				dVec3 n = (c - b).Cross(d - b);
+				n = n.Scale(MathUtils::sgn(n.Dot(b - a)));
+				n.Scale(1.0 / sqrt(n.Dot(n)));
+
+				double dist = b.Dot(n);
+
+				if (dist < dFace)
+				{
+					iFace = i;
+					nFace = n;
+					dFace = dist;
+				}
+			}
+
+			if (dFace < MIN_SUPPORT_SQR)
+			{
+				return 0.0;
+			}
+
+			pt0 = geom0->Support(pos0, rot0, nFace);
+			pt1 = geom1->Support(pos1, rot1, -nFace);
+			simplex[iFace] = pt0 - pt1;
+			if (abs((simplex[iFace].Dot(nFace) - dFace) / dFace) < GJK_TERMINATION_RATIO)
+			{
+				return sqrt(simplex[iFace].Dot(simplex[iFace]));
+			}
+		}
+	}
+	return 0.0;
 }
 
 double Geometry::ComputeSeparation(
@@ -69,6 +120,7 @@ double Geometry::ComputeSeparation(
 
 	while (nIter < 16)
 	{
+		nIter++;
 		// Get the closest point on the convex hull of the simplex, set it to the new support direction "v"
 		// and discard any existing points on the simplex that are not needed to express "v"
 		Simplex3D newSimplex;
@@ -76,7 +128,10 @@ double Geometry::ComputeSeparation(
 
 		if (newSimplex.GetNumVertices() == 4)
 		{
-//			return ComputePenetration(geom, ptSelf, ptGeom, newSimplex);
+			return ComputePenetration(
+				geom0, pos0, rot0, pt0,
+				geom1, pos1, rot1, pt1,
+				newSimplex);
 		}
 
 		double vSqr = v.Dot(v);
