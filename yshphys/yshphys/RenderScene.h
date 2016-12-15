@@ -67,7 +67,6 @@ public:
 	void AttachCamera(Camera* camera);
 
 	Viewport m_viewport;
-	Window* m_window; // The window into which the rendered scene is displayed
 protected:
 
 	std::stack<FreedRenderNode> m_freedNodeStack;

@@ -208,6 +208,4 @@ void RenderScene::DrawScene()
 
 	m_debugRenderer.DrawObjects(m_viewport);
 	m_debugRenderer.EvictObjects();
-
-	m_window->UpdateGLRender();
 }

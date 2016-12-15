@@ -53,8 +53,6 @@ public:
 
 	bool QuitRequested() const;
 
-	Window* m_window;
-
 protected:
 
 	void UpdateKeyboardState(int dt_ms);

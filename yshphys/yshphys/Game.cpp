@@ -88,12 +88,15 @@ void Game::Run()
 
 		if (t - m_tInput > m_dtInput)
 		{
-			m_inputHandler.ProcessEvents(m_dtInput);
 			m_tInput = t;
 
-			if (m_inputHandler.QuitRequested())
+			if (SDL_GetMouseFocus() == m_window->m_window);
 			{
-				quit = true;
+				m_inputManager.ProcessEvents(m_dtInput);
+				if (m_inputManager.QuitRequested())
+				{
+					quit = true;
+				}
 			}
 		}
 		if (t - m_tPhysics > m_dtPhys)
@@ -110,6 +113,8 @@ void Game::Run()
 			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
 			
 			m_renderScene.DrawScene();
+
+			m_window->UpdateGLRender();
 
 			m_tPhysics = t;
 		}

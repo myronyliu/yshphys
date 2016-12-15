@@ -17,10 +17,12 @@ public:
 	void AddGameObject(GameObject* gameObject);
 	void RemoveGameObject(GameObject* gameObject);
 
-	InputManager m_inputHandler;
+	InputManager m_inputManager;
 
 	PhysicsScene m_physicsScene;
 	RenderScene m_renderScene;
+
+	Window* m_window; // The window into which the rendered scene is displayed and from which the inputManager gets its mouse coordinates
 
 protected:
 

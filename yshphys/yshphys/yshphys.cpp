@@ -31,12 +31,11 @@ int main(int argc, char *args[])
 
 	Game game;
 	picker.m_game = &game;
-	game.m_inputHandler.m_window = &window;
-	game.m_inputHandler.AddInputHandler(&camera);
-	game.m_inputHandler.AddInputHandler(&picker);
-	game.m_inputHandler.AddInputHandler(&toggle);
+	game.m_inputManager.AddInputHandler(&camera);
+	game.m_inputManager.AddInputHandler(&picker);
+	game.m_inputManager.AddInputHandler(&toggle);
 	game.m_renderScene.AttachCamera(&camera);
-	game.m_renderScene.m_window = &window;
+	game.m_window = &window;
 
 	RenderMesh mesh;
 	mesh.CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
