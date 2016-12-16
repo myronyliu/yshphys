@@ -42,7 +42,7 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 			if (m_pickedObject = (RigidBody*)m_game->m_physicsScene.RayCast(ray))
 			{
 				dVec3 x = m_pickedObject->GetPosition();
-				m_depth = (x - ray.GetOrigin()).Dot(viewDir);
+				m_depth = fVec3(x - ray.GetOrigin()).Dot(viewDir);
 			}
 		}
 		else if (m_pickedObject != nullptr)

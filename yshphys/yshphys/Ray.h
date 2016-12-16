@@ -1,7 +1,7 @@
 #pragma once
 #include "YshMath.h"
-#include "Geometry.h"
 #include "BoundingBox.h"
+
 class Ray
 {
 public:
