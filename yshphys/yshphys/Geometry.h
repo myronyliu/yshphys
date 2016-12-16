@@ -22,8 +22,8 @@ public:
 
 	virtual bool RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hitPt) const;
 
-	virtual dVec3 Support(const dVec3& pos, const dQuat& rot, const dVec3& v) const;
-	virtual dVec3 SupportLocal(const dVec3& v) const;
+	virtual dVec3 Support(const dVec3& pos, const dQuat& rot, const dVec3& v, bool& degenerate) const;
+	virtual dVec3 SupportLocal(const dVec3& v, bool& degenerate) const;
 
 	// ptSelf and ptGeoms are the points on the respective Geometries
 	// that consititue the smallest separation between the Geometries.

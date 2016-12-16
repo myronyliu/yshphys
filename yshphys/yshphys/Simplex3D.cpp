@@ -42,7 +42,8 @@ dVec3 Simplex3D::ClosestPoint(const dVec3& x, Simplex3D& closestFeature) const
 {
 	if (m_nVertices == 1)
 	{
-		closestFeature.m_nVertices = 0;
+		closestFeature.m_nVertices = 1;
+		closestFeature.m_vertices[0] = m_vertices[0];
 		return m_vertices[0];
 	}
 

@@ -6,6 +6,7 @@
 
 #define MIN_SUPPORT_SQR 0.0001
 #define GJK_TERMINATION_RATIO 0.001
+#define DEGENERATE_SIMPLEX_RATIO 0.01
 
 Geometry::Geometry() : m_pos(0.0, 0.0, 0.0), m_rot(0.0, 0.0, 0.0, 1.0)
 {
@@ -39,13 +40,14 @@ void Geometry::SetRotation(const dQuat& rot)
 	m_rot = rot;
 }
 
-dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
+dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v, bool& degenerate) const
 {
-	return x + q.Transform(SupportLocal((-q).Transform(v)));
+	return x + q.Transform(SupportLocal((-q).Transform(v), degenerate));
 }
 
-dVec3 Geometry::SupportLocal(const dVec3& v) const
+dVec3 Geometry::SupportLocal(const dVec3& v, bool& degenerate) const
 {
+	degenerate = false;
 	return dVec3(0.0, 0.0, 0.0);
 }
 
@@ -62,9 +64,14 @@ bool Geometry::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, 
 
 	while (true)
 	{
-		Geometry::ComputeSeparation(&pt, hit, dQuat::Identity(), dummy, this, pos, rot, closest, simplex);
+		double sep = Geometry::ComputeSeparation(&pt, hit, dQuat::Identity(), dummy, this, pos, rot, closest, simplex);
 
 		const dVec3 hit2closest = closest - hit;
+
+		if (sep < 0.001)
+		{
+			return true;
+		}
 
 		if (hit2closest.Dot(hit2closest) < 0.001*0.001)
 		{
@@ -136,8 +143,10 @@ double Geometry::ComputePenetration(
 				return 0.0;
 			}
 
-			pt0 = geom0->Support(pos0, rot0, nFace);
-			pt1 = geom1->Support(pos1, rot1, -nFace);
+			bool degen0, degen1;
+
+			pt0 = geom0->Support(pos0, rot0, nFace, degen0);
+			pt1 = geom1->Support(pos1, rot1, -nFace, degen1);
 			simplex[iFace] = pt0 - pt1;
 			if (abs((simplex[iFace].Dot(nFace) - dFace) / dFace) < GJK_TERMINATION_RATIO)
 			{
@@ -166,14 +175,16 @@ double Geometry::ComputeSeparation(
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	Simplex3D& simplex)
 {
+	bool degen0, degen1;
+
 	if (simplex.GetNumVertices() == 0)
 	{
 		// First pass is special. Don't check for termination since v is just a guess.
 		dVec3 v(pos0 - pos1);
-		pt0 = geom0->Support(pos0, rot0, -v);
-		pt1 = geom1->Support(pos1, rot1, v);
-		dVec3 ptSimplex(pt0 - pt1);
-		simplex.SetVertices(1, &ptSimplex);
+		pt0 = geom0->Support(pos0, rot0, -v, degen0);
+		pt1 = geom1->Support(pos1, rot1, v, degen1);
+		dVec3 newSimplexPt(pt0 - pt1);
+		simplex.SetVertices(1, &newSimplexPt);
 	}
 
 	int nIter = 0;
@@ -186,36 +197,93 @@ double Geometry::ComputeSeparation(
 		Simplex3D newSimplex;
 		dVec3 v = simplex.ClosestPoint(dVec3(0.0, 0.0, 0.0), newSimplex);
 
-		if (newSimplex.GetNumVertices() == 4)
-		{
-			return ComputePenetration(
-				geom0, pos0, rot0, pt0,
-				geom1, pos1, rot1, pt1,
-				newSimplex);
-		}
+		dVec3 vertices[4];
+		int nVertices = newSimplex.GetVertices(vertices);
 
-		double vSqr = v.Dot(v);
-		if (vSqr < MIN_SUPPORT_SQR)
+		if (nVertices == 4)
 		{
-			return 0.0;
+			return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, newSimplex);
 		}
-		pt0 = geom0->Support(pos0, rot0, -v);
-		pt1 = geom1->Support(pos1, rot1, v);
-		dVec3 ptSimplex = pt0 - pt1;
-		const double dSqr(ptSimplex.Dot(ptSimplex));
+		else
+		{
+			double vSqr = v.Dot(v);
+			if (vSqr < MIN_SUPPORT_SQR)
+			{
+				if (degen0)
+				{
+					pt0 = pt1;
+				}
+				else if (degen1)
+				{
+					pt1 = pt0;
+				}
+				return 0.0;
+			}
+			pt0 = geom0->Support(pos0, rot0, -v, degen0);
+			pt1 = geom1->Support(pos1, rot1, v, degen1);
+			dVec3 newSimplexPt = pt0 - pt1;
+			const double dSqr(newSimplexPt.Dot(newSimplexPt));
 
-		if (dSqr < MIN_SUPPORT_SQR)
-		{
-			return 0.0;
-		}
-		else if (fabs(ptSimplex.Dot(v) - vSqr) / vSqr < GJK_TERMINATION_RATIO)
-		{
-			return sqrt(dSqr);
-		}
+			if (dSqr < MIN_SUPPORT_SQR)
+			{
+				return 0.0;
+			}
+			else if (fabs(newSimplexPt.Dot(v) - vSqr) / vSqr < GJK_TERMINATION_RATIO)
+			{
+				return sqrt(dSqr);
+			}
+			else if (nVertices == 3)
+			{
+				const dVec3 area = (vertices[1] - vertices[0]).Cross(vertices[2] - vertices[0]);
+				const double proj =(newSimplexPt - vertices[0]).Dot(area);
+				const double areaSqr = area.Dot(area);
 
-		// Add the newly found support point to the simplex
-		simplex = newSimplex;
-		simplex.AddVertex(ptSimplex);
+				const double numerator = proj*proj*proj*proj;
+				const double denominator = areaSqr*areaSqr*areaSqr;
+
+				const double degeneracyRatio = DEGENERATE_SIMPLEX_RATIO*DEGENERATE_SIMPLEX_RATIO*DEGENERATE_SIMPLEX_RATIO*DEGENERATE_SIMPLEX_RATIO;
+
+				if (numerator / denominator < degeneracyRatio)
+				{
+					const dVec3 perp = area.Scale(proj / areaSqr);
+					if (degen0)
+					{
+						pt0 = pt1 + perp;
+					}
+					else if (degen1)
+					{
+						pt1 = pt0 - perp;
+					}
+					return sqrt(vSqr);
+				}
+			}
+			else if (nVertices == 2)
+			{
+				const dVec3 line = vertices[1] - vertices[0];
+				const dVec3 u = (newSimplexPt - vertices[0]);
+				const dVec3 perp = u - line.Scale(u.Dot(line) / line.Dot(line));
+
+				const double degeneracyRatio = DEGENERATE_SIMPLEX_RATIO*DEGENERATE_SIMPLEX_RATIO;
+
+				if (perp.Dot(perp) / line.Dot(line) < degeneracyRatio)
+				{
+					if (degen0)
+					{
+						pt0 = pt1 + perp;
+					}
+					else if (degen1)
+					{
+						pt1 = pt0 - perp;
+					}
+					return sqrt(vSqr);
+				}
+			}
+
+			// Add the newly found support point to the simplex
+			simplex = newSimplex;
+			simplex.AddVertex(newSimplexPt);
+		}
 	}
-	return false;
+	assert(0);
+	return 88888888.0;
 }

@@ -69,6 +69,10 @@ dVec3 RigidBody::GetAngularVelocity() const
 {
 	return m_w;
 }
+Geometry* RigidBody::GetGeometry() const
+{
+	return m_geometry;
+}
 void RigidBody::SetPosition(const dVec3& x)
 {
 	m_x = x;

@@ -29,8 +29,10 @@ void Box::SetDimensions(double halfDimX, double halfDimY, double halfDimZ)
 	m_localOOBB.max = m_halfDim;
 }
 
-dVec3 Box::SupportLocal(const dVec3& v) const
+dVec3 Box::SupportLocal(const dVec3& v, bool& degenerate) const
 {
+	degenerate = v.x*v.y*v.z == 0.0;
+
 	return dVec3
 	(
 		m_halfDim.x * MathUtils::sgn(v.x),

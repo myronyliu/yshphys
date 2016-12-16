@@ -83,9 +83,26 @@ PhysicsObject* PhysicsScene::RayCast(const Ray& ray) const
 	for (int i = 0; i < candidateLeaves.size(); ++i)
 	{
 		// TODO: Add the actual intersection test
+		RigidBody* rigidBody = (RigidBody*)candidateLeaves[i].node->GetContent();
+		const dVec3 x0 = rigidBody->GetPosition();
+		const dQuat q0 = rigidBody->GetRotation();
+		const dVec3 x1 = rigidBody->GetGeometry()->GetPosition();
+		const dQuat q1 = rigidBody->GetGeometry()->GetRotation();
+		const dVec3 x = x0 + q0.Transform(x1);
+		const dQuat q = q0*q1;
+
+		dVec3 hit;
+//		Ray ray__ = ray;
+//		ray__.SetDirection(dVec3(0.0, 1.0, 0.0));
+		if (rigidBody->GetGeometry()->RayIntersect(x, q, ray, hit))
+		{
+			return rigidBody;
+		}
+		
 	}
 
-	return (PhysicsObject*)candidateLeaves.begin()->node->GetContent();
+	return nullptr;
+//	return (PhysicsObject*)candidateLeaves.begin()->node->GetContent();
 }
 
 const BVTree& PhysicsScene::GetBVTree() const

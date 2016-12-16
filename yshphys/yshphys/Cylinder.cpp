@@ -27,8 +27,10 @@ void Cylinder::SetRadius(double radius)
 	m_localOOBB.max.y = m_radius;
 }
 
-dVec3 Cylinder::SupportLocal(const dVec3& v) const
+dVec3 Cylinder::SupportLocal(const dVec3& v, bool& degenerate) const
 {
+	degenerate = v.z == 0.0;
+
 	dVec3 support;
 	double xySqr = v.x*v.x + v.y*v.y;
 

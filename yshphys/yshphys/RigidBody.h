@@ -18,6 +18,7 @@ public:
 	dQuat GetRotation() const;
 	dVec3 GetLinearVelocity() const;
 	dVec3 GetAngularVelocity() const;
+	Geometry* GetGeometry() const;
 
 	void SetPosition(const dVec3& x);
 	void SetRotation(const dQuat& q);
