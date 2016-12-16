@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Box.h"
+#include "Ray.h"
 
 
 Box::Box()
@@ -36,4 +37,25 @@ dVec3 Box::SupportLocal(const dVec3& v) const
 		m_halfDim.y * MathUtils::sgn(v.y),
 		m_halfDim.z * MathUtils::sgn(v.z)
 	);
+}
+
+bool Box::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hit) const
+{
+	Ray r;
+	r.SetOrigin(pos + (-rot).Transform((ray.GetOrigin() - pos)));
+	r.SetDirection((-rot).Transform(ray.GetDirection()));
+	AABB aabb;
+	aabb.min = pos - m_halfDim;
+	aabb.max = pos + m_halfDim;
+
+	double tMin, tMax;
+	if (r.IntersectAABB(aabb, tMin, tMax))
+	{
+		hit = ray.GetOrigin() + ray.GetDirection().Scale(tMin);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
