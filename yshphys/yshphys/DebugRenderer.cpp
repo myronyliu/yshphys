@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DebugRenderer.h"
 
+#include "Picker.h"
 
 DebugRenderer::DebugRenderer()
 {
@@ -89,6 +90,8 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 	data.color[1] = color.y;
 	data.color[2] = color.z;
 
+	data.nVertices = 2;
+
 	data.vertices[0][0] = start.x;
 	data.vertices[0][1] = start.y;
 	data.vertices[0][2] = start.z;
@@ -103,6 +106,8 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 	data.polygonType = GL_LINES;
 	data.nVertsPerPoly = 2;
 	data.nIndices = 2;
+
+	m_objects.push_back(data);
 }
 
 void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame)
@@ -225,5 +230,20 @@ void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 			nodeStack.push(node->GetLeftChild());
 			nodeStack.push(node->GetRightChild());
 		}
+	}
+}
+
+void DebugRenderer::DrawPicker(const Picker& picker, const fVec3& color)
+{
+	if (const RigidBody* obj = picker.GetPickedObject())
+	{
+		const dVec3 x = obj->GetPosition();
+		const dQuat q = obj->GetRotation();
+
+		const dVec3 grabPos = x + q.Transform(picker.GetGrabOffset());
+
+		const dVec3 pickerPos = picker.GetPosition();
+
+		DrawLine(grabPos, pickerPos, color);
 	}
 }

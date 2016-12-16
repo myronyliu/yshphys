@@ -26,15 +26,18 @@ PhysicsScene::~PhysicsScene()
 {
 }
 
-PhysicsObject* PhysicsScene::RayCast(const Ray& ray) const
+PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 {
+	PhysicsRayCastHit hit;
+
 	dVec3 o = ray.GetOrigin();
 	dVec3 d = ray.GetDirection();
 
 	const BVNode* node = m_bvTree.Root();
 	if (!node)
 	{
-		return nullptr;
+		hit.body = nullptr;
+		return hit;
 	}
 	std::stack<const BVNode*> nodeStack;
 	nodeStack.push(node);
@@ -76,7 +79,8 @@ PhysicsObject* PhysicsScene::RayCast(const Ray& ray) const
 
 	if (candidateLeaves.empty())
 	{
-		return nullptr;
+		hit.body = nullptr;
+		return hit;
 	}
 
 	std::sort(candidateLeaves.begin(), candidateLeaves.end());
@@ -91,17 +95,18 @@ PhysicsObject* PhysicsScene::RayCast(const Ray& ray) const
 		const dVec3 x = x0 + q0.Transform(x1);
 		const dQuat q = q0*q1;
 
-		dVec3 hit;
-//		Ray ray__ = ray;
-//		ray__.SetDirection(dVec3(0.0, 1.0, 0.0));
-		if (rigidBody->GetGeometry()->RayIntersect(x, q, ray, hit))
+		dVec3 hitPt;
+		if (rigidBody->GetGeometry()->RayIntersect(x, q, ray, hitPt))
 		{
-			return rigidBody;
+			hit.body = rigidBody;
+			hit.offset = (-q0).Transform(hitPt - x0);
+			return hit;
 		}
 		
 	}
 
-	return nullptr;
+	hit.body = nullptr;
+	return hit;
 //	return (PhysicsObject*)candidateLeaves.begin()->node->GetContent();
 }
 

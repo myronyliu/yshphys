@@ -26,6 +26,7 @@ public:
 	void SetMass(double m);
 	void SetInertia(dMat33 Ibody);
 
+	void ApplyForce(const dVec3& F, const dVec3& applicationPt);
 
 	virtual void UpdateAABB();
 
@@ -33,8 +34,6 @@ public:
 
 	dVec3 m_P; // linear  momentum
 	dVec3 m_L; // angular momentum
-	dVec3 m_F; // force
-	dVec3 m_T; // torque
 	dVec3 m_dP; // linear impulse
 	dVec3 m_dL; // angular impulse
 protected:
@@ -62,8 +61,11 @@ protected:
 	dVec3 m_w; // angular velocity
 
 	// COMPUTED
-//	dVec3 m_F; // force
-//	dVec3 m_T; // torque
+	dVec3 m_F; // force
+	dVec3 m_T; // torque
+
+	dVec3 m_Fprev;
+	dVec3 m_Tprev;
 
 //	dVec3 m_dP; // linear impulse
 //	dVec3 m_dL; // angular impulse

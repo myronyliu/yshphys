@@ -7,6 +7,12 @@
 
 #define MAX_PHYSICS_NODES 1024
 
+struct PhysicsRayCastHit
+{
+	RigidBody* body;
+	dVec3 offset;
+};
+
 class PhysicsScene
 {
 public:
@@ -16,7 +22,7 @@ public:
 	void AddPhysicsObject(PhysicsObject* physicsObject);
 	void RemovePhysicsObject(PhysicsObject* physicsObject);
 
-	PhysicsObject* RayCast(const Ray& ray) const;
+	PhysicsRayCastHit RayCast(const Ray& ray) const;
 
 	const BVTree& GetBVTree() const;
 

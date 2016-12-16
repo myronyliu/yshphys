@@ -7,6 +7,8 @@
 #define SINGLE_DRAW_VERTEX_BUFFER_SIZE 64
 #define SINGLE_DRAW_INDEX_BUFFER_SIZE 256
 
+class Picker;
+
 class DebugRenderer
 {
 	friend class RenderScene;
@@ -16,6 +18,10 @@ public:
 	void DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame);
 	void DrawLine(const fVec3& start, const fVec3& end, const fVec3& color);
 	void DrawBVTree(const BVTree& tree, const fVec3& color);
+	void DrawPicker(const Picker& picker, const fVec3& color);
+
+	Picker* m_picker;
+
 protected:
 
 	DebugRenderer();

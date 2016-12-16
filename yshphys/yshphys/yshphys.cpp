@@ -37,6 +37,8 @@ int main(int argc, char *args[])
 	game.m_renderScene.AttachCamera(&camera);
 	game.m_window = &window;
 
+	game.m_renderScene.DebugDrawSystem().m_picker = &picker;
+
 	RenderMesh mesh;
 	mesh.CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
 	Shader_Default shader;

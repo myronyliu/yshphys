@@ -16,7 +16,7 @@ Window::~Window()
 void Window::CreateWindow()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	m_window = SDL_CreateWindow("yshphys", 88, 88, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	m_window = SDL_CreateWindow("yshphys", 88, 88, 1200, 900, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	m_screenSurface = SDL_GetWindowSurface(m_window);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	InitGL();

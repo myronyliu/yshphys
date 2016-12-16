@@ -90,7 +90,7 @@ void Game::Run()
 		{
 			m_tInput = t;
 
-			if (SDL_GetMouseFocus() == m_window->m_window);
+			if (SDL_GetMouseFocus() == m_window->m_window)
 			{
 				m_inputManager.ProcessEvents(m_dtInput);
 				if (m_inputManager.QuitRequested())
@@ -111,6 +111,7 @@ void Game::Run()
 				node = node->GetNext();
 			}
 			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
+			m_renderScene.DebugDrawSystem().DrawPicker(*m_renderScene.DebugDrawSystem().m_picker, fVec3(0.0f, 1.0f, 0.0f));
 			
 			m_renderScene.DrawScene();
 

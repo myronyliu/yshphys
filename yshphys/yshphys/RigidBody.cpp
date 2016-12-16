@@ -109,6 +109,13 @@ void RigidBody::SetInertia(dMat33 Ibody)
 	dMat33 R(m_q);
 	m_Iinv = R*m_Ibodyinv*R.Transpose();
 }
+
+void RigidBody::ApplyForce(const dVec3& F, const dVec3& applicationPt)
+{
+	m_F = m_F + F;
+	m_T = m_T + (applicationPt - m_x).Cross(F);
+}
+
 void RigidBody::UpdateAABB()
 {
 	const BoundingBox oobb = m_geometry->GetLocalOOBB();
@@ -221,6 +228,12 @@ void RigidBody::Step(double dt)
 	dMat33 R(q);
 	m_Iinv = R*m_Ibodyinv*R.Transpose();
 	m_w = m_Iinv.Transform(m_L);
+
+	// SAVE THE HISTORY AND ZERO THE DRIVERS OF DYNAMICS
+	m_Fprev = m_F;
+	m_Tprev = m_T;
+	m_F = dVec3(0.0, 0.0, 0.0);
+	m_T = dVec3(0.0, 0.0, 0.0);
 
 	UpdateAABB();
 }
