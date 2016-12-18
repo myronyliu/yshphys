@@ -76,7 +76,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>D:\Projects\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\include\GL;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\jackcliu\Documents\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\include\GL;C:\Users\jackcliu\Documents\yshphys\yshphys\yshphys\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Projects\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\lib\x64;D:\Projects\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\jackcliu\Documents\yshphys\yshphys\packages\nupengl.core.0.1.0.1\build\native\lib\x64;C:\Users\jackcliu\Documents\yshphys\yshphys\yshphys\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -172,6 +172,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyButtonRenamings.h" />
+    <ClInclude Include="Mat22.h" />
     <ClInclude Include="PhysicsNode.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="LineSegment.h" />
@@ -182,8 +183,10 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
     <ClInclude Include="Shader_FlatUniformColor.h" />
+    <ClInclude Include="SupportPolygon.h" />
     <ClInclude Include="Tests.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Vec2.h" />
     <ClInclude Include="YshMath.h" />
     <ClInclude Include="HomogeneousTransformation.h" />
     <ClInclude Include="Mat33.h" />
@@ -222,6 +225,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="KeyButtonRemappings.cpp" />
+    <ClCompile Include="Mat22.cpp" />
     <ClCompile Include="Mat33.cpp" />
     <ClCompile Include="Mat44.cpp" />
     <ClCompile Include="MathUtils.cpp" />
@@ -248,8 +252,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SupportPolygon.cpp" />
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Vec2.cpp" />
     <ClCompile Include="Vec3.cpp" />
     <ClCompile Include="Vec4.cpp" />
     <ClCompile Include="Viewport.cpp" />

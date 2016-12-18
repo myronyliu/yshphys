@@ -29,14 +29,11 @@ PhysicsScene::~PhysicsScene()
 PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 {
 	PhysicsRayCastHit hit;
-
-	dVec3 o = ray.GetOrigin();
-	dVec3 d = ray.GetDirection();
+	hit.body = nullptr;
 
 	const BVNode* node = m_bvTree.Root();
 	if (!node)
 	{
-		hit.body = nullptr;
 		return hit;
 	}
 	std::stack<const BVNode*> nodeStack;
@@ -44,12 +41,38 @@ PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 
 	struct CandidateLeaf
 	{
-		double t;
+		double tMin, tMax;
 		const BVNode* node;
 
 		bool operator < (const CandidateLeaf& candidate)
 		{
-			return t < candidate.t;
+			if (tMin < candidate.tMin)
+			{
+				return true;
+			}
+			else if (tMin > candidate.tMin)
+			{
+				return false;
+			}
+
+			if (tMax < candidate.tMax)
+			{
+				return true;
+			}
+			else if (tMax > candidate.tMax)
+			{
+				return false;
+			}
+
+			if (node < candidate.node)
+			{
+				return true;
+			}
+			else if (node > candidate.node)
+			{
+				return false;
+			}
+			return false;
 		}
 	};
 	std::vector<CandidateLeaf> candidateLeaves;
@@ -65,7 +88,8 @@ PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 			if (node->IsLeaf())
 			{
 				CandidateLeaf candidate;
-				candidate.t = tMin;
+				candidate.tMin = tMin;
+				candidate.tMax = tMax;
 				candidate.node = node;
 				candidateLeaves.push_back(candidate);
 			}
@@ -79,13 +103,22 @@ PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 
 	if (candidateLeaves.empty())
 	{
-		hit.body = nullptr;
 		return hit;
 	}
 
 	std::sort(candidateLeaves.begin(), candidateLeaves.end());
+
+	double tBest = 888888888.0f;
+
+	dVec3 o = ray.GetOrigin();
+	dVec3 d = ray.GetDirection();
+
 	for (int i = 0; i < candidateLeaves.size(); ++i)
 	{
+		if (candidateLeaves[i].tMin > tBest)
+		{
+			break;
+		}
 		// TODO: Add the actual intersection test
 		RigidBody* rigidBody = (RigidBody*)candidateLeaves[i].node->GetContent();
 		const dVec3 x0 = rigidBody->GetPosition();
@@ -95,19 +128,25 @@ PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 		const dVec3 x = x0 + q0.Transform(x1);
 		const dQuat q = q0*q1;
 
-		dVec3 hitPt;
-		if (rigidBody->GetGeometry()->RayIntersect(x, q, ray, hitPt))
+		double tMin, tMax;
+		if (ray.IntersectOOBB(rigidBody->GetGeometry()->GetLocalOOBB(), x, q, tMin, tMax))
 		{
-			hit.body = rigidBody;
-			hit.offset = (-q0).Transform(hitPt - x0);
-			return hit;
+			dVec3 hitPt;
+			if (rigidBody->GetGeometry()->RayIntersect(x, q, ray, hitPt))
+			{
+				const double t = (hitPt - o).Dot(d);
+
+				if (t < tBest)
+				{
+					hit.body = rigidBody;
+					hit.offset = (-q0).Transform(hitPt - x0);
+					tBest = t;
+				}
+			}
 		}
 		
 	}
-
-	hit.body = nullptr;
 	return hit;
-//	return (PhysicsObject*)candidateLeaves.begin()->node->GetContent();
 }
 
 const BVTree& PhysicsScene::GetBVTree() const

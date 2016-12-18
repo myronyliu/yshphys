@@ -29,15 +29,33 @@ void Capsule::SetRadius(double radius)
 	m_localOOBB.min = -m_localOOBB.max;
 }
 
-dVec3 Capsule::SupportLocal(const dVec3& v, bool& degenerate) const
+SupportPolygon Capsule::SupportLocal(const dVec3& v) const
 {
-	degenerate = v.z == 0.0;
+	SupportPolygon poly;
 
-	double k = m_radius / sqrt(v.Dot(v));
-	dVec3 support = v.Scale(k);
+	double xySqr = v.x*v.x + v.y*v.y;
+	double xy = sqrt(xySqr);
 
-	double z = (-m_rot).Transform(v).z;
-	support.z += MathUtils::sgn(v.z) * m_halfHeight;
+	if (v.z*v.z / xySqr < ZERO_ANGLE_THRESH*ZERO_ANGLE_THRESH)
+	{
+		const double supportX = m_radius*v.x / xy;
+		const double supportY = m_radius*v.y / xy;
 
-	return support;
+		poly.nVertices = 2;
+		poly.vertices[0] = dVec3(supportX, supportY, -m_halfHeight);
+		poly.vertices[1] = dVec3(supportX, supportY, m_halfHeight);
+	}
+	else
+	{
+		double k = m_radius / sqrt(v.Dot(v));
+		dVec3 support = v.Scale(k);
+
+		double z = (-m_rot).Transform(v).z;
+		support.z += MathUtils::sgn(v.z) * m_halfHeight;
+
+		poly.nVertices = 1;
+		poly.vertices[0] = support;
+	}
+
+	return poly;
 }

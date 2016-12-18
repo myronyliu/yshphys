@@ -7,7 +7,7 @@ public:
 	LineSegment();
 	virtual ~LineSegment();
 
-	virtual dVec3 SupportLocal(const dVec3& v, bool & degenerate) const;
+	virtual SupportPolygon SupportLocal(const dVec3& v) const;
 protected:
 
 	double m_halfLength;

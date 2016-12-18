@@ -23,17 +23,20 @@ void Sphere::SetRadius(double radius)
 	m_localOOBB.min = -m_localOOBB.max;
 }
 
-dVec3 Sphere::SupportLocal(const dVec3& v, bool& degenerate) const
+SupportPolygon Sphere::SupportLocal(const dVec3& v) const
 {
-	degenerate = false;
-	double k = m_radius / sqrt(v.Dot(v));
-	return v.Scale(k);
+	SupportPolygon poly;
+	poly.nVertices = 1;
+	poly.vertices[0] = v.Scale(m_radius / sqrt(v.Dot(v)));
+	return poly;
 }
 
-dVec3 Sphere::Support(const dVec3& x, const dQuat& q, const dVec3& v, bool& degenerate) const
+SupportPolygon Sphere::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
 {
-	degenerate = false;
-	return x + Sphere::SupportLocal(v, degenerate);
+	SupportPolygon poly;
+	poly.nVertices = 1;
+	poly.vertices[0] = x + v.Scale(m_radius / sqrt(v.Dot(v)));
+	return poly;
 }
 
 bool Sphere::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hit) const

@@ -107,7 +107,7 @@ template <class T>
 Mat33_t<T> Mat33_t<T>::Inverse() const
 {
 	Mat33_t<T> inv;
-	const T detInv = 1.0f / Determinant();
+	const T detInv = (T)1.0 / Determinant();
 	for (int i = 0; i < 3; ++i)
 	{
 		const int i0((i + 1) % 3);

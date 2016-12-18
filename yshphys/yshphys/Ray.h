@@ -16,6 +16,7 @@ public:
 	void SetOrigin(const dVec3& origin);
 	void SetLength(double length);
 
+	bool IntersectOOBB(const BoundingBox& oobb, const dVec3& pos, const dQuat& rot, double& tIn, double& tOut) const;
 	bool IntersectAABB(const AABB& aabb, double& tIn, double& tOut) const;
 
 protected:

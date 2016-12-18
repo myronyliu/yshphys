@@ -195,6 +195,15 @@
     <ClInclude Include="DebugRenderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="SupportPolygon.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Mat22.h">
+      <Filter>Math\Mat</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec2.h">
+      <Filter>Math\Vec</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -331,6 +340,15 @@
     </ClCompile>
     <ClCompile Include="DebugRenderer.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="SupportPolygon.cpp">
+      <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Mat22.cpp">
+      <Filter>Math\Mat</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec2.cpp">
+      <Filter>Math\Vec</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -11,13 +11,17 @@ Point::~Point()
 {
 }
 
-dVec3 Point::Support(const dVec3& pos, const dQuat& rot, const dVec3& v, bool& degenerate) const
+SupportPolygon Point::Support(const dVec3& pos, const dQuat& rot, const dVec3& v) const
 {
-	degenerate = false;
-	return pos;
+	SupportPolygon poly;
+	poly.nVertices = 1;
+	poly.vertices[0] = pos;
+	return poly;
 }
-dVec3 Point::SupportLocal(const dVec3& v, bool& degenerate) const
+SupportPolygon Point::SupportLocal(const dVec3& v) const
 {
-	degenerate = false;
-	return dVec3(0.0, 0.0, 0.0);
+	SupportPolygon poly;
+	poly.nVertices = 1;
+	poly.vertices[0] = dVec3(0.0, 0.0, 0.0);
+	return poly;
 }

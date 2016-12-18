@@ -2,6 +2,10 @@
 
 // Template classes are causing a headache so we will predeclare all of them here
 
+template <typename> class Vec2_t;
+typedef Vec2_t<float> fVec2;
+typedef Vec2_t<double> dVec2;
+
 template <typename> class Vec3_t;
 typedef Vec3_t<float> fVec3;
 typedef Vec3_t<double> dVec3;
@@ -13,6 +17,10 @@ typedef Vec4_t<double> dVec4;
 template <typename> class Quat_t;
 typedef Quat_t<float> fQuat;
 typedef Quat_t<double> dQuat;
+
+template <typename> class Mat22_t;
+typedef Mat22_t<float> fMat22;
+typedef Mat22_t<double> dMat22;
 
 template <typename> class Mat33_t;
 typedef Mat33_t<float> fMat33;
@@ -33,9 +41,11 @@ typedef HomogeneousTransformation_t<double> dHomogeneousTransformation;
 // relevant template data-types (specifically <float> and <double>). Anything that wishes to use the math library
 // merely needs to include this file YshPhys.h
 
+#include "Vec2.h"
 #include "Vec3.h"
 #include "Vec4.h"
 #include "Quat.h"
+#include "Mat22.h"
 #include "Mat33.h"
 #include "Mat44.h"
 #include "MathUtils.h"

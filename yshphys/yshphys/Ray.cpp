@@ -39,6 +39,20 @@ void Ray::SetLength(double length)
 {
 	m_length = length;
 }
+
+bool Ray::IntersectOOBB(const BoundingBox& oobb, const dVec3& pos, const dQuat& rot, double& tMin, double& tMax) const
+{
+	Ray r = *this;
+	r.SetDirection((-rot).Transform(m_direction));
+	r.SetOrigin((-rot).Transform(m_origin - pos));
+
+	AABB aabb;
+	aabb.min = oobb.min;
+	aabb.max = oobb.max;
+
+	return r.IntersectAABB(aabb, tMin, tMax);
+}
+
 bool Ray::IntersectAABB(const AABB& aabb, double& tMin, double& tMax) const
 {
 	double tx0 = (aabb.min.x - m_origin.x) * m_dirInv.x;

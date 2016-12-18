@@ -40,15 +40,21 @@ void Geometry::SetRotation(const dQuat& rot)
 	m_rot = rot;
 }
 
-dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v, bool& degenerate) const
+SupportPolygon Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
 {
-	return x + q.Transform(SupportLocal((-q).Transform(v), degenerate));
+	SupportPolygon poly = SupportLocal((-q).Transform(v));
+	for (int i = 0; i < poly.nVertices; ++i)
+	{
+		poly.vertices[i] = x + q.Transform(poly.vertices[i]);
+	}
+	return poly;
 }
 
-dVec3 Geometry::SupportLocal(const dVec3& v, bool& degenerate) const
+SupportPolygon Geometry::SupportLocal(const dVec3& v) const
 {
-	degenerate = false;
-	return dVec3(0.0, 0.0, 0.0);
+	SupportPolygon poly;
+	poly.nVertices = 0;
+	return poly;
 }
 
 bool Geometry::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hit) const
@@ -145,8 +151,10 @@ double Geometry::ComputePenetration(
 
 			bool degen0, degen1;
 
-			pt0 = geom0->Support(pos0, rot0, nFace, degen0);
-			pt1 = geom1->Support(pos1, rot1, -nFace, degen1);
+			SupportPolygon poly0, poly1;
+			poly0 = geom0->Support(pos0, rot0, nFace);
+			poly1 = geom1->Support(pos1, rot1, -nFace);
+			SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
 			simplex[iFace] = pt0 - pt1;
 			if (abs((simplex[iFace].Dot(nFace) - dFace) / dFace) < GJK_TERMINATION_RATIO)
 			{
@@ -175,14 +183,14 @@ double Geometry::ComputeSeparation(
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	Simplex3D& simplex)
 {
-	bool degen0, degen1;
-
+	SupportPolygon poly0, poly1;
 	if (simplex.GetNumVertices() == 0)
 	{
 		// First pass is special. Don't check for termination since v is just a guess.
 		dVec3 v(pos0 - pos1);
-		pt0 = geom0->Support(pos0, rot0, -v, degen0);
-		pt1 = geom1->Support(pos1, rot1, v, degen1);
+		poly0 = geom0->Support(pos0, rot0, -v);
+		poly1 = geom1->Support(pos1, rot1, v);
+		SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
 		dVec3 newSimplexPt(pt0 - pt1);
 		simplex.SetVertices(1, &newSimplexPt);
 	}
@@ -209,18 +217,11 @@ double Geometry::ComputeSeparation(
 			double vSqr = v.Dot(v);
 			if (vSqr < MIN_SUPPORT_SQR)
 			{
-				if (degen0)
-				{
-					pt0 = pt1;
-				}
-				else if (degen1)
-				{
-					pt1 = pt0;
-				}
 				return 0.0;
 			}
-			pt0 = geom0->Support(pos0, rot0, -v, degen0);
-			pt1 = geom1->Support(pos1, rot1, v, degen1);
+			poly0 = geom0->Support(pos0, rot0, -v);
+			poly1 = geom1->Support(pos1, rot1, v);
+			SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
 			dVec3 newSimplexPt = pt0 - pt1;
 			const double dSqr(newSimplexPt.Dot(newSimplexPt));
 
@@ -245,15 +246,15 @@ double Geometry::ComputeSeparation(
 
 				if (numerator / denominator < degeneracyRatio)
 				{
-					const dVec3 perp = area.Scale(proj / areaSqr);
-					if (degen0)
-					{
-						pt0 = pt1 + perp;
-					}
-					else if (degen1)
-					{
-						pt1 = pt0 - perp;
-					}
+//					const dVec3 perp = area.Scale(proj / areaSqr);
+//					if (degen0)
+//					{
+//						pt0 = pt1 + perp;
+//					}
+//					else if (degen1)
+//					{
+//						pt1 = pt0 - perp;
+//					}
 					return sqrt(vSqr);
 				}
 			}
@@ -267,14 +268,14 @@ double Geometry::ComputeSeparation(
 
 				if (perp.Dot(perp) / line.Dot(line) < degeneracyRatio)
 				{
-					if (degen0)
-					{
-						pt0 = pt1 + perp;
-					}
-					else if (degen1)
-					{
-						pt1 = pt0 - perp;
-					}
+//					if (degen0)
+//					{
+//						pt0 = pt1 + perp;
+//					}
+//					else if (degen1)
+//					{
+//						pt1 = pt0 - perp;
+//					}
 					return sqrt(vSqr);
 				}
 			}
