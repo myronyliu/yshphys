@@ -116,6 +116,11 @@ void RigidBody::ApplyForce(const dVec3& F, const dVec3& applicationPt)
 	m_T = m_T + (applicationPt - m_x).Cross(F);
 }
 
+void RigidBody::ApplyForceAtCenterOfMass(const dVec3& F)
+{
+	m_F = m_F + F;
+}
+
 void RigidBody::UpdateAABB()
 {
 	const BoundingBox oobb = m_geometry->GetLocalOOBB();

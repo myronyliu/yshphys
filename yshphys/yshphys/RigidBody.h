@@ -6,6 +6,13 @@
 // See http://www.cs.cmu.edu/~baraff/sigcourse/notesd1.pdf
 // and http://www.cs.cmu.edu/~baraff/sigcourse/notesd2.pdf
 
+struct CollisionGeometry
+{
+	Geometry* m_geometry;
+	dVec3 m_pos;
+	dVec3 m_rot;
+};
+
 class RigidBody : public PhysicsObject
 {
 public:
@@ -27,6 +34,7 @@ public:
 	void SetInertia(dMat33 Ibody);
 
 	void ApplyForce(const dVec3& F, const dVec3& applicationPt);
+	void ApplyForceAtCenterOfMass(const dVec3& F);
 
 	virtual void UpdateAABB();
 

@@ -124,24 +124,27 @@ double Geometry::ComputePenetration(
 
 			for (int i = 0; i < 4; ++i)
 			{
-				const dVec3& a = simplex[(i + 0) % 3];
-				const dVec3& b = simplex[(i + 1) % 3];
-				const dVec3& c = simplex[(i + 2) % 3];
-				const dVec3& d = simplex[(i + 3) % 3];
+				const dVec3& a = simplex[(i + 0) % 4];
+				const dVec3& b = simplex[(i + 1) % 4];
+				const dVec3& c = simplex[(i + 2) % 4];
+				const dVec3& d = simplex[(i + 3) % 4];
 
 				dVec3 n = (c - b).Cross(d - b);
+				const dVec3 asdf = b - a;
+				const double qwer = n.Dot(asdf);
 				n = n.Scale(MathUtils::sgn(n.Dot(b - a)));
 				n.Scale(1.0 / sqrt(n.Dot(n)));
 
 				double dist = b.Dot(n);
 
-				if (dist < dFace)
+				if (dist > 0.0 && dist < dFace)
 				{
 					iFace = i;
 					nFace = n;
 					dFace = dist;
 				}
 			}
+			assert(dFace < 8888.0f);
 
 			if (dFace < MIN_SUPPORT_SQR)
 			{
@@ -196,32 +199,55 @@ double Geometry::ComputeSeparation(
 
 	int nIter = 0;
 
-	while (nIter < 256)
+	while (nIter < 16)
 	{
 		nIter++;
 		// Get the closest point on the convex hull of the simplex, set it to the new support direction "v"
 		// and discard any existing points on the simplex that are not needed to express "v"
-		Simplex3D newSimplex;
-		dVec3 v = simplex.ClosestPoint(dVec3(0.0, 0.0, 0.0), newSimplex);
+		Simplex3D closestFeature;
+		dVec3 v = simplex.ClosestPoint(dVec3(0.0, 0.0, 0.0), closestFeature);
 
-		dVec3 vertices[4];
-		int nVertices = newSimplex.GetVertices(vertices);
+		dVec3 featureVertices[4];
+		const int nFeatureVertices = closestFeature.GetVertices(featureVertices);
 
-		if (nVertices == 4)
+		if (nFeatureVertices == 4)
 		{
-			return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, newSimplex);
+			return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
 		}
 		else
 		{
+			dVec3 newSimplexPt;
 			double vSqr = v.Dot(v);
 			if (vSqr < MIN_SUPPORT_SQR)
 			{
-				return 0.0;
+				dVec3 simplexVertices[4];
+				const int nSimplexVertices = simplex.GetVertices(simplexVertices);
+				switch (nSimplexVertices)
+				{
+				case 4:
+					return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+				case 3:
+				{
+					const dVec3 perp = (simplexVertices[1] - simplexVertices[0]).Cross(simplexVertices[2] - simplexVertices[0]);
+					poly0 = geom0->Support(pos0, rot0, -perp);
+					poly1 = geom1->Support(pos1, rot1, perp);
+					SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
+					newSimplexPt = pt0 - pt1;
+					simplex.AddVertex(newSimplexPt);
+					return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+				}
+				case 2:
+					return 0.0;
+				case 1:
+					return 0.0;
+				default:
+					assert(false);
+				}
 			}
 			poly0 = geom0->Support(pos0, rot0, -v);
 			poly1 = geom1->Support(pos1, rot1, v);
 			SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
-			dVec3 newSimplexPt = pt0 - pt1;
+			newSimplexPt = pt0 - pt1;
 			const double dSqr(newSimplexPt.Dot(newSimplexPt));
 
 			if (dSqr < MIN_SUPPORT_SQR)
@@ -282,7 +308,7 @@ double Geometry::ComputeSeparation(
 #endif
 
 			// Add the newly found support point to the simplex
-			simplex = newSimplex;
+			simplex = closestFeature;
 			simplex.AddVertex(newSimplexPt);
 		}
 	}

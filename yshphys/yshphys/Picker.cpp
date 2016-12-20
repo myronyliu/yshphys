@@ -75,7 +75,8 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 
 			dVec3 force = ((m_pos - x).Scale(m_springCoeff.kOverM) - v.Scale(m_springCoeff.b)).Scale(m);
 
-			m_pickedObject->ApplyForce(force, x);
+//			m_pickedObject->ApplyForce(force, x);
+			m_pickedObject->ApplyForceAtCenterOfMass(force);
 		}
 	}
 }

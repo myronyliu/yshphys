@@ -119,8 +119,8 @@ void Game::Run()
 				rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), x1);
 
 			m_renderScene.DebugDrawSystem().DrawLine(x0, x1, fVec3(0.0f, 0.0f, 1.0f));
-			m_renderScene.DebugDrawSystem().DrawBox(0.1, 0.1, 0.1, x0, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
-			m_renderScene.DebugDrawSystem().DrawBox(0.1, 0.1, 0.1, x1, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
+			m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x0, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
+			m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x1, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
 			
 			m_renderScene.DrawScene();
 

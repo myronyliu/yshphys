@@ -128,8 +128,8 @@ void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& r
 	}
 	else
 	{
-		const double sinAng = sqrtf(sinAngSqr);
-		const double cosAng = fVec3(0.0f, 0.0f, 1.0f).Dot(axis.Scale(1.0f / h));
+		const float sinAng = sqrtf(sinAngSqr);
+		const float cosAng = fVec3(0.0f, 0.0f, 1.0f).Dot(axis.Scale(1.0f / h));
 		data.rot = fQuat(cross.Scale(1.0f / sinAng), atan2(sinAng, cosAng));
 	}
 	
@@ -344,7 +344,7 @@ void DebugRenderer::DrawPicker(const Picker& picker, const fVec3& color)
 		const dVec3 pickerPos = picker.GetPosition();
 
 		DrawLine(grabPos, pickerPos, color);
-		DrawBox(0.1f, 0.1f, 0.1f, grabPos, fQuat::Identity(), color, false);
+		DrawBox(0.2f, 0.2f, 0.2f, grabPos, fQuat::Identity(), color, false);
 //		const dVec3 coneAxis = pickerPos - grabPos;
 //		const double coneRadius = sqrtf(coneAxis.Dot(coneAxis)) / 16.0f;
 //		DrawCone(grabPos, pickerPos, coneRadius, color);

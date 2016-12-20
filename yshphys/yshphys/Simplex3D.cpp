@@ -120,13 +120,14 @@ dVec3 Simplex3D::ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& 
 	const double L10 = ab_ac / L00;
 	const double L20 = ab_ad / L00;
 
-	const double L11_sqr = ac.Dot(ac) - ab_ac*ab_ac / ab_ab;
+	const double L11_sqr = std::max(0.0, ac.Dot(ac) - ab_ac*ab_ac / ab_ab);
 	const double L21_num = ac.Dot(ad) - ab_ac*ab_ad / ab_ab;
 
 	const double L11 = sqrt(L11_sqr);
 	const double L21 = L21_num / L11;
 
-	const double L22 = sqrt(ad.Dot(ad) - (ab_ad*ab_ad / ab_ab) - L21_num*L21_num / L11_sqr);
+	const double L22_sqr = std::max(0.0, ad.Dot(ad) - (ab_ad*ab_ad / ab_ab) - L21_num*L21_num / L11_sqr);
+	const double L22 = sqrt(L22_sqr);
 
 	const double y0 = ax.Dot(ab) / L00;
 	const double y1 = (ax.Dot(ac) - L10 * y0) / L11;

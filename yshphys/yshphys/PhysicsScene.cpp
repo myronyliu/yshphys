@@ -115,32 +115,41 @@ PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 
 	for (int i = 0; i < candidateLeaves.size(); ++i)
 	{
-		if (candidateLeaves[i].tMin > tBest)
+		const double& tMin_AABB = candidateLeaves[i].tMin;
+
+		if (tMin_AABB > tBest)
 		{
 			break;
 		}
-		// TODO: Add the actual intersection test
+
+		Ray ray_shifted = ray;
+		ray_shifted.SetOrigin(dVec3(0.0, 0.0, 0.0));
+
 		RigidBody* rigidBody = (RigidBody*)candidateLeaves[i].node->GetContent();
-		const dVec3 x0 = rigidBody->GetPosition();
+
+		const dVec3 x0_shifted = rigidBody->GetPosition() - (o + d.Scale(tMin_AABB)); // SHIFTED!
 		const dQuat q0 = rigidBody->GetRotation();
 		const dVec3 x1 = rigidBody->GetGeometry()->GetPosition();
 		const dQuat q1 = rigidBody->GetGeometry()->GetRotation();
-		const dVec3 x = x0 + q0.Transform(x1);
+		const dVec3 x_shifted = x0_shifted + q0.Transform(x1);
 		const dQuat q = q0*q1;
 
-		double tMin, tMax;
-		if (ray.IntersectOOBB(rigidBody->GetGeometry()->GetLocalOOBB(), x, q, tMin, tMax))
+		double tMin_shifted, tMax_shifted;
+		if (ray_shifted.IntersectOOBB(rigidBody->GetGeometry()->GetLocalOOBB(), x_shifted, q, tMin_shifted, tMax_shifted))
 		{
-			dVec3 hitPt;
-			if (rigidBody->GetGeometry()->RayIntersect(x, q, ray, hitPt))
+			if (tMin_shifted + tMin_AABB < tBest)
 			{
-				const double t = (hitPt - o).Dot(d);
-
-				if (t < tBest)
+				dVec3 hitPt_shifted;
+				if (rigidBody->GetGeometry()->RayIntersect(x_shifted, q, ray_shifted, hitPt_shifted))
 				{
-					hit.body = rigidBody;
-					hit.offset = (-q0).Transform(hitPt - x0);
-					tBest = t;
+					const double t = (hitPt_shifted).Dot(d) + tMin_AABB;
+
+					if (t < tBest)
+					{
+						hit.body = rigidBody;
+						hit.offset = (-q0).Transform(hitPt_shifted - x0_shifted);
+						tBest = t;
+					}
 				}
 			}
 		}

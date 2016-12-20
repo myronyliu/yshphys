@@ -55,7 +55,7 @@ void Tests::CreateGJKTest(Game* game)
 	geometry->SetRadius(1.0);
 	geometry->SetHalfHeight(1.0);
 
-	dVec3 pos[2] = { dVec3(-1.1,32.0,-0.4),dVec3(1.1,32.0,0.0) };
+	dVec3 pos[2] = { dVec3(0.0,16.0,-1.9),dVec3(0.0,16.0,1.9) };
 
 	for (int i = 0; i < 2; ++i)
 	{
