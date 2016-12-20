@@ -90,7 +90,7 @@ void Game::Run()
 		{
 			m_tInput = t;
 
-			if (SDL_GetMouseFocus() == m_window->m_window)
+//			if (SDL_GetMouseFocus() == m_window->m_window)
 			{
 				m_inputManager.ProcessEvents(m_dtInput);
 				if (m_inputManager.QuitRequested())

@@ -110,6 +110,53 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 	m_objects.push_back(data);
 }
 
+void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& radius, const fVec3& color)
+{
+	DebugDrawData data;
+	data.pos = base;
+	data.color[0] = color.x;
+	data.color[1] = color.y;
+	data.color[2] = color.z;
+
+	const fVec3 axis = tip - base;
+	const float h = sqrtf(axis.Dot(axis));
+	const fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(axis.Scale(1.0f / h));
+	const float sinAngSqr = cross.Dot(cross);
+	if (sinAngSqr < 0.000001f)
+	{
+		data.rot = fQuat::Identity();
+	}
+	else
+	{
+		const double sinAng = sqrtf(sinAngSqr);
+		const double cosAng = fVec3(0.0f, 0.0f, 1.0f).Dot(axis.Scale(1.0f / h));
+		data.rot = fQuat(cross.Scale(1.0f / sinAng), atan2(sinAng, cosAng));
+	}
+	
+	const int nBase = 32;
+	data.nVertices = 1 + nBase;
+	for (int i = 0; i < nBase; ++i)
+	{
+		float phi = (float)i * 2.0f * fPI / (float)nBase;
+		data.vertices[i][0] = radius*cos(phi);
+		data.vertices[i][1] = radius*sin(phi);
+		data.vertices[i][2] = 0.0;
+
+		data.indices[3 * i + 0] = nBase;
+		data.indices[3 * i + 1] = i;
+		data.indices[3 * i + 2] = (i + 1) % nBase;
+	}
+	data.vertices[nBase][0] = 0.0f;
+	data.vertices[nBase][1] = 0.0f;
+	data.vertices[nBase][2] = h;
+
+	data.polygonType = GL_TRIANGLES;
+	data.nVertsPerPoly = 3;
+	data.nIndices = 3 * nBase;
+
+	m_objects.push_back(data);
+}
+
 void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame)
 {
 	DebugDrawData data;
@@ -297,5 +344,9 @@ void DebugRenderer::DrawPicker(const Picker& picker, const fVec3& color)
 		const dVec3 pickerPos = picker.GetPosition();
 
 		DrawLine(grabPos, pickerPos, color);
+		DrawBox(0.1f, 0.1f, 0.1f, grabPos, fQuat::Identity(), color, false);
+//		const dVec3 coneAxis = pickerPos - grabPos;
+//		const double coneRadius = sqrtf(coneAxis.Dot(coneAxis)) / 16.0f;
+//		DrawCone(grabPos, pickerPos, coneRadius, color);
 	}
 }

@@ -72,13 +72,15 @@ dVec3 Simplex3D::ClosestPoint3(const dVec3* const v, const dVec3& x, Simplex3D& 
 	const double ab_ab = ab.Dot(ab);
 	const double ab_ac = ab.Dot(ac);
 
-	double L[3];
-	L[0] = sqrt(ab_ab);
-	L[1] = ab_ac / L[0];
-	L[2] = sqrt(ac.Dot(ac) - ab_ac*ab_ac / ab_ab);
+	const double L00 = sqrt(ab_ab);
+	const double L10 = ab_ac / L00;
+	const double L11 = sqrt(ac.Dot(ac) - ab_ac*ab_ac / ab_ab);
 
-	double s = ax.Dot(ab) / L[0];
-	double t = (ax.Dot(ac) - L[1] * s) / L[2];
+	const double y0 = ax.Dot(ab) / L00;
+	const double y1 = (ax.Dot(ac) - L10 * y0) / L11;
+
+	const double t = y1 / L11;
+	const double s = (y0 - L10 * t) / L00;
 
 	if (s <= 0.0)
 	{
@@ -112,40 +114,38 @@ dVec3 Simplex3D::ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& 
 	const double ab_ac = ab.Dot(ac);
 	const double ab_ad = ab.Dot(ad);
 
-	// CHOLESKY (L0 = row0, L1 = row1, L2 = row2)
+	// CHOLESKY
 
-	double L0[6];
-	double* const L1 = &L0[1];
-	double* const L2 = &L0[3];
-
-	L0[0] = sqrt(ab_ab);
-	L1[0] = ab_ac / L0[0];
-	L2[0] = ab_ad / L0[0];
+	const double L00 = sqrt(ab_ab);
+	const double L10 = ab_ac / L00;
+	const double L20 = ab_ad / L00;
 
 	const double L11_sqr = ac.Dot(ac) - ab_ac*ab_ac / ab_ab;
 	const double L21_num = ac.Dot(ad) - ab_ac*ab_ad / ab_ab;
 
-	L1[1] = sqrt(L11_sqr);
-	L2[1] = L21_num / L1[1];
+	const double L11 = sqrt(L11_sqr);
+	const double L21 = L21_num / L11;
 
-	L2[2] = sqrt(ad.Dot(ad) - (ab_ad*ab_ad / ab_ab) - L21_num*L21_num / L11_sqr);
+	const double L22 = sqrt(ad.Dot(ad) - (ab_ad*ab_ad / ab_ab) - L21_num*L21_num / L11_sqr);
 
-	double t[3] = {
-	ax.Dot(ab) / L0[0],
-	(ax.Dot(ac) - L1[0] * t[0]) / L1[1],
-	(ax.Dot(ad) - L2[0] * t[0] - L2[1] * t[1]) / L2[2]
-	};
+	const double y0 = ax.Dot(ab) / L00;
+	const double y1 = (ax.Dot(ac) - L10 * y0) / L11;
+	const double y2 = (ax.Dot(ad) - L20 * y0 - L21 * y1) / L22;
+
+	const double t2 = y2 / L22;
+	const double t1 = (y1 - L21*t2) / L11;
+	const double t0 = (y0 - L10*t1 - L20*t2) / L00;
 
 	double LT[3][3];
-	LT[0][0] = L0[0];
-	LT[0][1] = L1[0];
-	LT[0][2] = L2[0];
+	LT[0][0] = L00;
+	LT[0][1] = L10;
+	LT[0][2] = L20;
 	LT[1][0] = 0.0;
-	LT[1][1] = L1[1];
-	LT[1][2] = L2[1];
+	LT[1][1] = L11;
+	LT[1][2] = L21;
 	LT[2][0] = 0.0;
 	LT[2][1] = 0.0;
-	LT[2][2] = L2[2];
+	LT[2][2] = L22;
 
 	double A[3][3];
 	A[0][0] = ab.Dot(ab);
@@ -161,22 +161,22 @@ dVec3 Simplex3D::ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& 
 
 	MathUtils::CholeskyFactorization(&A[0][0], 3, &LT__[0][0]);
 
-	if (t[0] <= 0.0)
+	if (t0 <= 0.0)
 	{
 		const dVec3 triangle[3] = { v[2],v[3],v[0] };
 		return ClosestPoint3(triangle, x, closestFeature);
 	}
-	else if (t[1] <= 0.0)
+	else if (t1 <= 0.0)
 	{
 		const dVec3 triangle[3] = { v[3],v[0],v[1] };
 		return ClosestPoint3(triangle, x, closestFeature);
 	}
-	else if (t[2] <= 0.0)
+	else if (t2 <= 0.0)
 	{
 		const dVec3 triangle[3] = { v[0],v[1],v[2] };
 		return ClosestPoint3(triangle, x, closestFeature);
 	}
-	else if (t[0] + t[1] + t[2] >= 1.0)
+	else if (t0 + t1 + t2 >= 1.0)
 	{
 		const dVec3 triangle[3] = { v[1],v[2],v[3] };
 		return ClosestPoint3(triangle, x, closestFeature);
@@ -184,7 +184,9 @@ dVec3 Simplex3D::ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& 
 	else
 	{
 		closestFeature.SetVertices(4, v);
-		return v[0] + ab.Scale(t[0]) + ac.Scale(t[1]) + ad.Scale(t[2]);
+		const dVec3 asdf = v[0] + ab.Scale(t0) + ac.Scale(t1) + ad.Scale(t2) - x;
+		assert(asdf.Dot(asdf) < 0.000001);
+		return x;
 	}
 }
 

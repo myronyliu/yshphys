@@ -16,6 +16,7 @@ public:
 	// The following functions are for one time draws. The caller has no control over the shader. Everything is drawn with flat colors.
 	// Intended for debugging and should be used sparingly as these shuttle memory to the GPU each time they are called.
 	void DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame);
+	void DrawCone(const fVec3& tip, const fVec3& base, const float& radius, const fVec3& color);
 	void DrawLine(const fVec3& start, const fVec3& end, const fVec3& color);
 	void DrawBVTree(const BVTree& tree, const fVec3& color);
 	void DrawPicker(const Picker& picker, const fVec3& color);
