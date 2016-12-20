@@ -53,17 +53,20 @@ double SupportPolygon::ComputeSeparation(const SupportPolygon& poly0, dVec3& pt0
 
 	double dSqrMin = 88888888.0;
 
-	for (int i = 0; i < poly0.nVertices; ++i)
+	int iMax = (poly0.nVertices == 2) ? 1 : poly0.nVertices;
+	int jMax = (poly1.nVertices == 2) ? 1 : poly1.nVertices;
+
+	for (int i = 0; i < iMax; ++i)
 	{
-		const int ii = (i + 1) % 3;
+		const int ii = (i + 1) % poly0.nVertices;
 
 		const dVec3 u = poly0.vertices[ii] - poly0.vertices[i];
 
 		double uu = u.Dot(u);
 
-		for (int j = 0; j < poly1.nVertices; ++j)
+		for (int j = 0; j < jMax; ++j)
 		{
-			const int jj = (j + 1) % 3;
+			const int jj = (j + 1) % poly1.nVertices;
 
 			const dVec3 v = poly1.vertices[jj] - poly1.vertices[j];
 
@@ -71,29 +74,87 @@ double SupportPolygon::ComputeSeparation(const SupportPolygon& poly0, dVec3& pt0
 
 			const double uv = u.Dot(v);
 
+			dVec3 p0, p1;
+			double dSqr;
+
 			if (uv*uv / (uu*vv) > 0.999)
 			{
-				// REGULARIZATION
-				uu *= 1.01;
-				vv *= 1.01;
+				dVec3 lineMin0 = poly0.vertices[i];
+				dVec3 lineMax0 = poly0.vertices[ii];
+
+				dVec3 lineMin1 = poly1.vertices[j];
+				dVec3 lineMax1 = poly1.vertices[jj];
+
+				double sMin = lineMin0.Dot(u) / u.Dot(u);
+				double sMax = lineMax0.Dot(u) / u.Dot(u);
+
+				double tMin = lineMin1.Dot(u) / u.Dot(u);
+				double tMax = lineMax1.Dot(u) / u.Dot(u);
+
+				if (sMax < sMin)
+				{
+					double swp = sMin;
+					sMin = sMax;
+					sMax = swp;
+					dVec3 tmp = lineMin0;
+					lineMax0 = lineMin0;
+					lineMin0 = tmp;
+				}
+				if (tMax < tMin)
+				{
+					double swp = tMin;
+					tMin = tMax;
+					tMax = swp;
+					dVec3 tmp = lineMin1;
+					lineMax1 = lineMin1;
+					lineMin1 = tmp;
+				}
+
+				dVec3 w = poly1.vertices[j] - poly0.vertices[i];
+				dVec3 perp = w - u.Scale(w.Dot(u) / u.Dot(u));
+
+				if (sMax < tMin)
+				{
+					p0 = lineMax0;
+					p1 = lineMin1;
+				}
+				else if (tMax < sMin)
+				{
+					p0 = lineMin0;
+					p1 = lineMax1;
+				}
+				else if (sMax > tMin)
+				{
+					p0 = lineMax0;
+					p1 = p0 + perp;
+				}
+				else if (sMin < tMax)
+				{
+					p0 = lineMin0;
+					p1 = p0 + perp;
+				}
 			}
-			dMat22 A;
-			A(0, 0) = -uu;
-			A(0, 1) = uv;
-			A(1, 0) = uv;
-			A(1, 1) = -vv;
-			dVec2 b(
-				(poly0.vertices[i] + poly1.vertices[j]).Dot(u),
-				(poly0.vertices[i] + poly1.vertices[j]).Dot(v)
-			);
+			else
+			{
+				dMat22 A;
+				A(0, 0) = -uu;
+				A(0, 1) = uv;
+				A(1, 0) = uv;
+				A(1, 1) = -vv;
+				dVec2 b(
+					(poly0.vertices[i] + poly1.vertices[j]).Dot(u),
+					(poly0.vertices[i] + poly1.vertices[j]).Dot(v)
+				);
 
-			dVec2 x = A.Inverse().Transform(b);
-			x[0] = std::max(0.0, std::min(x[0], 1.0));
-			x[1] = std::max(0.0, std::min(x[1], 1.0));
+				dVec2 x = A.Inverse().Transform(b);
+				x[0] = std::max(0.0, std::min(x[0], 1.0));
+				x[1] = std::max(0.0, std::min(x[1], 1.0));
 
-			dVec3 p0 = poly0.vertices[i] + u.Scale(x[0]);
-			dVec3 p1 = poly1.vertices[j] + v.Scale(x[1]);
-			double dSqr = (p1 - p0).Dot(p1 - p0);
+				p0 = poly0.vertices[i] + u.Scale(x[0]);
+				p1 = poly1.vertices[j] + v.Scale(x[1]);
+			}
+
+			dSqr = (p1 - p0).Dot(p1 - p0);
 
 			if (dSqr < dSqrMin)
 			{

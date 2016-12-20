@@ -73,8 +73,8 @@ Mat22_t<T> Mat22_t<T>::Inverse() const
 	Mat22_t<T> inv;
 	const T detInv = (T)1.0 / (M_ij[0][0] * M_ij[1][1] - M_ij[0][1] - M_ij[1][0]);
 	inv.M_ij[0][0] = M_ij[1][1] * detInv;
-	inv.M_ij[0][1] = M_ij[0][1] * detInv;
-	inv.M_ij[1][0] = M_ij[1][0] * detInv;
+	inv.M_ij[0][1] = -M_ij[0][1] * detInv;
+	inv.M_ij[1][0] = -M_ij[1][0] * detInv;
 	inv.M_ij[1][1] = M_ij[0][0] * detInv;
 	return inv;
 }

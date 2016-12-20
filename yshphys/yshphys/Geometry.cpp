@@ -5,7 +5,7 @@
 #include "Ray.h"
 
 #define MIN_SUPPORT_SQR 0.0001
-#define GJK_TERMINATION_RATIO 0.001
+#define GJK_TERMINATION_RATIO 0.0001
 #define DEGENERATE_SIMPLEX_RATIO 0.01
 
 Geometry::Geometry() : m_pos(0.0, 0.0, 0.0), m_rot(0.0, 0.0, 0.0, 1.0)
@@ -149,8 +149,6 @@ double Geometry::ComputePenetration(
 				return 0.0;
 			}
 
-			bool degen0, degen1;
-
 			SupportPolygon poly0, poly1;
 			poly0 = geom0->Support(pos0, rot0, nFace);
 			poly1 = geom1->Support(pos1, rot1, -nFace);
@@ -188,6 +186,7 @@ double Geometry::ComputeSeparation(
 	{
 		// First pass is special. Don't check for termination since v is just a guess.
 		dVec3 v(pos0 - pos1);
+		v = dVec3(1.0, 0.0, 0.0);
 		poly0 = geom0->Support(pos0, rot0, -v);
 		poly1 = geom1->Support(pos1, rot1, v);
 		SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
@@ -197,7 +196,7 @@ double Geometry::ComputeSeparation(
 
 	int nIter = 0;
 
-	while (nIter < 16)
+	while (nIter < 256)
 	{
 		nIter++;
 		// Get the closest point on the convex hull of the simplex, set it to the new support direction "v"
@@ -233,6 +232,7 @@ double Geometry::ComputeSeparation(
 			{
 				return sqrt(dSqr);
 			}
+#if 0
 			else if (nVertices == 3)
 			{
 				const dVec3 area = (vertices[1] - vertices[0]).Cross(vertices[2] - vertices[0]);
@@ -279,12 +279,13 @@ double Geometry::ComputeSeparation(
 					return sqrt(vSqr);
 				}
 			}
+#endif
 
 			// Add the newly found support point to the simplex
 			simplex = newSimplex;
 			simplex.AddVertex(newSimplexPt);
 		}
 	}
-	assert(0);
+//	assert(0);
 	return 88888888.0;
 }

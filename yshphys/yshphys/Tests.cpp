@@ -47,3 +47,37 @@ void Tests::CreateBVTest(Game* game)
 		game->AddGameObject(gameObject);
 	}
 }
+
+void Tests::CreateGJKTest(Game* game)
+{
+	Shader_Default* shader = new Shader_Default;
+	Capsule* geometry = new Capsule;
+	geometry->SetRadius(1.0);
+	geometry->SetHalfHeight(1.0);
+
+	dVec3 pos[2] = { dVec3(-1.1,32.0,-0.4),dVec3(1.1,32.0,0.0) };
+
+	for (int i = 0; i < 2; ++i)
+	{
+		RenderMesh* mesh = new RenderMesh;
+		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+		RenderObject* renderObj = new RenderObject;
+		renderObj->SetRenderMesh(mesh);
+		renderObj->SetShader(shader);
+
+		RigidBody* rigidBody = new RigidBody;
+		rigidBody->SetGeometry(geometry);
+		rigidBody->SetMass(1.0);
+		rigidBody->SetInertia(dMat33::Identity().Scale(10.0));
+
+		rigidBody->SetPosition(pos[i]);
+
+		game->rb[i] = rigidBody;
+
+		GameObject* gameObject = new GameObject;
+		gameObject->SetPhysicsObject(rigidBody);
+		gameObject->SetRenderObject(renderObj);
+
+		game->AddGameObject(gameObject);
+	}
+}

@@ -12,7 +12,7 @@ namespace MathUtils
 	}
 
 	template <typename T>
-	T Determinant(const T* A, int n)
+	T Determinant(const T* const A, int n)
 	{
 		assert(n > 1);
 		if (n == 2)
@@ -40,6 +40,33 @@ namespace MathUtils
 			delete[] a;
 		}
 		return det;
+	}
+
+	// A = L * LT
+	template <typename T>
+	void CholeskyFactorization(const T* const A, int n, T* const LT)
+	{
+		std::memcpy(LT, A, n*n * sizeof(T));
+
+		for (int dim = 0; dim < n; ++dim)
+		{
+			std::memset(&LT[n*dim], 0, dim * sizeof(T));
+
+			LT[n*dim + dim] = sqrt(LT[n*dim + dim]);
+			const T s = (T)1.0 / LT[n*dim + dim];
+
+			for (int j = dim + 1; j < n; ++j)
+			{
+				LT[n*dim + j] = LT[n*dim + j] * s;
+			}
+			for (int i = dim + 1; i < n; ++i)
+			{
+				for (int j = i; j < n; ++j)
+				{
+					LT[n*i + j] -= LT[n*dim + i] * LT[n*dim + j];
+				}
+			}
+		}
 	}
 
 //	typedef void(*dydt_func)(double t, const double y[], double yDot[]);

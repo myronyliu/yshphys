@@ -50,8 +50,7 @@ SupportPolygon Capsule::SupportLocal(const dVec3& v) const
 		double k = m_radius / sqrt(v.Dot(v));
 		dVec3 support = v.Scale(k);
 
-		double z = (-m_rot).Transform(v).z;
-		support.z += MathUtils::sgn(v.z) * m_halfHeight;
+		support.z += m_halfHeight*MathUtils::sgn(v.z);
 
 		poly.nVertices = 1;
 		poly.vertices[0] = support;

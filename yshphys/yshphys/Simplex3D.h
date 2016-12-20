@@ -22,6 +22,12 @@ public:
 	dVec3 ClosestPoint(const dVec3& x, Simplex3D& closestFeature) const;
 	
 private:
+
+	inline static dVec3 ClosestPoint1(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
+	inline static dVec3 ClosestPoint2(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
+	inline static dVec3 ClosestPoint3(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
+	inline static dVec3 ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
+
 	int m_nVertices;
 	dVec3 m_vertices[4];
 };

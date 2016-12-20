@@ -15,10 +15,7 @@ void Simplex3D::SetVertices(unsigned int nVertices, const dVec3* vertices)
 {
 	assert(nVertices <= 4);
 	m_nVertices = nVertices;
-	for (unsigned int i = 0; i < nVertices; ++i)
-	{
-		m_vertices[i] = vertices[i];
-	}
+	std::memcpy(m_vertices, vertices, nVertices * sizeof(dVec3));
 }
 
 void Simplex3D::AddVertex(const dVec3& vertex)
@@ -38,198 +35,175 @@ int Simplex3D::GetVertices(dVec3* const vertices) const
 	return m_nVertices;
 }
 
+dVec3 Simplex3D::ClosestPoint1(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature)
+{
+	closestFeature.SetVertices(1, v);
+	return v[0];
+}
+dVec3 Simplex3D::ClosestPoint2(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature)
+{
+	const dVec3 ax = x - v[0];
+	const dVec3 ab = v[1] - v[0];
+
+	const double t = ax.Dot(ab) / ab.Dot(ab);
+	
+	if (t <= 0.0)
+	{
+		closestFeature.SetVertices(1, &v[0]);
+		return v[0];
+	}
+	else if (t >= 1.0)
+	{
+		closestFeature.SetVertices(1, &v[1]);
+		return v[1];
+	}
+	else
+	{
+		closestFeature.SetVertices(2, v);
+		return v[0] + ab.Scale(t);
+	}
+}
+dVec3 Simplex3D::ClosestPoint3(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature)
+{
+	const dVec3 ax = x - v[0];
+	const dVec3 ab = v[1] - v[0];
+	const dVec3 ac = v[2] - v[0];
+
+	const double ab_ab = ab.Dot(ab);
+	const double ab_ac = ab.Dot(ac);
+
+	double L[3];
+	L[0] = sqrt(ab_ab);
+	L[1] = ab_ac / L[0];
+	L[2] = sqrt(ac.Dot(ac) - ab_ac*ab_ac / ab_ab);
+
+	double s = ax.Dot(ab) / L[0];
+	double t = (ax.Dot(ac) - L[1] * s) / L[2];
+
+	if (s <= 0.0)
+	{
+		const dVec3 line[2] = { v[2],v[0] };
+		return ClosestPoint2(line, x, closestFeature);
+	}
+	else if (t <= 0.0)
+	{
+		const dVec3 line[2] = { v[0],v[1] };
+		return ClosestPoint2(line, x, closestFeature);
+	}
+	else if (s + t >= 1.0)
+	{
+		const dVec3 line[2] = { v[1],v[2] };
+		return ClosestPoint2(line, x, closestFeature);
+	}
+	else
+	{
+		closestFeature.SetVertices(3, v);
+		return v[0] + ab.Scale(s) + ac.Scale(t);
+	}
+}
+dVec3 Simplex3D::ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature)
+{
+	const dVec3 ax = x - v[0];
+	const dVec3 ab = v[1] - v[0];
+	const dVec3 ac = v[2] - v[0];
+	const dVec3 ad = v[3] - v[0];
+
+	const double ab_ab = ab.Dot(ab);
+	const double ab_ac = ab.Dot(ac);
+	const double ab_ad = ab.Dot(ad);
+
+	// CHOLESKY (L0 = row0, L1 = row1, L2 = row2)
+
+	double L0[6];
+	double* const L1 = &L0[1];
+	double* const L2 = &L0[3];
+
+	L0[0] = sqrt(ab_ab);
+	L1[0] = ab_ac / L0[0];
+	L2[0] = ab_ad / L0[0];
+
+	const double L11_sqr = ac.Dot(ac) - ab_ac*ab_ac / ab_ab;
+	const double L21_num = ac.Dot(ad) - ab_ac*ab_ad / ab_ab;
+
+	L1[1] = sqrt(L11_sqr);
+	L2[1] = L21_num / L1[1];
+
+	L2[2] = sqrt(ad.Dot(ad) - (ab_ad*ab_ad / ab_ab) - L21_num*L21_num / L11_sqr);
+
+	double t[3] = {
+	ax.Dot(ab) / L0[0],
+	(ax.Dot(ac) - L1[0] * t[0]) / L1[1],
+	(ax.Dot(ad) - L2[0] * t[0] - L2[1] * t[1]) / L2[2]
+	};
+
+	double LT[3][3];
+	LT[0][0] = L0[0];
+	LT[0][1] = L1[0];
+	LT[0][2] = L2[0];
+	LT[1][0] = 0.0;
+	LT[1][1] = L1[1];
+	LT[1][2] = L2[1];
+	LT[2][0] = 0.0;
+	LT[2][1] = 0.0;
+	LT[2][2] = L2[2];
+
+	double A[3][3];
+	A[0][0] = ab.Dot(ab);
+	A[0][1] = ab.Dot(ac);
+	A[0][2] = ab.Dot(ad);
+	A[1][0] = ac.Dot(ab);
+	A[1][1] = ac.Dot(ac);
+	A[1][2] = ac.Dot(ad);
+	A[2][0] = ad.Dot(ab);
+	A[2][1] = ad.Dot(ac);
+	A[2][2] = ad.Dot(ad);
+	double LT__[3][3];
+
+	MathUtils::CholeskyFactorization(&A[0][0], 3, &LT__[0][0]);
+
+	if (t[0] <= 0.0)
+	{
+		const dVec3 triangle[3] = { v[2],v[3],v[0] };
+		return ClosestPoint3(triangle, x, closestFeature);
+	}
+	else if (t[1] <= 0.0)
+	{
+		const dVec3 triangle[3] = { v[3],v[0],v[1] };
+		return ClosestPoint3(triangle, x, closestFeature);
+	}
+	else if (t[2] <= 0.0)
+	{
+		const dVec3 triangle[3] = { v[0],v[1],v[2] };
+		return ClosestPoint3(triangle, x, closestFeature);
+	}
+	else if (t[0] + t[1] + t[2] >= 1.0)
+	{
+		const dVec3 triangle[3] = { v[1],v[2],v[3] };
+		return ClosestPoint3(triangle, x, closestFeature);
+	}
+	else
+	{
+		closestFeature.SetVertices(4, v);
+		return v[0] + ab.Scale(t[0]) + ac.Scale(t[1]) + ad.Scale(t[2]);
+	}
+}
+
 dVec3 Simplex3D::ClosestPoint(const dVec3& x, Simplex3D& closestFeature) const
 {
-	if (m_nVertices == 1)
+	switch (m_nVertices)
 	{
-		closestFeature.m_nVertices = 1;
-		closestFeature.m_vertices[0] = m_vertices[0];
-		return m_vertices[0];
+	case 1:
+		return ClosestPoint1(m_vertices, x, closestFeature);
+		break;
+	case 2:
+		return ClosestPoint2(m_vertices, x, closestFeature);
+		break;
+	case 3:
+		return ClosestPoint3(m_vertices, x, closestFeature);
+		break;
+	case 4:
+		return ClosestPoint4(m_vertices, x, closestFeature);
+		break;
 	}
-
-	const dVec3& a = m_vertices[0];
-	const dVec3& b = m_vertices[1];
-	const dVec3& c = m_vertices[2];
-
-	if (m_nVertices == 2)
-	{
-		dVec3 ax(x - a);
-		dVec3 bx(x - b);
-		dVec3 ab(b - a);
-
-		// POINT
-		closestFeature.m_nVertices = 1;
-		if (ax.Dot(ab) <= 0.0)
-		{
-			closestFeature.m_vertices[0] = a;
-			return a;
-		}
-		if (bx.Dot(ab) >= 0.0)
-		{
-			closestFeature.m_vertices[0] = b;
-			return b;
-		}
-
-		// EDGE 
-		closestFeature.m_nVertices = 2;
-		closestFeature.m_vertices[0] = a;
-		closestFeature.m_vertices[1] = b;
-		return a + ab.Scale((ax).Dot(ab) / ab.Dot(ab));
-	}
-	else if (m_nVertices == 3)
-	{
-		const dVec3 ab(b - a);
-		const dVec3 bc(c - b);
-		const dVec3 ca(a - c);
-
-		const dVec3 ax(x - a);
-		const dVec3 bx(x - b);
-		const dVec3 cx(x - c);
-
-		// POINT
-		closestFeature.m_nVertices = 1;
-		if (ax.Dot(ab) <= 0.0 && ax.Dot(ca) >= 0.0)
-		{
-			closestFeature.m_vertices[0] = a;
-			return a;
-		}
-		if (bx.Dot(bc) <= 0.0 && bx.Dot(ab) >= 0.0)
-		{
-			closestFeature.m_vertices[0] = b;
-			return b;
-		}
-		if (cx.Dot(ca) <= 0.0 && cx.Dot(bc) >= 0.0)
-		{
-			closestFeature.m_vertices[0] = c;
-			return c;
-		}
-
-		// EDGE
-		closestFeature.m_nVertices = 2;
-		if (
-			bc.Cross(ab).Cross(ab).Dot(ax) >= 0.0 &&
-			ax.Dot(ab) >= 0.0 &&
-			bx.Dot(ab) <= 0.0
-			)
-		{
-			closestFeature.m_vertices[0] = a;
-			closestFeature.m_vertices[1] = b;
-			return a + ab.Scale(ax.Dot(ab) / ab.Dot(ab));
-		}
-		if (
-			ca.Cross(bc).Cross(bc).Dot(bx) >= 0.0 &&
-			bx.Dot(bc) >= 0.0 &&
-			cx.Dot(bc) <= 0.0
-			)
-		{
-			closestFeature.m_vertices[0] = b;
-			closestFeature.m_vertices[1] = c;
-			return b + bc.Scale(bx.Dot(bc) / bc.Dot(bc));
-		}
-		if (
-			ab.Cross(ca).Cross(ca).Dot(cx) >= 0.0 &&
-			cx.Dot(ca) >= 0.0 &&
-			ax.Dot(ca) <= 0.0
-			)
-		{
-			closestFeature.m_vertices[0] = c;
-			closestFeature.m_vertices[1] = a;
-			return c + ca.Scale(cx.Dot(ca) / ca.Dot(ca));
-		}
-
-		// FACE
-		closestFeature.m_nVertices = 3;
-		closestFeature.m_vertices[0] = a;
-		closestFeature.m_vertices[0] = b;
-		closestFeature.m_vertices[0] = c;
-		dVec3 n(ab.Cross(bc));
-		return a + ax - n.Scale(ax.Dot(n) / n.Dot(n)); // the origin projected onto the plane of the triangle
-	}
-	else if (m_nVertices == 4)
-	{
-		// POINT
-		for (int i = 0; i < 4; ++i)
-		{
-			const dVec3& v0 = m_vertices[i];
-			const dVec3 v0_x(x - v0);
-			const dVec3 v0_v1(m_vertices[(i + 1) % 4] - v0);
-			const dVec3 v0_v2(m_vertices[(i + 2) % 4] - v0);
-			const dVec3 v0_v3(m_vertices[(i + 3) % 4] - v0);
-
-			if (
-				v0_x.Dot(v0_v1) <= 0.0 &&
-				v0_x.Dot(v0_v2) <= 0.0 &&
-				v0_x.Dot(v0_v3) <= 0.0
-				)
-			{
-				closestFeature.m_nVertices = 1;
-				closestFeature.m_vertices[0] = v0;
-				return v0;
-			}
-		}
-
-		// EDGE
-		for (int i = 0; i < 3; ++i)
-		{
-			const dVec3& v0 = m_vertices[i];
-			const dVec3 v0_x(x - v0);
-
-			for (int di = 1; di < 4 - i; ++di)
-			{
-				const dVec3& v1 = m_vertices[i + di];
-				const dVec3& v2 = m_vertices[(i + di + 1) % 4];
-				const dVec3& v3 = m_vertices[(i + di + 2) % 4];
-				const dVec3 v0_v1(v1 - v0);
-				const dVec3 v1_x(x - v1);
-				const dVec3 n_2((v2 - v1).Cross(v0_v1).Cross(v0_v1)); // normal of the edge v0_v1 on triangle (v0,v1,v2)
-				const dVec3 n_3((v3 - v1).Cross(v0_v1).Cross(v0_v1)); // normal of the edge v0_v1 on triangle (v0,v1,v3)
-
-				if (n_2.Dot(v0_x) >= 0.0 &&
-					n_3.Dot(v0_x) >= 0.0 &&
-
-					v0_x.Dot(v0_v1) >= 0.0 &&
-					v1_x.Dot(v0_v1) <= 0.0)
-				{
-					closestFeature.m_nVertices = 2;
-					closestFeature.m_vertices[0] = v0;
-					closestFeature.m_vertices[1] = v1;
-					return v0 + v0_v1.Scale(v0_x.Dot(v0_v1) / v0_v1.Dot(v0_v1));
-				}
-			}
-		}
-
-		// FACE
-		for (int i = 0; i < 4; ++i)
-		{
-			const dVec3& v0 = m_vertices[i];
-			const dVec3& v1 = m_vertices[(i + 1) % 4];
-			const dVec3& v2 = m_vertices[(i + 2) % 4];
-			const dVec3& v3 = m_vertices[(i + 3) % 4];
-
-			dVec3 n((v2 - v1).Cross(v3 - v1));
-			n.Scale(n.Dot(v1 - v0)); // make sure the normal is facing outward
-
-			const dVec3 v1_x(x - v1);
-			const double d = n.Dot(v1_x);
-
-			if (d >= 0.0)
-			{
-				closestFeature.m_nVertices = 3;
-				closestFeature.m_vertices[0] = v1;
-				closestFeature.m_vertices[1] = v2;
-				closestFeature.m_vertices[2] = v3;
-				return v1 + v1_x - n.Scale(d / n.Dot(n));
-			}
-		}
-
-		// INTERIOR
-		closestFeature.m_nVertices = 4;
-		closestFeature.m_vertices[0] = m_vertices[0];
-		closestFeature.m_vertices[1] = m_vertices[1];
-		closestFeature.m_vertices[2] = m_vertices[2];
-		closestFeature.m_vertices[3] = m_vertices[3];
-		return x;
-	}
-
 	return dVec3(0.0, 0.0, 0.0);
 }

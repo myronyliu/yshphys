@@ -191,6 +191,58 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 		data.polygonType = GL_TRIANGLES;
 		data.nVertsPerPoly = 3;
 		data.nIndices = 36;
+		
+		data.indices[0] = iVertex(0, 0, 0);
+		data.indices[1] = iVertex(0, 1, 1);
+		data.indices[2] = iVertex(0, 1, 0);
+
+		data.indices[3] = iVertex(0, 0, 0);
+		data.indices[4] = iVertex(0, 0, 1);
+		data.indices[5] = iVertex(0, 1, 1);
+		
+		data.indices[6] = iVertex(1, 0, 0);
+		data.indices[7] = iVertex(1, 1, 0);
+		data.indices[8] = iVertex(1, 1, 1);
+
+		data.indices[9] = iVertex(1, 0, 0);
+		data.indices[10] = iVertex(1, 1, 1);
+		data.indices[11] = iVertex(1, 0, 1);
+
+		////////////////////////////////////
+
+		data.indices[12] = iVertex(0, 0, 0);
+		data.indices[13] = iVertex(1, 0, 1);
+		data.indices[14] = iVertex(0, 0, 1);
+
+		data.indices[15] = iVertex(0, 0, 0);
+		data.indices[16] = iVertex(1, 0, 0);
+		data.indices[17] = iVertex(1, 0, 1);
+
+		data.indices[18] = iVertex(0, 1, 0);
+		data.indices[19] = iVertex(0, 1, 1);
+		data.indices[20] = iVertex(1, 1, 1);
+
+		data.indices[21] = iVertex(0, 1, 0);
+		data.indices[22] = iVertex(1, 1, 1);
+		data.indices[23] = iVertex(1, 1, 0);
+
+		////////////////////////////////////
+
+		data.indices[24] = iVertex(0, 0, 0);
+		data.indices[25] = iVertex(1, 1, 0);
+		data.indices[26] = iVertex(1, 0, 0);
+
+		data.indices[27] = iVertex(0, 0, 0);
+		data.indices[28] = iVertex(0, 1, 0);
+		data.indices[29] = iVertex(1, 1, 0);
+	
+		data.indices[30] = iVertex(0, 0, 1);
+		data.indices[31] = iVertex(1, 0, 1);
+		data.indices[32] = iVertex(1, 1, 1);
+
+		data.indices[33] = iVertex(0, 0, 1);
+		data.indices[34] = iVertex(1, 1, 1);
+		data.indices[35] = iVertex(0, 1, 1);
 	}
 	m_objects.push_back(data);
 }

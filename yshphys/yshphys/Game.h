@@ -24,6 +24,8 @@ public:
 
 	Window* m_window; // The window into which the rendered scene is displayed and from which the inputManager gets its mouse coordinates
 
+	RigidBody* rb[2];
+
 protected:
 
 	unsigned int m_dtPhys;

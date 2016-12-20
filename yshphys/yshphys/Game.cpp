@@ -112,6 +112,15 @@ void Game::Run()
 			}
 			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
 			m_renderScene.DebugDrawSystem().DrawPicker(*m_renderScene.DebugDrawSystem().m_picker, fVec3(0.0f, 1.0f, 0.0f));
+
+			dVec3 x0, x1;
+			Geometry::ComputeSeparation(
+				rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(), x0,
+				rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), x1);
+
+			m_renderScene.DebugDrawSystem().DrawLine(x0, x1, fVec3(0.0f, 0.0f, 1.0f));
+			m_renderScene.DebugDrawSystem().DrawBox(0.1, 0.1, 0.1, x0, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
+			m_renderScene.DebugDrawSystem().DrawBox(0.1, 0.1, 0.1, x1, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
 			
 			m_renderScene.DrawScene();
 
