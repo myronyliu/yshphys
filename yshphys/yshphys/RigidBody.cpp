@@ -27,7 +27,8 @@ RigidBody::RigidBody() :
 	m_q(dQuat::Identity()),
 	m_m(0.0),
 	m_minv(0.0),
-	m_geometry(nullptr)
+	m_geometry(nullptr),
+	m_nSpringPenalties(0)
 {
 	m_Ibody.SetRow(0, dVec3(0.0, 0.0, 0.0));
 	m_Ibody.SetRow(1, dVec3(0.0, 0.0, 0.0));
@@ -40,7 +41,6 @@ RigidBody::RigidBody() :
 	m_Iinv.SetRow(0, dVec3(0.0, 0.0, 0.0));
 	m_Iinv.SetRow(1, dVec3(0.0, 0.0, 0.0));
 	m_Iinv.SetRow(2, dVec3(0.0, 0.0, 0.0));
-
 }
 
 RigidBody::~RigidBody()
@@ -121,6 +121,16 @@ void RigidBody::ApplyForceAtCenterOfMass(const dVec3& F)
 	m_F = m_F + F;
 }
 
+void RigidBody::ApplySpringPenalty(const dVec3& worldAnchor, const dVec3& localBodyAnchor, double kOverM, double bOverM)
+{
+	SpringPenalty& penalty = m_springPenalties[m_nSpringPenalties];
+	penalty.worldAnchor = worldAnchor;
+	penalty.localBodyAnchor = localBodyAnchor;
+	penalty.kOverM = kOverM;
+	penalty.bOverM = bOverM;
+	m_nSpringPenalties++;
+}
+
 void RigidBody::UpdateAABB()
 {
 	const BoundingBox oobb = m_geometry->GetLocalOOBB();
@@ -169,68 +179,75 @@ void RigidBody::Step(double dt)
 		return;
 	}
 
-	////////////
-	// LINEAR //
-	////////////
-
-	dVec3 a = m_F.Scale(m_minv);
-	m_x = m_x + m_v.Scale(dt) + a.Scale(0.5*dt*dt);
-	m_P = m_P + m_F.Scale(dt);
-	m_v = m_P.Scale(m_minv);
-
-	/////////////
-	// ANGULAR //
-	/////////////
-
-	auto ScaleQuat = [](const dQuat& quat, double scale)
+	if (m_nSpringPenalties == 0)
 	{
-		dQuat scaled;
-		scaled.x = quat.x * scale;
-		scaled.y = quat.y * scale;
-		scaled.z = quat.z * scale;
-		scaled.w = quat.w * scale;
-		return scaled;
-	};
-	auto AddQuats = [](const dQuat& q0, const dQuat& q1)
+		////////////
+		// LINEAR //
+		////////////
+
+		dVec3 a = m_F.Scale(m_minv);
+		m_x = m_x + m_v.Scale(dt) + a.Scale(0.5*dt*dt);
+		m_P = m_P + m_F.Scale(dt);
+		m_v = m_P.Scale(m_minv);
+
+		/////////////
+		// ANGULAR //
+		/////////////
+
+		auto ScaleQuat = [](const dQuat& quat, double scale)
+		{
+			dQuat scaled;
+			scaled.x = quat.x * scale;
+			scaled.y = quat.y * scale;
+			scaled.z = quat.z * scale;
+			scaled.w = quat.w * scale;
+			return scaled;
+		};
+		auto AddQuats = [](const dQuat& q0, const dQuat& q1)
+		{
+			dQuat sum;
+			sum.x = q0.x + q1.x;
+			sum.y = q0.y + q1.y;
+			sum.z = q0.z + q1.z;
+			sum.w = q0.w + q1.w;
+			return sum;
+		};
+
+		dQuat qDot[4];
+
+		dQuat q(m_q);
+		dVec3 L(m_L);
+		Compute_qDot(q, L, qDot[0]);
+
+		q = AddQuats(m_q, ScaleQuat(qDot[0], 0.5*dt)).Normalize(); // Must normalize, since we construct orthogonal R to transform Ibodyinv at each step
+		L = m_L + m_T.Scale(0.5*dt);
+		Compute_qDot(q, L, qDot[1]);
+
+		q = AddQuats(m_q, ScaleQuat(qDot[1], 0.5*dt)).Normalize();
+		L = m_L + m_T.Scale(0.5*dt);
+		Compute_qDot(q, L, qDot[2]);
+
+		q = AddQuats(m_q, ScaleQuat(qDot[2], dt)).Normalize();
+		L = m_w + m_T.Scale(dt);
+		Compute_qDot(q, L, qDot[3]);
+
+		dQuat dq = qDot[0];
+		dq = AddQuats(dq, ScaleQuat(qDot[1], 2.0));
+		dq = AddQuats(dq, ScaleQuat(qDot[2], 2.0));
+		dq = AddQuats(dq, qDot[3]);
+		dq = ScaleQuat(dq, dt / 6.0);
+		m_q = AddQuats(m_q, dq).Normalize();
+
+		m_L = m_L + m_T.Scale(dt);
+	}
+	else
 	{
-		dQuat sum;
-		sum.x = q0.x + q1.x;
-		sum.y = q0.y + q1.y;
-		sum.z = q0.z + q1.z;
-		sum.w = q0.w + q1.w;
-		return sum;
-	};
 
-	dQuat qDot[4];
-
-	dQuat q(m_q);
-	dVec3 L(m_L);
-	Compute_qDot(q, L, qDot[0]);
-
-	q = AddQuats(m_q, ScaleQuat(qDot[0], 0.5*dt)).Normalize(); // Must normalize, since we construct orthogonal R to transform Ibodyinv at each step
-	L = m_L + m_T.Scale(0.5*dt);
-	Compute_qDot(q, L, qDot[1]);
-
-	q = AddQuats(m_q, ScaleQuat(qDot[1], 0.5*dt)).Normalize();
-	L = m_L + m_T.Scale(0.5*dt);
-	Compute_qDot(q, L, qDot[2]);
-
-	q = AddQuats(m_q, ScaleQuat(qDot[2], dt)).Normalize();
-	L = m_w + m_T.Scale(dt);
-	Compute_qDot(q, L, qDot[3]);
-
-	dQuat dq = qDot[0];
-	dq = AddQuats(dq, ScaleQuat(qDot[1], 2.0));
-	dq = AddQuats(dq, ScaleQuat(qDot[2], 2.0));
-	dq = AddQuats(dq, qDot[3]);
-	dq = ScaleQuat(dq, dt / 6.0);
-	m_q = AddQuats(m_q, dq).Normalize();
-
-	m_L = m_L + m_T.Scale(dt);
+	}
 
 	// UPDATE DERIVED QUANTITIES
 
-	dMat33 R(q);
+	dMat33 R(m_q);
 	m_Iinv = R*m_Ibodyinv*R.Transpose();
 	m_w = m_Iinv.Transform(m_L);
 

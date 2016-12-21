@@ -2,33 +2,27 @@
 #include "YshMath.h"
 #include "Vec3.h"
 
-class Simplex3D
+struct GJKSimplex
 {
-public:
-	Simplex3D();
-	virtual ~Simplex3D();
+	GJKSimplex() : m_nPts(0) {}
 
-	void SetVertices(unsigned int nVertices, const dVec3* vertices);
-	void AddVertex(const dVec3& vertex);
+	struct SimplexPt
+	{
+		dVec3 m_MinkDif;
+		dVec3 m_MinkSum;
+	};
 
-	int GetNumVertices() const;
-	int GetVertices(dVec3* const vertices) const;
+	SimplexPt ClosestPointToOrigin(GJKSimplex& closestFeature) const;
+	void AddPoint(const SimplexPt& pt) { m_pts[m_nPts] = pt; m_nPts++; }
+	int GetNumPoints() const { return m_nPts; }
 
-	// Returns the closest point on this simplex to the point x.
-	// closestFeature is the feature on this simplex that is closest to x
-	// (e.g. If this simplex is a tetrahedron and x lies just above a face, closestFeature will be a triangle simplex)
-	// featureNormal may not be unique. For instance, if closestFeature is a line, the normal is ambiguous.
-	// If closestFeature is a tetrahedral face, featureNormal is unique in the outward facing direction.
-	dVec3 ClosestPoint(const dVec3& x, Simplex3D& closestFeature) const;
-	
+	SimplexPt m_pts[4];
+	int m_nPts;
+
 private:
+	inline SimplexPt ClosestPointToOrigin2(int iA, int iB, GJKSimplex& closestFeature) const;
+	inline SimplexPt ClosestPointToOrigin3(int iA, int iB, int iC, GJKSimplex& closestFeature) const;
+	inline SimplexPt ClosestPointToOrigin4(int iA, int iB, int iC, int iD, GJKSimplex& closestFeature) const;
 
-	inline static dVec3 ClosestPoint1(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
-	inline static dVec3 ClosestPoint2(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
-	inline static dVec3 ClosestPoint3(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
-	inline static dVec3 ClosestPoint4(const dVec3* const v, const dVec3& x, Simplex3D& closestFeature);
 
-	int m_nVertices;
-	dVec3 m_vertices[4];
 };
-

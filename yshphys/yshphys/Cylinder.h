@@ -10,7 +10,7 @@ public:
 	void SetHalfHeight(double halfHeight);
 	void SetRadius(double radius);
 
-	virtual SupportPolygon SupportLocal(const dVec3& v) const;
+	virtual dVec3 SupportLocal(const dVec3& v) const;
 
 protected:
 

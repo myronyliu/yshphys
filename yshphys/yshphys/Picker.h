@@ -31,13 +31,7 @@ private:
 
 	float m_depth;
 
-	struct DampedOscillatorCoefficients
-	{
-		float kOverM;
-		float b;
-	};
-
-	DampedOscillatorCoefficients m_springCoeff;
+	DampedOscillatorCoefficients m_springCoeff; // assuming a unit mass
 
 	RigidBody* m_pickedObject;
 	dVec3 m_grabOffset;
