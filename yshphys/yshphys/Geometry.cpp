@@ -109,62 +109,128 @@ double Geometry::ComputePenetration(
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	Simplex3D& tetrahedron)
 {
-	dVec3 simplex[4];
-	if (tetrahedron.GetVertices(simplex) == 4)
+	struct TriangleDistance
 	{
+		bool operator < (const TriangleDistance& td)
+		{
+			return distance > td.distance;
+		};
+
+		unsigned int indices[3];
+		double distance;
+	};
+
+	TriangleDistance triangles[256];
+	dVec3 vertices[256];
+	unsigned int nTriangles = 0;
+	unsigned int nVertices = 0;
+	std::make_heap(&triangles[0], &triangles[nTriangles]);
+
+	auto PushTriangle = [&](unsigned int A, unsigned int B, unsigned int C, double distance)
+	{
+		TriangleDistance td;
+		td.indices[0] = A;
+		td.indices[1] = B;
+		td.indices[2] = C;
+		td.distance = distance;
+		triangles[nTriangles] = td;
+		nTriangles++;
+		std::push_heap(&triangles[0], &triangles[nTriangles]);
+	};
+	auto PopClosestTriangle = [&](unsigned int& A, unsigned int& B, unsigned int& C, double& distance)
+	{
+		std::pop_heap(&triangles[0], &triangles[nTriangles]);
+		nTriangles--;
+		unsigned int* indices = triangles[nTriangles].indices;
+		A = indices[0];
+		B = indices[1];
+		C = indices[2];
+		distance = triangles[nTriangles].distance;
+	};
+	auto PushVertex = [&](const dVec3& vertex)
+	{
+		vertices[nVertices] = vertex;
+		nVertices++;
+		return nVertices - 1;
+	};
+
+	dVec3 tetraVerts[4];
+	if (tetrahedron.GetVertices(tetraVerts) == 4)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			PushVertex(tetraVerts[i]);
+			const int iA = (i + 0) % 4;
+			const int iB = (i + 1) % 4;
+			const int iC = (i + 2) % 4;
+			const int iD = (i + 3) % 4;
+			const dVec3& a = tetraVerts[iA];
+			const dVec3& b = tetraVerts[iB];
+			const dVec3& c = tetraVerts[iC];
+			const dVec3& d = tetraVerts[iD];
+
+			dVec3 n = (c - b).Cross(d - b);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+
+			if (n.Dot(b - a) < 0.0)
+			{
+				PushTriangle(iD, iC, iB, -b.Dot(n));
+			}
+			else
+			{
+				PushTriangle(iB, iC, iD, b.Dot(n));
+			}
+		}
+
 		int nIter = 0;
 
 		while (nIter < 16)
 		{
 			nIter++;
 
-			int iFace = 0;
-			dVec3 nFace(0.0, 0.0, 0.0);
-			double dFace = 88888888.0;
+			unsigned int iA, iB, iC;
+			double dFace;
+			PopClosestTriangle(iA, iB, iC, dFace);
 
-			for (int i = 0; i < 4; ++i)
-			{
-				const dVec3& a = simplex[(i + 0) % 4];
-				const dVec3& b = simplex[(i + 1) % 4];
-				const dVec3& c = simplex[(i + 2) % 4];
-				const dVec3& d = simplex[(i + 3) % 4];
+			const dVec3 a = vertices[iA];
+			const dVec3 b = vertices[iB];
+			const dVec3 c = vertices[iC];
 
-				dVec3 n = (c - b).Cross(d - b);
-				const dVec3 asdf = b - a;
-				const double qwer = n.Dot(asdf);
-				n = n.Scale(MathUtils::sgn(n.Dot(b - a)));
-				n.Scale(1.0 / sqrt(n.Dot(n)));
-
-				double dist = b.Dot(n);
-
-				if (dist > 0.0 && dist < dFace)
-				{
-					iFace = i;
-					nFace = n;
-					dFace = dist;
-				}
-			}
-			assert(dFace < 8888.0f);
-
-			if (dFace < MIN_SUPPORT_SQR)
-			{
-				tetrahedron.SetVertices(4, simplex);
-				return 0.0;
-			}
+			dVec3 n = (b - a).Cross(c - a);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
 			SupportPolygon poly0, poly1;
-			poly0 = geom0->Support(pos0, rot0, nFace);
-			poly1 = geom1->Support(pos1, rot1, -nFace);
+			poly0 = geom0->Support(pos0, rot0, n);
+			poly1 = geom1->Support(pos1, rot1, -n);
 			SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
-			simplex[iFace] = pt0 - pt1;
-			if (abs((simplex[iFace].Dot(nFace) - dFace) / dFace) < GJK_TERMINATION_RATIO)
+			const dVec3 d = pt0 - pt1;
+
+			const unsigned int iD = PushVertex(d);
+
+			n = (a - d).Cross(b - d);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+			PushTriangle(iA, iB, iD, d.Dot(n));
+			assert(d.Dot(n) >= 0.0);
+
+			n = (b - d).Cross(c - d);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+			PushTriangle(iB, iC, iD, d.Dot(n));
+			assert(d.Dot(n) >= 0.0);
+
+			n = (c - d).Cross(a - d);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+			PushTriangle(iC, iA, iD, d.Dot(n));
+			assert(d.Dot(n) >= 0.0);
+
+			if (abs((d.Dot(n) - dFace) / dFace) < GJK_TERMINATION_RATIO)
 			{
-				tetrahedron.SetVertices(4, simplex);
-				return sqrt(simplex[iFace].Dot(simplex[iFace]));
+				const dVec3 terminatingSimplex[3] = { a,b,c };
+				tetrahedron.SetVertices(3, terminatingSimplex);
+				return dFace;
 			}
 		}
 	}
-	tetrahedron.SetVertices(4, simplex);
+//	tetrahedron.SetVertices(4, simplex);
 	return 0.0;
 }
 double Geometry::ComputeSeparation(
@@ -228,12 +294,25 @@ double Geometry::ComputeSeparation(
 					return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
 				case 3:
 				{
-					const dVec3 perp = (simplexVertices[1] - simplexVertices[0]).Cross(simplexVertices[2] - simplexVertices[0]);
-					poly0 = geom0->Support(pos0, rot0, -perp);
-					poly1 = geom1->Support(pos1, rot1, perp);
-					SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
-					newSimplexPt = pt0 - pt1;
-					simplex.AddVertex(newSimplexPt);
+//					const dVec3 perp = (simplexVertices[1] - simplexVertices[0]).Cross(simplexVertices[2] - simplexVertices[0]);
+//					poly0 = geom0->Support(pos0, rot0, -perp);
+//					poly1 = geom1->Support(pos1, rot1, perp);
+//					SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
+//					newSimplexPt = pt0 - pt1;
+//					simplex.AddVertex(newSimplexPt);
+
+					std::vector<dVec3> asdf;
+					dVec3 qwer[4] = { dVec3(0.0,0.0,1.0), dVec3(1.0, 0.0, -0.4), dVec3(-0.2, 0.8,-0.4), dVec3(-0.2, -0.8, -0.4) };
+
+					for (int i = 0; i < 4; ++i)
+					{
+						poly0 = geom0->Support(pos0, rot0, -qwer[i]);
+						poly1 = geom1->Support(pos1, rot1, qwer[i]);
+						SupportPolygon::ComputeSeparation(poly0, pt0, poly1, pt1);
+						asdf.push_back(pt0 - pt1);
+					}
+					simplex.SetVertices(4, &asdf[0]);
+
 					return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
 				}
 				case 2:
