@@ -69,6 +69,54 @@ namespace MathUtils
 		}
 	}
 
+	template <typename T>
+	void GaussSeidel(const T* const A, const T* const b, const T* const xMin, const T* const xMax, int n, T* const x)
+	{
+		T* dx = new T[n];
+		T* b_r = new T[n]; // b-r
+		std::memcpy(b_r, b, n*sizeof(T));
+		std::memset(x, 0, n*sizeof(T));
+
+		T nInv = (T)1.0 / (T)n;
+
+		T drPrev;
+
+		for (int iter = 0; iter < 64; ++iter)
+		{
+			for (int i = 0; i < n; ++i)
+			{
+				dx[i] = b_r[i];
+				for (int j = 0; j < i; ++j)
+				{
+					dx[i] -= A[n*i + j] * dx[j];
+				}
+				dx[i] /= A[n*i + i];
+				dx[i] = std::max(xMin[i] - x[i], std::min(dx[i], xMax[i] - x[i]));
+				x[i] += dx[i];
+			}
+
+			T dr(0.0);
+			for (int i = 0; i < n; ++i)
+			{
+				T dri(0.0);
+				for (int j = 0; j < n; ++j)
+				{
+					dri += A[n*i + j] * dx[j];
+				}
+				b_r[i] -= dri;
+				dr += dri*dri*nInv;
+			}
+			if (iter > 0)
+			{
+				if (dr < (T)0.0000001 || abs(dr - drPrev) / drPrev < (T)0.01)
+				{
+					return;
+				}
+			}
+			drPrev = dr;
+		}
+	}
+
 //	typedef void(*dydt_func)(double t, const double y[], double yDot[]);
 
 	template <typename T>

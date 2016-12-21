@@ -56,6 +56,9 @@ void Tests::CreateGJKTest(Game* game)
 	geometry->SetHalfHeight(1.0);
 
 	dVec3 pos[2] = { dVec3(0.0,16.0,-1.9),dVec3(0.0,16.0,1.9) };
+//	dVec3 pos[2] = { dVec3(-1.2,16.0,0.0),dVec3(1.2,16.0,0.1) };
+//	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI / 6.0) };
+	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -71,6 +74,7 @@ void Tests::CreateGJKTest(Game* game)
 		rigidBody->SetInertia(dMat33::Identity().Scale(10.0));
 
 		rigidBody->SetPosition(pos[i]);
+		rigidBody->SetRotation(rot[i]);
 
 		game->rb[i] = rigidBody;
 

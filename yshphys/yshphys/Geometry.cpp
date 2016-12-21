@@ -210,17 +210,17 @@ double Geometry::ComputePenetration(
 			n = (a - d).Cross(b - d);
 			n = n.Scale(1.0 / sqrt(n.Dot(n)));
 			PushTriangle(iA, iB, iD, d.Dot(n));
-			assert(d.Dot(n) >= 0.0);
+//			assert(d.Dot(n) >= 0.0);
 
 			n = (b - d).Cross(c - d);
 			n = n.Scale(1.0 / sqrt(n.Dot(n)));
 			PushTriangle(iB, iC, iD, d.Dot(n));
-			assert(d.Dot(n) >= 0.0);
+//			assert(d.Dot(n) >= 0.0);
 
 			n = (c - d).Cross(a - d);
 			n = n.Scale(1.0 / sqrt(n.Dot(n)));
 			PushTriangle(iC, iA, iD, d.Dot(n));
-			assert(d.Dot(n) >= 0.0);
+//			assert(d.Dot(n) >= 0.0);
 
 			if (abs((d.Dot(n) - dFace) / dFace) < GJK_TERMINATION_RATIO)
 			{
