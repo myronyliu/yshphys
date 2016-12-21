@@ -72,14 +72,12 @@ namespace MathUtils
 	template <typename T>
 	void GaussSeidel(const T* const A, const T* const b, const T* const xMin, const T* const xMax, int n, T* const x)
 	{
-		T* dx = new T[n];
-		T* b_r = new T[n]; // b-r
+		T* dx = new T[2 * n];
+		T* b_r = &dx[n]; // b-r
 		std::memcpy(b_r, b, n*sizeof(T));
 		std::memset(x, 0, n*sizeof(T));
 
 		T nInv = (T)1.0 / (T)n;
-
-		T drPrev;
 
 		for (int iter = 0; iter < 64; ++iter)
 		{
@@ -106,15 +104,12 @@ namespace MathUtils
 				b_r[i] -= dri;
 				dr += dri*dri*nInv;
 			}
-			if (iter > 0)
+			if (dr < (T)0.0000001)
 			{
-				if (dr < (T)0.0000001 || abs(dr - drPrev) / drPrev < (T)0.01)
-				{
-					return;
-				}
+				break;
 			}
-			drPrev = dr;
 		}
+		delete[] dx;
 	}
 
 //	typedef void(*dydt_func)(double t, const double y[], double yDot[]);
