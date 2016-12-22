@@ -55,8 +55,8 @@ void Tests::CreateGJKTest(Game* game)
 	geometry->SetRadius(1.0);
 	geometry->SetHalfHeight(1.0);
 
-//	dVec3 pos[2] = { dVec3(0.0,16.0,-1.9),dVec3(0.0,16.0,1.9) };
-	dVec3 pos[2] = { dVec3(-1.2,16.0,0.0),dVec3(1.2,16.0,0.00001) };
+	dVec3 pos[2] = { dVec3(0.0,16.0,-1.9),dVec3(0.0,16.0,1.9) };
+//	dVec3 pos[2] = { dVec3(-1.2,16.0,0.0),dVec3(1.2,16.0,0.00001) };
 //	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI / 6.0) };
 	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
 

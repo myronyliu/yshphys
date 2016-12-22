@@ -107,40 +107,65 @@ double Geometry::ComputePenetration(
 		};
 
 		unsigned int indices[3];
+		dVec3 normal;
 		double distance;
+		bool valid = true;
 	};
 
 	TriangleDistance triangles[256];
-	GJKSimplex::SimplexPt hullPts[256];
+	MinkowskiPoint hullPts[256];
 	unsigned int nTriangles = 0;
 	unsigned int nHullPts = 0;
 	std::make_heap(&triangles[0], &triangles[nTriangles]);
 
-	auto PushTriangle = [&](unsigned int iA, unsigned int iB, unsigned int iC, double distance)
+	auto PushTriangle = [&](unsigned int iA, unsigned int iB, unsigned int iC, double distance, const dVec3& normal)
 	{
 		TriangleDistance td;
 		td.indices[0] = iA;
 		td.indices[1] = iB;
 		td.indices[2] = iC;
 		td.distance = distance;
+		td.normal = normal;
 		triangles[nTriangles] = td;
 		nTriangles++;
 		std::push_heap(&triangles[0], &triangles[nTriangles]);
 	};
-	auto PopClosestTriangle = [&](unsigned int& iA, unsigned int& iB, unsigned int& iC, double& distance)
+	auto PopClosestTriangle = [&](unsigned int& iA, unsigned int& iB, unsigned int& iC, double& distance, dVec3& normal)
 	{
-		std::pop_heap(&triangles[0], &triangles[nTriangles]);
-		nTriangles--;
+		while (true)
+		{
+			std::pop_heap(&triangles[0], &triangles[nTriangles]);
+			nTriangles--;
+			if (triangles[nTriangles].valid)
+			{
+				break;
+			}
+		}
 		unsigned int* indices = triangles[nTriangles].indices;
 		iA = indices[0];
 		iB = indices[1];
 		iC = indices[2];
 		distance = triangles[nTriangles].distance;
+		normal = triangles[nTriangles].normal;
 	};
-	auto AddHullPt = [&](const GJKSimplex::SimplexPt& hullPt)
+	auto AddHullPt = [&](const MinkowskiPoint& hullPt)
 	{
 		hullPts[nHullPts] = hullPt;
 		nHullPts++;
+
+		for (int i = 0; i < nTriangles; ++i)
+		{
+			TriangleDistance& triangle = triangles[i];
+			if (triangle.valid)
+			{
+				const dVec3& A = hullPts[triangle.indices[0]].m_MinkDif;
+				if ((hullPt.m_MinkDif - A).Dot(triangle.normal) >= 0)
+				{
+					triangle.valid = false;
+				}
+			}
+		}
+
 		return nHullPts - 1;
 	};
 	auto UpdateClosestPts = [&](unsigned int iA, unsigned int iB, unsigned int iC)
@@ -149,93 +174,154 @@ double Geometry::ComputePenetration(
 		triangleSimplex.AddPoint(hullPts[iA]);
 		triangleSimplex.AddPoint(hullPts[iB]);
 		triangleSimplex.AddPoint(hullPts[iC]);
-		const GJKSimplex::SimplexPt closestHullPt = triangleSimplex.ClosestPointToOrigin(GJKSimplex());
+		const MinkowskiPoint closestHullPt = triangleSimplex.ClosestPointToOrigin(GJKSimplex());
 		pt0 = (closestHullPt.m_MinkSum + closestHullPt.m_MinkDif).Scale(0.5);
 		pt1 = (closestHullPt.m_MinkSum - closestHullPt.m_MinkDif).Scale(0.5);
 	};
 
-	if (simplex.GetNumPoints() == 4)
+	GJKSimplex fullSimplex = simplex;
+
+	switch (simplex.GetNumPoints())
 	{
-		for (int i = 0; i < 4; ++i)
+	case 1:
+	{
+		MinkowskiPoint singlePt = simplex.m_pts[0];
+		pt0 = (singlePt.m_MinkSum + singlePt.m_MinkDif).Scale(0.5);
+		pt1 = (singlePt.m_MinkSum - singlePt.m_MinkDif).Scale(0.5);
+		return (pt0 - pt1).Dot(pt0 - pt1);
+	}
+	case 2:
+	{
+		const dVec3& A = simplex.m_pts[0].m_MinkDif;
+		const dVec3& B = simplex.m_pts[1].m_MinkDif;
+		const dVec3 AB = B - A;
+		const dVec3 AB_AB = AB.Times(AB);
+		dVec3 n;
+		for (int i = 0; i < 3; ++i)
 		{
-			AddHullPt(simplex.m_pts[i]);
-			const int iA = (i + 0) % 4;
-			const int iB = (i + 1) % 4;
-			const int iC = (i + 2) % 4;
-			const int iD = (i + 3) % 4;
-			const dVec3& A = simplex.m_pts[iA].m_MinkDif;
-			const dVec3& B = simplex.m_pts[iB].m_MinkDif;
-			const dVec3& C = simplex.m_pts[iC].m_MinkDif;
-			const dVec3& D = simplex.m_pts[iD].m_MinkDif;
-
-			dVec3 n = (C - B).Cross(D - B);
-			n = n.Scale(1.0 / sqrt(n.Dot(n)));
-
-			if (n.Dot(B - A) < 0.0)
+			int j = (i + 1) % 3;
+			int k = (i + 2) % 3;
+			if (AB_AB[i] <= AB_AB[j] && AB_AB[i] <= AB_AB[k])
 			{
-				PushTriangle(iD, iC, iB, -B.Dot(n));
-			}
-			else
-			{
-				PushTriangle(iB, iC, iD, B.Dot(n));
+				n[i] = 0.0;
+				n[j] = AB[k];
+				n[k] = -AB[j];
+
+				MinkowskiPoint newSimplexPt;
+				dVec3 p0 = geom0->Support(pos0, rot0, -n);
+				dVec3 p1 = geom1->Support(pos1, rot1, n);
+				const dVec3& C = p0 - p1;
+				newSimplexPt.m_MinkDif = C;
+				newSimplexPt.m_MinkSum = p0 + p1;
+				fullSimplex.AddPoint(newSimplexPt);
+
+				n = (B - A).Cross(C - A);
+				p0 = geom0->Support(pos0, rot0, -n);
+				p1 = geom1->Support(pos1, rot1, n);
+				newSimplexPt.m_MinkDif = p0 - p1;
+				newSimplexPt.m_MinkSum = p0 + p1;
+				fullSimplex.AddPoint(newSimplexPt);
+
+				break;
 			}
 		}
 
-		int nIter = 0;
+		break;
+	}
+	case 3:
+	{
+		const dVec3& A = simplex.m_pts[0].m_MinkDif;
+		const dVec3& B = simplex.m_pts[1].m_MinkDif;
+		const dVec3& C = simplex.m_pts[2].m_MinkDif;
+		const dVec3 n = (B - A).Cross(C - A);
+		MinkowskiPoint newSimplexPt;
+		const dVec3 p0 = geom0->Support(pos0, rot0, -n);
+		const dVec3 p1 = geom1->Support(pos1, rot1, n);
+		newSimplexPt.m_MinkDif = p0 - p1;
+		newSimplexPt.m_MinkSum = p0 + p1;
+		fullSimplex.AddPoint(newSimplexPt);
+		break;
+	}
+	}
 
-		while (nIter < 16)
+	for (int i = 0; i < 4; ++i)
+	{
+		AddHullPt(fullSimplex.m_pts[i]);
+		const int iA = (i + 0) % 4;
+		const int iB = (i + 1) % 4;
+		const int iC = (i + 2) % 4;
+		const int iD = (i + 3) % 4;
+		const dVec3& A = fullSimplex.m_pts[iA].m_MinkDif;
+		const dVec3& B = fullSimplex.m_pts[iB].m_MinkDif;
+		const dVec3& C = fullSimplex.m_pts[iC].m_MinkDif;
+		const dVec3& D = fullSimplex.m_pts[iD].m_MinkDif;
+
+		dVec3 n = (C - B).Cross(D - B);
+		n = n.Scale(1.0 / sqrt(n.Dot(n)));
+
+		if (n.Dot(B - A) < 0.0)
 		{
-			nIter++;
+			PushTriangle(iD, iC, iB, -B.Dot(n), n);
+		}
+		else
+		{
+			PushTriangle(iB, iC, iD, B.Dot(n), n);
+		}
+	}
 
-			unsigned int iA, iB, iC;
-			double dFace;
-			PopClosestTriangle(iA, iB, iC, dFace);
+	int nIter = 0;
 
-			const dVec3& A = hullPts[iA].m_MinkDif;
-			const dVec3& B = hullPts[iB].m_MinkDif;
-			const dVec3& C = hullPts[iC].m_MinkDif;
+	while (nIter < 16)
+	{
+		nIter++;
 
-			dVec3 n = (B - A).Cross(C - A);
-			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+		unsigned int iA, iB, iC;
+		double dFace;
+		dVec3 n;
+		PopClosestTriangle(iA, iB, iC, dFace, n);
 
-			pt0 = geom0->Support(pos0, rot0, n);
-			pt1 = geom1->Support(pos1, rot1, -n);
-			const dVec3 D = pt0 - pt1;
+		const dVec3& A = hullPts[iA].m_MinkDif;
+		const dVec3& B = hullPts[iB].m_MinkDif;
+		const dVec3& C = hullPts[iC].m_MinkDif;
 
-			const double dCloser = abs(D.Dot(n) - dFace);
-			if (dCloser < 0.001 || abs(dCloser / dFace) < GJK_TERMINATION_RATIO)
-			{
-				UpdateClosestPts(iA, iB, iC);
-				return dFace;
-			}
-			else
-			{
-				GJKSimplex::SimplexPt newHullPt;
-				newHullPt.m_MinkDif = D;
-				newHullPt.m_MinkSum = pt0 + pt1;
+		pt0 = geom0->Support(pos0, rot0, n);
+		pt1 = geom1->Support(pos1, rot1, -n);
+		const dVec3 D = pt0 - pt1;
 
-				const unsigned int iD = AddHullPt(newHullPt);
+		const double dCloser = abs(D.Dot(n) - dFace);
+		if (dCloser < 0.001 || abs(dCloser / dFace) < GJK_TERMINATION_RATIO)
+		{
+			UpdateClosestPts(iA, iB, iC);
+			return dFace;
+		}
+		else
+		{
+			MinkowskiPoint newHullPt;
+			newHullPt.m_MinkDif = D;
+			newHullPt.m_MinkSum = pt0 + pt1;
 
-				dVec3 nABD = (A - D).Cross(B - D);
-				nABD = nABD.Scale(1.0 / sqrt(nABD.Dot(nABD)));
-				PushTriangle(iA, iB, iD, D.Dot(nABD));
-				//			assert(d.Dot(nABD) >= 0.0);
+			const unsigned int iD = AddHullPt(newHullPt);
 
-				dVec3 nBCD = (B - D).Cross(C - D);
-				nBCD = nBCD.Scale(1.0 / sqrt(nBCD.Dot(nBCD)));
-				PushTriangle(iB, iC, iD, D.Dot(nBCD));
-				//			assert(d.Dot(nBCD) >= 0.0);
+			dVec3 nABD = (A - D).Cross(B - D);
+			nABD = nABD.Scale(1.0 / sqrt(nABD.Dot(nABD)));
+			PushTriangle(iA, iB, iD, D.Dot(nABD), nABD);
+			//			assert(d.Dot(nABD) >= 0.0);
 
-				dVec3 nCAD = (C - D).Cross(A - D);
-				nCAD = nCAD.Scale(1.0 / sqrt(nCAD.Dot(nCAD)));
-				PushTriangle(iC, iA, iD, D.Dot(nCAD));
-				//			assert(d.Dot(nCAD) >= 0.0);
-			}
+			dVec3 nBCD = (B - D).Cross(C - D);
+			nBCD = nBCD.Scale(1.0 / sqrt(nBCD.Dot(nBCD)));
+			PushTriangle(iB, iC, iD, D.Dot(nBCD), nBCD);
+			//			assert(d.Dot(nBCD) >= 0.0);
+
+			dVec3 nCAD = (C - D).Cross(A - D);
+			nCAD = nCAD.Scale(1.0 / sqrt(nCAD.Dot(nCAD)));
+			PushTriangle(iC, iA, iD, D.Dot(nCAD), nCAD);
+			//			assert(d.Dot(nCAD) >= 0.0);
 		}
 	}
 	unsigned int iA, iB, iC;
 	double dFace;
-	PopClosestTriangle(iA, iB, iC, dFace);
+	dVec3 n;
+	PopClosestTriangle(iA, iB, iC, dFace, n);
 	UpdateClosestPts(iA, iB, iC);
 	return dFace;
 }
@@ -260,7 +346,7 @@ double Geometry::ComputeSeparation(
 		dVec3 v(pos0 - pos1);
 		pt0 = geom0->Support(pos0, rot0, -v);
 		pt1 = geom1->Support(pos1, rot1, v);
-		GJKSimplex::SimplexPt newSimplexPt;
+		MinkowskiPoint newSimplexPt;
 		newSimplexPt.m_MinkDif = pt0 - pt1;
 		newSimplexPt.m_MinkSum = pt0 + pt1;
 		simplex.AddPoint(newSimplexPt);
@@ -268,7 +354,7 @@ double Geometry::ComputeSeparation(
 
 	int nIter = 0;
 
-	GJKSimplex::SimplexPt closestSimplexPt;
+	MinkowskiPoint closestSimplexPt;
 
 	while (nIter < 16)
 	{
@@ -288,13 +374,14 @@ double Geometry::ComputeSeparation(
 			double vSqr = v.Dot(v);
 			if (vSqr < MIN_SUPPORT_SQR)
 			{
-				pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
-				pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
-				return 0.0;
+				return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+//				pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
+//				pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
+//				return 0.0;
 			}
 			pt0 = geom0->Support(pos0, rot0, -v);
 			pt1 = geom1->Support(pos1, rot1, v);
-			GJKSimplex::SimplexPt newSimplexPt;
+			MinkowskiPoint newSimplexPt;
 			newSimplexPt.m_MinkDif = pt0 - pt1;
 			newSimplexPt.m_MinkSum = pt0 + pt1;
 			const double dSqr = newSimplexPt.m_MinkDif.Dot(newSimplexPt.m_MinkDif);

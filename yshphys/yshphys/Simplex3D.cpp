@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Simplex3D.h"
 
-GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin2(int iA, int iB, GJKSimplex& closestFeature) const
+MinkowskiPoint GJKSimplex::ClosestPointToOrigin2(int iA, int iB, GJKSimplex& closestFeature) const
 {
 	const dVec3& A = m_pts[iA].m_MinkDif;
 	const dVec3& B = m_pts[iB].m_MinkDif;
@@ -28,13 +28,13 @@ GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin2(int iA, int iB, GJKSimpl
 		closestFeature.m_pts[0] = m_pts[iA];
 		closestFeature.m_pts[1] = m_pts[iB];
 
-		SimplexPt pq;
+		MinkowskiPoint pq;
 		pq.m_MinkDif = A + AB.Scale(t);
 		pq.m_MinkSum = m_pts[iA].m_MinkSum + (m_pts[iB].m_MinkSum - m_pts[iA].m_MinkSum).Scale(t);
 		return pq;
 	}
 }
-GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin3(int iA, int iB, int iC, GJKSimplex& closestFeature) const
+MinkowskiPoint GJKSimplex::ClosestPointToOrigin3(int iA, int iB, int iC, GJKSimplex& closestFeature) const
 {
 	const dVec3& A = m_pts[iA].m_MinkDif;
 	const dVec3& B = m_pts[iB].m_MinkDif;
@@ -75,7 +75,7 @@ GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin3(int iA, int iB, int iC, 
 		closestFeature.m_pts[1] = m_pts[iB];
 		closestFeature.m_pts[2] = m_pts[iC];
 
-		SimplexPt pq;
+		MinkowskiPoint pq;
 		pq.m_MinkDif = A + AB.Scale(s) + AC.Scale(t);
 		pq.m_MinkSum = m_pts[iA].m_MinkSum
 			+ (m_pts[iB].m_MinkSum - m_pts[iA].m_MinkSum).Scale(s)
@@ -83,7 +83,7 @@ GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin3(int iA, int iB, int iC, 
 		return pq;
 	}
 }
-GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin4(int iA, int iB, int iC, int iD, GJKSimplex& closestFeature) const
+MinkowskiPoint GJKSimplex::ClosestPointToOrigin4(int iA, int iB, int iC, int iD, GJKSimplex& closestFeature) const
 {
 	const dVec3& A = m_pts[iA].m_MinkDif;
 	const dVec3& B = m_pts[iB].m_MinkDif;
@@ -166,7 +166,7 @@ GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin4(int iA, int iB, int iC, 
 	else
 	{
 		closestFeature = *this;
-		SimplexPt pq;
+		MinkowskiPoint pq;
 		pq.m_MinkDif = dVec3(0.0, 0.0, 0.0);
 		pq.m_MinkSum = m_pts[iA].m_MinkSum
 			+ (m_pts[iB].m_MinkSum - m_pts[iA].m_MinkSum).Scale(t0)
@@ -176,7 +176,7 @@ GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin4(int iA, int iB, int iC, 
 	}
 }
 
-GJKSimplex::SimplexPt GJKSimplex::ClosestPointToOrigin(GJKSimplex& closestFeature) const
+MinkowskiPoint GJKSimplex::ClosestPointToOrigin(GJKSimplex& closestFeature) const
 {
 	switch (m_nPts)
 	{

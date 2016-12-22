@@ -81,8 +81,8 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 //			dVec3 force = (compression.Scale(m_springCoeff.k) - compressionRate.Scale(m_springCoeff.b)).Scale(m);
 			dVec3 force = (compression.Scale(m_springCoeff.k) - v.Scale(m_springCoeff.b)).Scale(m);
 
-			m_pickedObject->ApplyForce(force, x);
-//			m_pickedObject->ApplyForceAtCenterOfMass(force);
+//			m_pickedObject->ApplyForce(force, x);
+			m_pickedObject->ApplyForceAtCenterOfMass(force);
 		}
 	}
 }

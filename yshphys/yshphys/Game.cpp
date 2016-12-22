@@ -114,13 +114,15 @@ void Game::Run()
 			m_renderScene.DebugDrawSystem().DrawPicker(*m_renderScene.DebugDrawSystem().m_picker, fVec3(0.0f, 1.0f, 0.0f));
 
 			dVec3 x0, x1;
-			Geometry::ComputeSeparation(
+			const double sep = Geometry::ComputeSeparation(
 				rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(), x0,
 				rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), x1);
 
+			fVec3 color = (sep > 0.0) ? fVec3(1.0f, 0.0f, 0.0f) : fVec3(0.0f, 1.0f, 0.0f);
+
 			m_renderScene.DebugDrawSystem().DrawLine(x0, x1, fVec3(0.0f, 0.0f, 1.0f));
-			m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x0, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
-			m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x1, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false);
+			m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x0, fQuat::Identity(), color, false);
+			m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x1, fQuat::Identity(), color, false);
 			
 			m_renderScene.DrawScene();
 
