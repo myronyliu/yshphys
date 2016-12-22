@@ -356,6 +356,9 @@
     <ClCompile Include="Trimesh.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
+    <ClCompile Include="EPAHull.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

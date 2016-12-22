@@ -218,6 +218,7 @@
     <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
+    <ClCompile Include="EPAHull.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameNode.cpp" />
     <ClCompile Include="GameObject.cpp" />

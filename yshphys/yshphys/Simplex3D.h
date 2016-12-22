@@ -27,5 +27,65 @@ private:
 
 struct EPAHull
 {
+private:
+
+	struct Vertex;
+	struct Face;
+	struct HalfEdge;
+
+	struct HalfEdge
+	{
+		~HalfEdge();
+		void SetVertex(Vertex* vertex);
+
+		HalfEdge*	twin = nullptr;
+		HalfEdge*	next = nullptr;
+		HalfEdge*	prev = nullptr;
+		Face*	 	face = nullptr;
+	private:
+		Vertex*	 	vert = nullptr;
+	};
+	struct Face
+	{
+		HalfEdge* edge = nullptr;
+
+		double distance;
+		dVec3 normal;
+		
+		bool operator < (const Face& face)
+		{
+			return distance > face.distance;
+		}
+	};
+	struct Vertex
+	{
+		friend class HalfEdge;
+
+		MinkowskiPoint	point;
+
+	private:
+		int nRefs = 0; // reference counting
+	};
+
+	// DATA BUFFERS
+
+	Face m_faces[256];
+	int m_nFaces = 0;
+
+	MinkowskiPoint m_vertices[256];
+	int m_nVertices = 0;
+
+	// MEMORY MANAGEMENT
+
+	HalfEdge* m_halfEdgeFreeList[256];
+	int m_nFreeHalfEdges = 0;
+	MinkowskiPoint* m_vertexFreeList[256];
+	int m_nFreeVertices = 0;
+
+	
+	void AddPoint(const MinkowskiPoint& pt, const Face& face);
+
+	void InvalidateFace(Face& face);
+
 
 };
