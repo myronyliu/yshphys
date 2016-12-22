@@ -5,8 +5,7 @@
 #include "Ray.h"
 
 #define MIN_SUPPORT_SQR 0.0001
-#define GJK_TERMINATION_RATIO 0.0001
-#define DEGENERATE_SIMPLEX_RATIO 0.01
+#define GJK_TERMINATION_RATIO 0.01
 
 Geometry::Geometry() : m_pos(0.0, 0.0, 0.0), m_rot(0.0, 0.0, 0.0, 1.0)
 {
@@ -251,13 +250,15 @@ double Geometry::ComputeSeparation(
 
 	int nIter = 0;
 
+	GJKSimplex::SimplexPt closestSimplexPt;
+
 	while (nIter < 16)
 	{
 		nIter++;
 		// Get the closest point on the convex hull of the simplex, set it to the new support direction "v"
 		// and discard any existing points on the simplex that are not needed to express "v"
 		GJKSimplex closestFeature;
-		GJKSimplex::SimplexPt closestSimplexPt = simplex.ClosestPointToOrigin(closestFeature);
+		closestSimplexPt = simplex.ClosestPointToOrigin(closestFeature);
 
 		if (closestFeature.GetNumPoints() == 4)
 		{
@@ -278,23 +279,30 @@ double Geometry::ComputeSeparation(
 			GJKSimplex::SimplexPt newSimplexPt;
 			newSimplexPt.m_MinkDif = pt0 - pt1;
 			newSimplexPt.m_MinkSum = pt0 + pt1;
-			const double dSqr((pt0 - pt1).Dot(pt0 - pt1));
+			const double dSqr = newSimplexPt.m_MinkDif.Dot(newSimplexPt.m_MinkDif);
 
 			if (dSqr < MIN_SUPPORT_SQR)
 			{
 				return 0.0;
 			}
-			else if (fabs(newSimplexPt.m_MinkDif.Dot(v) - vSqr) / vSqr < GJK_TERMINATION_RATIO)
+			else
 			{
-				pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
-				pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
-				return sqrt(dSqr);
+				const double vNorm = sqrt(vSqr);
+				const dVec3 vHat = v.Scale(1.0 / vNorm);
+				const double dCloser = fabs(newSimplexPt.m_MinkDif.Dot(vHat) - vNorm);
+				if (dCloser < 0.001 || dCloser / vNorm < GJK_TERMINATION_RATIO)
+				{
+					pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
+					pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
+					return sqrt(dSqr);
+				}
 			}
 			// Add the newly found support point to the simplex
 			simplex = closestFeature;
 			simplex.AddPoint(newSimplexPt);
 		}
 	}
-	assert(0);
-	return 88888888.0;
+	pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
+	pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
+	return sqrt((pt0 - pt1).Dot(pt0 - pt1));
 }
