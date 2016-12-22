@@ -271,8 +271,8 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 }
 void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& color)
 {
-	const int nRadiusPts = 32; // also the number of segments
-	const int nTheta = 16;
+	const int nRadiusPts = 16; // also the number of segments
+	const int nTheta = 8;
 
 	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nRadiusPts) + 1;
 	const int nStripPts = 2 * (nTheta - 2) + nHeightPts;

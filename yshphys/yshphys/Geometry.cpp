@@ -99,127 +99,145 @@ double Geometry::ComputePenetration(
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	const GJKSimplex& simplex)
 {
-//	struct TriangleDistance
-//	{
-//		bool operator < (const TriangleDistance& td)
-//		{
-//			return distance > td.distance;
-//		};
+	struct TriangleDistance
+	{
+		bool operator < (const TriangleDistance& td)
+		{
+			return distance > td.distance;
+		};
 
-//		unsigned int indices[3];
-//		double distance;
-//	};
+		unsigned int indices[3];
+		double distance;
+	};
 
-//	TriangleDistance triangles[256];
-//	dVec3 vertices[256];
-//	unsigned int nTriangles = 0;
-//	unsigned int nVertices = 0;
-//	std::make_heap(&triangles[0], &triangles[nTriangles]);
+	TriangleDistance triangles[256];
+	GJKSimplex::SimplexPt hullPts[256];
+	unsigned int nTriangles = 0;
+	unsigned int nHullPts = 0;
+	std::make_heap(&triangles[0], &triangles[nTriangles]);
 
-//	auto PushTriangle = [&](unsigned int A, unsigned int B, unsigned int C, double distance)
-//	{
-//		TriangleDistance td;
-//		td.indices[0] = A;
-//		td.indices[1] = B;
-//		td.indices[2] = C;
-//		td.distance = distance;
-//		triangles[nTriangles] = td;
-//		nTriangles++;
-//		std::push_heap(&triangles[0], &triangles[nTriangles]);
-//	};
-//	auto PopClosestTriangle = [&](unsigned int& A, unsigned int& B, unsigned int& C, double& distance)
-//	{
-//		std::pop_heap(&triangles[0], &triangles[nTriangles]);
-//		nTriangles--;
-//		unsigned int* indices = triangles[nTriangles].indices;
-//		A = indices[0];
-//		B = indices[1];
-//		C = indices[2];
-//		distance = triangles[nTriangles].distance;
-//	};
-//	auto PushVertex = [&](const dVec3& vertex)
-//	{
-//		vertices[nVertices] = vertex;
-//		nVertices++;
-//		return nVertices - 1;
-//	};
+	auto PushTriangle = [&](unsigned int iA, unsigned int iB, unsigned int iC, double distance)
+	{
+		TriangleDistance td;
+		td.indices[0] = iA;
+		td.indices[1] = iB;
+		td.indices[2] = iC;
+		td.distance = distance;
+		triangles[nTriangles] = td;
+		nTriangles++;
+		std::push_heap(&triangles[0], &triangles[nTriangles]);
+	};
+	auto PopClosestTriangle = [&](unsigned int& iA, unsigned int& iB, unsigned int& iC, double& distance)
+	{
+		std::pop_heap(&triangles[0], &triangles[nTriangles]);
+		nTriangles--;
+		unsigned int* indices = triangles[nTriangles].indices;
+		iA = indices[0];
+		iB = indices[1];
+		iC = indices[2];
+		distance = triangles[nTriangles].distance;
+	};
+	auto AddHullPt = [&](const GJKSimplex::SimplexPt& hullPt)
+	{
+		hullPts[nHullPts] = hullPt;
+		nHullPts++;
+		return nHullPts - 1;
+	};
+	auto UpdateClosestPts = [&](unsigned int iA, unsigned int iB, unsigned int iC)
+	{
+		GJKSimplex triangleSimplex;
+		triangleSimplex.AddPoint(hullPts[iA]);
+		triangleSimplex.AddPoint(hullPts[iB]);
+		triangleSimplex.AddPoint(hullPts[iC]);
+		const GJKSimplex::SimplexPt closestHullPt = triangleSimplex.ClosestPointToOrigin(GJKSimplex());
+		pt0 = (closestHullPt.m_MinkSum + closestHullPt.m_MinkDif).Scale(0.5);
+		pt1 = (closestHullPt.m_MinkSum - closestHullPt.m_MinkDif).Scale(0.5);
+	};
 
-//	dVec3 tetraVerts[4];
-//	if (tetrahedron.GetVertices(tetraVerts) == 4)
-//	{
-//		for (int i = 0; i < 4; ++i)
-//		{
-//			PushVertex(tetraVerts[i]);
-//			const int iA = (i + 0) % 4;
-//			const int iB = (i + 1) % 4;
-//			const int iC = (i + 2) % 4;
-//			const int iD = (i + 3) % 4;
-//			const dVec3& a = tetraVerts[iA];
-//			const dVec3& b = tetraVerts[iB];
-//			const dVec3& c = tetraVerts[iC];
-//			const dVec3& d = tetraVerts[iD];
+	if (simplex.GetNumPoints() == 4)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			AddHullPt(simplex.m_pts[i]);
+			const int iA = (i + 0) % 4;
+			const int iB = (i + 1) % 4;
+			const int iC = (i + 2) % 4;
+			const int iD = (i + 3) % 4;
+			const dVec3& A = simplex.m_pts[iA].m_MinkDif;
+			const dVec3& B = simplex.m_pts[iB].m_MinkDif;
+			const dVec3& C = simplex.m_pts[iC].m_MinkDif;
+			const dVec3& D = simplex.m_pts[iD].m_MinkDif;
 
-//			dVec3 n = (c - b).Cross(d - b);
-//			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+			dVec3 n = (C - B).Cross(D - B);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
-//			if (n.Dot(b - a) < 0.0)
-//			{
-//				PushTriangle(iD, iC, iB, -b.Dot(n));
-//			}
-//			else
-//			{
-//				PushTriangle(iB, iC, iD, b.Dot(n));
-//			}
-//		}
+			if (n.Dot(B - A) < 0.0)
+			{
+				PushTriangle(iD, iC, iB, -B.Dot(n));
+			}
+			else
+			{
+				PushTriangle(iB, iC, iD, B.Dot(n));
+			}
+		}
 
-//		int nIter = 0;
+		int nIter = 0;
 
-//		while (nIter < 16)
-//		{
-//			nIter++;
+		while (nIter < 16)
+		{
+			nIter++;
 
-//			unsigned int iA, iB, iC;
-//			double dFace;
-//			PopClosestTriangle(iA, iB, iC, dFace);
+			unsigned int iA, iB, iC;
+			double dFace;
+			PopClosestTriangle(iA, iB, iC, dFace);
 
-//			const dVec3 a = vertices[iA];
-//			const dVec3 b = vertices[iB];
-//			const dVec3 c = vertices[iC];
+			const dVec3& A = hullPts[iA].m_MinkDif;
+			const dVec3& B = hullPts[iB].m_MinkDif;
+			const dVec3& C = hullPts[iC].m_MinkDif;
 
-//			dVec3 n = (b - a).Cross(c - a);
-//			n = n.Scale(1.0 / sqrt(n.Dot(n)));
+			dVec3 n = (B - A).Cross(C - A);
+			n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
-//			pt0 = geom0->Support(pos0, rot0, n);
-//			pt1 = geom1->Support(pos1, rot1, -n);
-//			const dVec3 d = pt0 - pt1;
+			pt0 = geom0->Support(pos0, rot0, n);
+			pt1 = geom1->Support(pos1, rot1, -n);
+			const dVec3 D = pt0 - pt1;
 
-//			const unsigned int iD = PushVertex(d);
+			const double dCloser = abs(D.Dot(n) - dFace);
+			if (dCloser < 0.001 || abs(dCloser / dFace) < GJK_TERMINATION_RATIO)
+			{
+				UpdateClosestPts(iA, iB, iC);
+				return dFace;
+			}
+			else
+			{
+				GJKSimplex::SimplexPt newHullPt;
+				newHullPt.m_MinkDif = D;
+				newHullPt.m_MinkSum = pt0 + pt1;
 
-//			n = (a - d).Cross(b - d);
-//			n = n.Scale(1.0 / sqrt(n.Dot(n)));
-//			PushTriangle(iA, iB, iD, d.Dot(n));
-////			assert(d.Dot(n) >= 0.0);
+				const unsigned int iD = AddHullPt(newHullPt);
 
-//			n = (b - d).Cross(c - d);
-//			n = n.Scale(1.0 / sqrt(n.Dot(n)));
-//			PushTriangle(iB, iC, iD, d.Dot(n));
-////			assert(d.Dot(n) >= 0.0);
+				dVec3 nABD = (A - D).Cross(B - D);
+				nABD = nABD.Scale(1.0 / sqrt(nABD.Dot(nABD)));
+				PushTriangle(iA, iB, iD, D.Dot(nABD));
+				//			assert(d.Dot(nABD) >= 0.0);
 
-//			n = (c - d).Cross(a - d);
-//			n = n.Scale(1.0 / sqrt(n.Dot(n)));
-//			PushTriangle(iC, iA, iD, d.Dot(n));
-////			assert(d.Dot(n) >= 0.0);
+				dVec3 nBCD = (B - D).Cross(C - D);
+				nBCD = nBCD.Scale(1.0 / sqrt(nBCD.Dot(nBCD)));
+				PushTriangle(iB, iC, iD, D.Dot(nBCD));
+				//			assert(d.Dot(nBCD) >= 0.0);
 
-//			if (abs((d.Dot(n) - dFace) / dFace) < GJK_TERMINATION_RATIO)
-//			{
-//				const dVec3 terminatingSimplex[3] = { a,b,c };
-//				tetrahedron.SetVertices(3, terminatingSimplex);
-//				return dFace;
-//			}
-//		}
-//	}
-////	tetrahedron.SetVertices(4, simplex);
-	return 0.0;
+				dVec3 nCAD = (C - D).Cross(A - D);
+				nCAD = nCAD.Scale(1.0 / sqrt(nCAD.Dot(nCAD)));
+				PushTriangle(iC, iA, iD, D.Dot(nCAD));
+				//			assert(d.Dot(nCAD) >= 0.0);
+			}
+		}
+	}
+	unsigned int iA, iB, iC;
+	double dFace;
+	PopClosestTriangle(iA, iB, iC, dFace);
+	UpdateClosestPts(iA, iB, iC);
+	return dFace;
 }
 double Geometry::ComputeSeparation(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
@@ -262,7 +280,7 @@ double Geometry::ComputeSeparation(
 
 		if (closestFeature.GetNumPoints() == 4)
 		{
-			return ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+			return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
 		}
 		else
 		{
