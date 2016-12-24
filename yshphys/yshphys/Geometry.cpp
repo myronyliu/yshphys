@@ -99,88 +99,9 @@ double Geometry::ComputePenetration(
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	const GJKSimplex& simplex)
 {
-	struct TriangleDistance
-	{
-		bool operator < (const TriangleDistance& td)
-		{
-			return distance > td.distance;
-		};
-
-		unsigned int indices[3];
-		dVec3 normal;
-		double distance;
-		bool valid = true;
-	};
-
-	TriangleDistance triangles[256];
-	MinkowskiPoint hullPts[256];
-	unsigned int nTriangles = 0;
-	unsigned int nHullPts = 0;
-	std::make_heap(&triangles[0], &triangles[nTriangles]);
-
-	auto PushTriangle = [&](unsigned int iA, unsigned int iB, unsigned int iC, double distance, const dVec3& normal)
-	{
-		TriangleDistance td;
-		td.indices[0] = iA;
-		td.indices[1] = iB;
-		td.indices[2] = iC;
-		td.distance = distance;
-		td.normal = normal;
-		triangles[nTriangles] = td;
-		nTriangles++;
-		std::push_heap(&triangles[0], &triangles[nTriangles]);
-	};
-	auto PopClosestTriangle = [&](unsigned int& iA, unsigned int& iB, unsigned int& iC, double& distance, dVec3& normal)
-	{
-		while (true)
-		{
-			std::pop_heap(&triangles[0], &triangles[nTriangles]);
-			nTriangles--;
-			if (triangles[nTriangles].valid)
-			{
-				break;
-			}
-		}
-		unsigned int* indices = triangles[nTriangles].indices;
-		iA = indices[0];
-		iB = indices[1];
-		iC = indices[2];
-		distance = triangles[nTriangles].distance;
-		normal = triangles[nTriangles].normal;
-	};
-	auto AddHullPt = [&](const MinkowskiPoint& hullPt)
-	{
-		hullPts[nHullPts] = hullPt;
-		nHullPts++;
-
-		for (int i = 0; i < nTriangles; ++i)
-		{
-			TriangleDistance& triangle = triangles[i];
-			if (triangle.valid)
-			{
-				const dVec3& A = hullPts[triangle.indices[0]].m_MinkDif;
-				if ((hullPt.m_MinkDif - A).Dot(triangle.normal) >= 0)
-				{
-					triangle.valid = false;
-				}
-			}
-		}
-
-		return nHullPts - 1;
-	};
-	auto UpdateClosestPts = [&](unsigned int iA, unsigned int iB, unsigned int iC)
-	{
-		GJKSimplex triangleSimplex;
-		triangleSimplex.AddPoint(hullPts[iA]);
-		triangleSimplex.AddPoint(hullPts[iB]);
-		triangleSimplex.AddPoint(hullPts[iC]);
-		const MinkowskiPoint closestHullPt = triangleSimplex.ClosestPointToOrigin(GJKSimplex());
-		pt0 = (closestHullPt.m_MinkSum + closestHullPt.m_MinkDif).Scale(0.5);
-		pt1 = (closestHullPt.m_MinkSum - closestHullPt.m_MinkDif).Scale(0.5);
-	};
+	// COMPLETE THE TETRAHEDRON IF THE SIMPLEX HAS FEWER THAN 4 POINTS
 
 	GJKSimplex fullSimplex = simplex;
-
 	switch (simplex.GetNumPoints())
 	{
 	case 1:
@@ -244,86 +165,182 @@ double Geometry::ComputePenetration(
 	}
 	}
 
+	// HALF-EDGE DATA STRUCTURE
+
+	struct Face;
+	struct HalfEdge;
+
+	struct HalfEdge
+	{
+		HalfEdge*		twin = nullptr;
+		HalfEdge*		next = nullptr;
+		Face*	 		face = nullptr;
+		MinkowskiPoint*	vert = nullptr;
+	};
+	struct Face
+	{
+		HalfEdge* edge = nullptr;
+
+		double distance;
+		dVec3 normal;
+
+		bool visited = false;
+	};
+
+	bool (*CompareFace)(const Face*, const Face*) = [](const Face* face0, const Face* face1)
+	{
+		if (face0->distance > face1->distance)
+		{
+			return true;
+		}
+		else if (face0->distance < face1->distance)
+		{
+			return false;
+		}
+		else
+		{
+			return face0->edge > face1->edge;
+		}
+	};
+
+	Face* faces[256];
+	int nFaces = 0;
+
+	// INITIALIZE EPAHULL
+
+	MinkowskiPoint tetraVerts[4] = { fullSimplex.m_pts[0], fullSimplex.m_pts[1], fullSimplex.m_pts[2], fullSimplex.m_pts[3] };
+
+	HalfEdge tetraEdges[4][4];
+
+	Face tetraFaces[4];
+
 	for (int i = 0; i < 4; ++i)
 	{
-		AddHullPt(fullSimplex.m_pts[i]);
-		const int iA = (i + 0) % 4;
-		const int iB = (i + 1) % 4;
-		const int iC = (i + 2) % 4;
-		const int iD = (i + 3) % 4;
-		const dVec3& A = fullSimplex.m_pts[iA].m_MinkDif;
-		const dVec3& B = fullSimplex.m_pts[iB].m_MinkDif;
-		const dVec3& C = fullSimplex.m_pts[iC].m_MinkDif;
-		const dVec3& D = fullSimplex.m_pts[iD].m_MinkDif;
+		for (int j = 0; j < 4; ++j)
+		{
+			tetraEdges[i][j].twin = &tetraEdges[j][i];
+			tetraEdges[i][j].vert = &tetraVerts[j];
+		}
+	}
+
+	for (int f = 0; f < 4; ++f)
+	{
+		const int iA = (f + 0) % 4;
+		const int iB = (f + 1) % 4;
+		const int iC = (f + 2) % 4;
+		const int iD = (f + 3) % 4;
+		const dVec3& A = tetraVerts[iA].m_MinkDif;
+		const dVec3& B = tetraVerts[iB].m_MinkDif;
+		const dVec3& C = tetraVerts[iC].m_MinkDif;
+		const dVec3& D = tetraVerts[iD].m_MinkDif;
 
 		dVec3 n = (C - B).Cross(D - B);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
+		faces[f] = &tetraFaces[f];
+
 		if (n.Dot(B - A) < 0.0)
 		{
-			PushTriangle(iD, iC, iB, -B.Dot(n), n);
+			tetraEdges[iC][iB].face = &tetraFaces[f];
+			tetraEdges[iD][iC].face = &tetraFaces[f];
+			tetraEdges[iB][iD].face = &tetraFaces[f];
+
+			tetraEdges[iC][iB].next = &tetraEdges[iB][iD];
+			tetraEdges[iD][iC].next = &tetraEdges[iC][iB];
+			tetraEdges[iB][iD].next = &tetraEdges[iD][iC];
+
+			tetraFaces[f].edge = &tetraEdges[iC][iB];
+
+			n = -n;
 		}
 		else
 		{
-			PushTriangle(iB, iC, iD, B.Dot(n), n);
+			tetraEdges[iB][iC].face = &tetraFaces[f];
+			tetraEdges[iC][iD].face = &tetraFaces[f];
+			tetraEdges[iD][iB].face = &tetraFaces[f];
+
+			tetraEdges[iB][iC].next = &tetraEdges[iC][iD];
+			tetraEdges[iC][iD].next = &tetraEdges[iD][iB];
+			tetraEdges[iD][iB].next = &tetraEdges[iB][iC];
+
+			tetraFaces[f].edge = &tetraEdges[iB][iC];
 		}
+
+		tetraFaces[f].normal = n;
+		tetraFaces[f].distance = B.Dot(n);
 	}
 
-	int nIter = 0;
+	nFaces = 4;
+	std::make_heap(faces, &faces[4], CompareFace);
 
-	while (nIter < 16)
+	// BEGIN MODIFIED QUICKHULL ALGORITHM http://media.steampowered.com/apps/valve/2014/DirkGregorius_ImplementingQuickHull.pdf
+
+	static const double INVALID_FACE_FLAG = -88888888.0;
+
+	for (int nIter = 0; nIter < 16; ++nIter)
 	{
-		nIter++;
-
-		unsigned int iA, iB, iC;
-		double dFace;
-		dVec3 n;
-		PopClosestTriangle(iA, iB, iC, dFace, n);
-
-		const dVec3& A = hullPts[iA].m_MinkDif;
-		const dVec3& B = hullPts[iB].m_MinkDif;
-		const dVec3& C = hullPts[iC].m_MinkDif;
-
-		pt0 = geom0->Support(pos0, rot0, n);
-		pt1 = geom1->Support(pos1, rot1, -n);
-		const dVec3 D = pt0 - pt1;
-
-		const double dCloser = abs(D.Dot(n) - dFace);
-		if (dCloser < 0.001 || abs(dCloser / dFace) < GJK_TERMINATION_RATIO)
+		while (nFaces > 0)
 		{
-			UpdateClosestPts(iA, iB, iC);
-			return dFace;
-		}
-		else
-		{
-			MinkowskiPoint newHullPt;
-			newHullPt.m_MinkDif = D;
-			newHullPt.m_MinkSum = pt0 + pt1;
+			std::pop_heap(faces, &faces[nFaces]);
+			nFaces--;
+			Face* closestFace = faces[nFaces];
+			if (closestFace->distance == INVALID_FACE_FLAG)
+			{
+				delete closestFace;
+			}
+			else
+			{
+				const dVec3& n = closestFace->normal;
+				pt0 = geom0->Support(pos0, rot0, n);
+				pt1 = geom1->Support(pos1, rot1, -n);
 
-			const unsigned int iD = AddHullPt(newHullPt);
+				const dVec3 D = pt0 - pt1;
 
-			dVec3 nABD = (A - D).Cross(B - D);
-			nABD = nABD.Scale(1.0 / sqrt(nABD.Dot(nABD)));
-			PushTriangle(iA, iB, iD, D.Dot(nABD), nABD);
-			//			assert(d.Dot(nABD) >= 0.0);
+				std::vector<Face*> visitedFaces;
+				std::stack<HalfEdge*> edgeStack;
+				std::vector<HalfEdge*> horizon;
 
-			dVec3 nBCD = (B - D).Cross(C - D);
-			nBCD = nBCD.Scale(1.0 / sqrt(nBCD.Dot(nBCD)));
-			PushTriangle(iB, iC, iD, D.Dot(nBCD), nBCD);
-			//			assert(d.Dot(nBCD) >= 0.0);
+				edgeStack.push(closestFace->edge->twin);
+				edgeStack.push(closestFace->edge->next->twin);
+				edgeStack.push(closestFace->edge->next->next->twin);
 
-			dVec3 nCAD = (C - D).Cross(A - D);
-			nCAD = nCAD.Scale(1.0 / sqrt(nCAD.Dot(nCAD)));
-			PushTriangle(iC, iA, iD, D.Dot(nCAD), nCAD);
-			//			assert(d.Dot(nCAD) >= 0.0);
+				while (!edgeStack.empty())
+				{
+					HalfEdge* edge = edgeStack.top();
+					Face* face = edge->face;
+					edgeStack.pop();
+
+					if ((D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0)
+					{
+						horizon.push_back(edge);
+					}
+					else
+					{
+						if (!edge->next->twin->face->visited)
+						{
+							edgeStack.push(edge->next->twin);
+						}
+						if (!edge->next->next->twin->face->visited)
+						{
+							edgeStack.push(edge->next->next->twin);
+						}
+					}
+					face->visited = true;
+					visitedFaces.push_back(face);
+				}
+
+				for (Face* visitedFace : visitedFaces)
+				{
+					visitedFace->visited = false;
+				}
+
+
+				
+				break;
+			}
 		}
 	}
-	unsigned int iA, iB, iC;
-	double dFace;
-	dVec3 n;
-	PopClosestTriangle(iA, iB, iC, dFace, n);
-	UpdateClosestPts(iA, iB, iC);
-	return dFace;
+return 0.0;
 }
 double Geometry::ComputeSeparation(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
