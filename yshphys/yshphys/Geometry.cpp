@@ -203,23 +203,24 @@ double Geometry::ComputePenetration(
 		}
 	};
 
-	Face* faces[256];
-	int nFaces = 0;
+	Face* heap[256];
 
 	// INITIALIZE EPAHULL
 
-	MinkowskiPoint tetraVerts[4] = { fullSimplex.m_pts[0], fullSimplex.m_pts[1], fullSimplex.m_pts[2], fullSimplex.m_pts[3] };
-
-	HalfEdge tetraEdges[4][4];
-
-	Face tetraFaces[4];
+	Face faces[64];
+	MinkowskiPoint verts[32];
+	HalfEdge edges[256];
+	verts[0] = fullSimplex.m_pts[0];
+	verts[1] = fullSimplex.m_pts[1];
+	verts[2] = fullSimplex.m_pts[2];
+	verts[3] = fullSimplex.m_pts[3];
 
 	for (int i = 0; i < 4; ++i)
 	{
 		for (int j = 0; j < 4; ++j)
 		{
-			tetraEdges[i][j].twin = &tetraEdges[j][i];
-			tetraEdges[i][j].vert = &tetraVerts[j];
+			edges[4 * i + j].twin = &edges[4 * j + i];
+			edges[4 * i + j].vert = &verts[j];
 		}
 	}
 
@@ -229,49 +230,52 @@ double Geometry::ComputePenetration(
 		const int iB = (f + 1) % 4;
 		const int iC = (f + 2) % 4;
 		const int iD = (f + 3) % 4;
-		const dVec3& A = tetraVerts[iA].m_MinkDif;
-		const dVec3& B = tetraVerts[iB].m_MinkDif;
-		const dVec3& C = tetraVerts[iC].m_MinkDif;
-		const dVec3& D = tetraVerts[iD].m_MinkDif;
+		const dVec3& A = verts[iA].m_MinkDif;
+		const dVec3& B = verts[iB].m_MinkDif;
+		const dVec3& C = verts[iC].m_MinkDif;
+		const dVec3& D = verts[iD].m_MinkDif;
 
 		dVec3 n = (C - B).Cross(D - B);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
-		faces[f] = &tetraFaces[f];
+		heap[f] = &faces[f];
 
 		if (n.Dot(B - A) < 0.0)
 		{
-			tetraEdges[iC][iB].face = &tetraFaces[f];
-			tetraEdges[iD][iC].face = &tetraFaces[f];
-			tetraEdges[iB][iD].face = &tetraFaces[f];
+			edges[4 * iC + iB].face = &faces[f];
+			edges[4 * iD + iC].face = &faces[f];
+			edges[4 * iB + iD].face = &faces[f];
 
-			tetraEdges[iC][iB].next = &tetraEdges[iB][iD];
-			tetraEdges[iD][iC].next = &tetraEdges[iC][iB];
-			tetraEdges[iB][iD].next = &tetraEdges[iD][iC];
+			edges[4 * iC + iB].next = &edges[4 * iB + iD];
+			edges[4 * iD + iC].next = &edges[4 * iC + iB];
+			edges[4 * iB + iD].next = &edges[4 * iD + iC];
 
-			tetraFaces[f].edge = &tetraEdges[iC][iB];
+			faces[f].edge = &edges[4 * iC + iB];
 
 			n = -n;
 		}
 		else
 		{
-			tetraEdges[iB][iC].face = &tetraFaces[f];
-			tetraEdges[iC][iD].face = &tetraFaces[f];
-			tetraEdges[iD][iB].face = &tetraFaces[f];
+			edges[4*iB+iC].face = &faces[f];
+			edges[4*iC+iD].face = &faces[f];
+			edges[4*iD+iB].face = &faces[f];
 
-			tetraEdges[iB][iC].next = &tetraEdges[iC][iD];
-			tetraEdges[iC][iD].next = &tetraEdges[iD][iB];
-			tetraEdges[iD][iB].next = &tetraEdges[iB][iC];
+			edges[4 * iB + iC].next = &edges[4 * iC + iD];
+			edges[4 * iC + iD].next = &edges[4 * iD + iB];
+			edges[4 * iD + iB].next = &edges[4 * iB + iC];
 
-			tetraFaces[f].edge = &tetraEdges[iB][iC];
+			faces[f].edge = &edges[4 * iB + iC];
 		}
 
-		tetraFaces[f].normal = n;
-		tetraFaces[f].distance = B.Dot(n);
+		faces[f].normal = n;
+		faces[f].distance = B.Dot(n);
 	}
 
-	nFaces = 4;
-	std::make_heap(faces, &faces[4], CompareFace);
+	int nHeap = 4;
+	int nFaces = 4;
+	int nVerts = 4;
+	int nEdges = 16;
+	std::make_heap(heap, &heap[4], CompareFace);
 
 	// BEGIN MODIFIED QUICKHULL ALGORITHM http://media.steampowered.com/apps/valve/2014/DirkGregorius_ImplementingQuickHull.pdf
 
@@ -279,16 +283,12 @@ double Geometry::ComputePenetration(
 
 	for (int nIter = 0; nIter < 16; ++nIter)
 	{
-		while (nFaces > 0)
+		while (nHeap > 0)
 		{
-			std::pop_heap(faces, &faces[nFaces]);
-			nFaces--;
-			Face* closestFace = faces[nFaces];
-			if (closestFace->distance == INVALID_FACE_FLAG)
-			{
-				delete closestFace;
-			}
-			else
+			std::pop_heap(heap, &heap[nHeap]);
+			nHeap--;
+			Face* closestFace = heap[nHeap];
+			if (closestFace->distance != INVALID_FACE_FLAG)
 			{
 				const dVec3& n = closestFace->normal;
 				pt0 = geom0->Support(pos0, rot0, n);
@@ -296,33 +296,54 @@ double Geometry::ComputePenetration(
 
 				const dVec3 D = pt0 - pt1;
 
-				std::vector<Face*> visitedFaces;
-				std::stack<HalfEdge*> edgeStack;
-				std::vector<HalfEdge*> horizon;
-
-				edgeStack.push(closestFace->edge->twin);
-				edgeStack.push(closestFace->edge->next->twin);
-				edgeStack.push(closestFace->edge->next->next->twin);
-
-				while (!edgeStack.empty())
+				if (abs((D.Dot(n) - closestFace->distance) / closestFace->distance) < 0.01)
 				{
-					HalfEdge* edge = edgeStack.top();
-					Face* face = edge->face;
-					edgeStack.pop();
+					GJKSimplex closestTriangle;
+					closestTriangle.AddPoint(*closestFace->edge->vert);
+					closestTriangle.AddPoint(*closestFace->edge->next->vert);
+					closestTriangle.AddPoint(*closestFace->edge->next->next->vert);
+					MinkowskiPoint pt = closestTriangle.ClosestPointToOrigin(GJKSimplex());
+					pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
+					pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
+					return closestFace->distance;
+				}
 
-					if ((D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0)
+				MinkowskiPoint newVert;
+				newVert.m_MinkDif = D;
+				newVert.m_MinkSum = pt0 + pt1;
+				verts[nVerts] = newVert;
+				nVerts++;
+
+				std::vector<HalfEdge*> horizon;
+				std::vector<Face*> visitedFaces;
+				visitedFaces.push_back(closestFace);
+
+				HalfEdge* initialEdge = closestFace->edge;
+				HalfEdge* edge = initialEdge->next->twin;
+
+				while (edge != initialEdge)
+				{
+					Face* face = edge->face;
+
+					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0)
 					{
-						horizon.push_back(edge);
+						horizon.push_back(edge->twin);
+						// Backcross the edge to return to the previous triangle
+						edge = edge->twin;
 					}
 					else
 					{
 						if (!edge->next->twin->face->visited)
 						{
-							edgeStack.push(edge->next->twin);
+							edge = edge->next->twin;
 						}
-						if (!edge->next->next->twin->face->visited)
+						else if (!edge->next->next->twin->face->visited)
 						{
-							edgeStack.push(edge->next->next->twin);
+							edge = edge->next->next->twin;
+						}
+						else
+						{
+							edge = edge->twin;
 						}
 					}
 					face->visited = true;
@@ -331,10 +352,36 @@ double Geometry::ComputePenetration(
 
 				for (Face* visitedFace : visitedFaces)
 				{
-					visitedFace->visited = false;
+					visitedFace->distance = INVALID_FACE_FLAG;
 				}
 
+				int nHorizon = horizon.size();
+				for (int i = 0; i < nHorizon; ++i)
+				{
+					// We need to use a new face because of our sorted heap mumbo jumbo
 
+					Face face = faces[nFaces];
+					face.edge = horizon[i];
+					const dVec3 B = horizon[i]->vert->m_MinkDif;
+					const dVec3 A = horizon[i]->next->next->vert->m_MinkDif;
+					dVec3 n = (A - D).Cross(B - D);
+					n = n.Scale(1.0 / sqrt(n.Dot(n)));
+					face.distance = D.Dot(n);
+					nFaces++;
+
+					HalfEdge next = edges[nEdges];
+					next.face = &face;
+					next.vert = &newVert;
+					next.twin = horizon[(i + 1) % nHorizon]->next->next;
+					next.next = horizon[i]->next->next;
+					nEdges++;
+
+					horizon[i]->face = &face;
+					horizon[i]->next = &next;
+
+					horizon[i]->next->next->face = &face;
+					horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
+				}
 				
 				break;
 			}
