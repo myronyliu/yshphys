@@ -386,6 +386,9 @@ double Geometry::ComputePenetration(
 					horizon[i]->next = next;
 
 					horizon[i]->next->next->face = face;
+				}
+				for (int i = 0; i < nHorizon; ++i)
+				{
 					horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
 				}
 				
