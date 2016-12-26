@@ -362,26 +362,30 @@ double Geometry::ComputePenetration(
 				{
 					// We need to use a new face because of our sorted heap mumbo jumbo
 
-					Face face = faces[nFaces];
-					face.edge = horizon[i];
+					Face* face = &faces[nFaces];
+					face->edge = horizon[i];
 					const dVec3 B = horizon[i]->vert->m_MinkDif;
 					const dVec3 A = horizon[i]->next->next->vert->m_MinkDif;
 					dVec3 n = (A - D).Cross(B - D);
 					n = n.Scale(1.0 / sqrt(n.Dot(n)));
-					face.distance = D.Dot(n);
+					face->distance = D.Dot(n);
 					nFaces++;
 
-					HalfEdge next = edges[nEdges];
-					next.face = &face;
-					next.vert = &verts[nVerts - 1];
-					next.twin = horizon[(i + 1) % nHorizon]->next->next;
-					next.next = horizon[i]->next->next;
+					heap[nHeap] = face;
+					nHeap++;
+					std::push_heap(heap, &heap[nHeap]);
+
+					HalfEdge* next = &edges[nEdges];
+					next->face = face;
+					next->vert = &verts[nVerts - 1];
+					next->twin = horizon[(i + 1) % nHorizon]->next->next;
+					next->next = horizon[i]->next->next;
 					nEdges++;
 
-					horizon[i]->face = &face;
-					horizon[i]->next = &next;
+					horizon[i]->face = face;
+					horizon[i]->next = next;
 
-					horizon[i]->next->next->face = &face;
+					horizon[i]->next->next->face = face;
 					horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
 				}
 				
