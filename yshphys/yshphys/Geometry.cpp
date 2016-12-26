@@ -179,10 +179,10 @@ double Geometry::ComputePenetration(
 	};
 	struct Face
 	{
-		HalfEdge* edge = nullptr;
-
 		double distance;
 		dVec3 normal;
+
+		HalfEdge* edge = nullptr;
 
 		bool visited = false;
 	};
@@ -256,9 +256,9 @@ double Geometry::ComputePenetration(
 		}
 		else
 		{
-			edges[4*iB+iC].face = &faces[f];
-			edges[4*iC+iD].face = &faces[f];
-			edges[4*iD+iB].face = &faces[f];
+			edges[4 * iB + iC].face = &faces[f];
+			edges[4 * iC + iD].face = &faces[f];
+			edges[4 * iD + iB].face = &faces[f];
 
 			edges[4 * iB + iC].next = &edges[4 * iC + iD];
 			edges[4 * iC + iD].next = &edges[4 * iD + iB];
@@ -308,10 +308,8 @@ double Geometry::ComputePenetration(
 					return closestFace->distance;
 				}
 
-				MinkowskiPoint newVert;
-				newVert.m_MinkDif = D;
-				newVert.m_MinkSum = pt0 + pt1;
-				verts[nVerts] = newVert;
+				verts[nVerts].m_MinkDif = D;
+				verts[nVerts].m_MinkSum = pt0 + pt1;
 				nVerts++;
 
 				std::vector<HalfEdge*> horizon;
@@ -320,12 +318,13 @@ double Geometry::ComputePenetration(
 
 				HalfEdge* initialEdge = closestFace->edge;
 				HalfEdge* edge = initialEdge->next->twin;
+				closestFace->visited = true;
 
 				while (edge != initialEdge)
 				{
 					Face* face = edge->face;
 
-					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0)
+					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0001)
 					{
 						horizon.push_back(edge->twin);
 						// Backcross the edge to return to the previous triangle
@@ -346,8 +345,11 @@ double Geometry::ComputePenetration(
 							edge = edge->twin;
 						}
 					}
-					face->visited = true;
-					visitedFaces.push_back(face);
+					if (!face->visited)
+					{
+						face->visited = true;
+						visitedFaces.push_back(face);
+					}
 				}
 
 				for (Face* visitedFace : visitedFaces)
@@ -371,7 +373,7 @@ double Geometry::ComputePenetration(
 
 					HalfEdge next = edges[nEdges];
 					next.face = &face;
-					next.vert = &newVert;
+					next.vert = &verts[nVerts - 1];
 					next.twin = horizon[(i + 1) % nHorizon]->next->next;
 					next.next = horizon[i]->next->next;
 					nEdges++;
