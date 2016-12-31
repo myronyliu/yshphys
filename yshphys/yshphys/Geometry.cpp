@@ -314,7 +314,9 @@ double Geometry::ComputePenetration(
 
 				std::vector<HalfEdge*> horizon;
 				std::vector<Face*> visitedFaces;
+				std::stack<Face*> faceStack;
 				visitedFaces.push_back(closestFace);
+				faceStack.push(closestFace);
 
 				HalfEdge* initialEdge = closestFace->edge;
 				HalfEdge* edge = initialEdge->next->twin;
@@ -324,7 +326,7 @@ double Geometry::ComputePenetration(
 				{
 					Face* face = edge->face;
 
-					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0001)
+					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < -0.0001)
 					{
 						horizon.push_back(edge->twin);
 						// Backcross the edge to return to the previous triangle
@@ -342,19 +344,22 @@ double Geometry::ComputePenetration(
 						}
 						else
 						{
-							edge = edge->twin;
+							faceStack.pop();
+							edge = faceStack.top()->edge;
+//							edge = edge->twin;
 						}
 					}
 					if (!face->visited)
 					{
 						face->visited = true;
 						visitedFaces.push_back(face);
+						faceStack.push(face);
 					}
 				}
 
 				for (Face* visitedFace : visitedFaces)
 				{
-					visitedFace->distance = INVALID_FACE_FLAG;
+					visitedFace->visited = false;
 				}
 
 				int nHorizon = horizon.size();
@@ -363,32 +368,39 @@ double Geometry::ComputePenetration(
 					// We need to use a new face because of our sorted heap mumbo jumbo
 
 					Face* face = &faces[nFaces];
+					nFaces++;
+					HalfEdge* next = &edges[nEdges];
+					nEdges++;
+					HalfEdge* nextNext = &edges[nEdges];
+					nEdges++;
+
 					face->edge = horizon[i];
 					const dVec3 B = horizon[i]->vert->m_MinkDif;
-					const dVec3 A = horizon[i]->next->next->vert->m_MinkDif;
+					const dVec3 A = horizon[i]->twin->vert->m_MinkDif;
 					dVec3 n = (A - D).Cross(B - D);
 					n = n.Scale(1.0 / sqrt(n.Dot(n)));
+					face->normal = n;
 					face->distance = D.Dot(n);
-					nFaces++;
 
 					heap[nHeap] = face;
 					nHeap++;
 					std::push_heap(heap, &heap[nHeap]);
 
-					HalfEdge* next = &edges[nEdges];
-					next->face = face;
-					next->vert = &verts[nVerts - 1];
-					next->twin = horizon[(i + 1) % nHorizon]->next->next;
-					next->next = horizon[i]->next->next;
-					nEdges++;
-
+					horizon[i]->face->distance = INVALID_FACE_FLAG;
 					horizon[i]->face = face;
-					horizon[i]->next = next;
+					next->face = face;
+					nextNext->face = face;
 
-					horizon[i]->next->next->face = face;
+					next->vert = &verts[nVerts - 1];
+					nextNext->vert = horizon[i]->twin->vert;
+
+					horizon[i]->next = next;
+					next->next = nextNext;
+					nextNext->next = horizon[i];
 				}
 				for (int i = 0; i < nHorizon; ++i)
 				{
+					horizon[i]->next->twin = horizon[(i + 1) % nHorizon]->next->next;
 					horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
 				}
 				
