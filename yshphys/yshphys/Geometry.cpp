@@ -328,26 +328,31 @@ double Geometry::ComputePenetration(
 				while (edge != initialEdge)
 				{
 					Face* face = edge->face;
+					
+					HalfEdge* nextEdge = nullptr;
 
 					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0001)
 					{
 						horizon.push_back(edge->twin);
 						// Backcross the edge to return to the previous triangle
-						edge = edge->twin;
+						nextEdge = edge->twin;
 					}
 					else
 					{
-						if (!edge->next->twin->face->visited)
+						nextEdge = edge->next->twin;
+
+						while (true)
 						{
-							edge = edge->next->twin;
-						}
-						else if (!edge->next->next->twin->face->visited)
-						{
-							edge = edge->next->next->twin;
-						}
-						else
-						{
-							edge = edge->next->twin;
+							if (!nextEdge->face->visited)
+							{
+								break;
+							}
+							else if (nextEdge == edge->twin)
+							{
+								nextEdge = edge->next->twin;
+								break;
+							}
+							nextEdge = nextEdge->twin->next->twin;
 						}
 					}
 					if (!face->visited)
@@ -355,6 +360,7 @@ double Geometry::ComputePenetration(
 						face->visited = true;
 						visitedFaces.push_back(face);
 					}
+					edge = nextEdge;
 				}
 
 				for (Face* visitedFace : visitedFaces)
