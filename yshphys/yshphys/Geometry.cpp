@@ -185,6 +185,8 @@ double Geometry::ComputePenetration(
 		HalfEdge* edge = nullptr;
 
 		bool visited = false;
+
+		bool valid = true;
 	};
 
 	bool (*CompareFace)(const Face*, const Face*) = [](const Face* face0, const Face* face1)
@@ -207,9 +209,14 @@ double Geometry::ComputePenetration(
 
 	// INITIALIZE EPAHULL
 
-	Face faces[64];
-	MinkowskiPoint verts[32];
-	HalfEdge edges[256];
+	const int maxIter = 16;
+	const int maxFaces = 128;
+	const int maxVerts = 4 + maxIter;
+	const int maxEdges = 256;
+
+	Face faces[maxFaces];
+	MinkowskiPoint verts[maxVerts];
+	HalfEdge edges[maxEdges];
 	verts[0] = fullSimplex.m_pts[0];
 	verts[1] = fullSimplex.m_pts[1];
 	verts[2] = fullSimplex.m_pts[2];
@@ -279,16 +286,14 @@ double Geometry::ComputePenetration(
 
 	// BEGIN MODIFIED QUICKHULL ALGORITHM http://media.steampowered.com/apps/valve/2014/DirkGregorius_ImplementingQuickHull.pdf
 
-	static const double INVALID_FACE_FLAG = -88888888.0;
-
-	for (int nIter = 0; nIter < 16; ++nIter)
+	for (int nIter = 0; nIter < maxIter; ++nIter)
 	{
 		while (nHeap > 0)
 		{
-			std::pop_heap(heap, &heap[nHeap]);
+			std::pop_heap(heap, &heap[nHeap], CompareFace);
 			nHeap--;
 			Face* closestFace = heap[nHeap];
-			if (closestFace->distance != INVALID_FACE_FLAG)
+			if (closestFace->valid)
 			{
 				const dVec3& n = closestFace->normal;
 				pt0 = geom0->Support(pos0, rot0, n);
@@ -314,9 +319,7 @@ double Geometry::ComputePenetration(
 
 				std::vector<HalfEdge*> horizon;
 				std::vector<Face*> visitedFaces;
-				std::stack<Face*> faceStack;
 				visitedFaces.push_back(closestFace);
-				faceStack.push(closestFace);
 
 				HalfEdge* initialEdge = closestFace->edge;
 				HalfEdge* edge = initialEdge->next->twin;
@@ -326,7 +329,7 @@ double Geometry::ComputePenetration(
 				{
 					Face* face = edge->face;
 
-					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < -0.0001)
+					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0001)
 					{
 						horizon.push_back(edge->twin);
 						// Backcross the edge to return to the previous triangle
@@ -344,16 +347,13 @@ double Geometry::ComputePenetration(
 						}
 						else
 						{
-							faceStack.pop();
-							edge = faceStack.top()->edge;
-//							edge = edge->twin;
+							edge = edge->next->twin;
 						}
 					}
 					if (!face->visited)
 					{
 						face->visited = true;
 						visitedFaces.push_back(face);
-						faceStack.push(face);
 					}
 				}
 
@@ -384,9 +384,9 @@ double Geometry::ComputePenetration(
 
 					heap[nHeap] = face;
 					nHeap++;
-					std::push_heap(heap, &heap[nHeap]);
+					std::push_heap(heap, &heap[nHeap], CompareFace);
 
-					horizon[i]->face->distance = INVALID_FACE_FLAG;
+					horizon[i]->face->valid = false;
 					horizon[i]->face = face;
 					next->face = face;
 					nextNext->face = face;
@@ -408,7 +408,29 @@ double Geometry::ComputePenetration(
 			}
 		}
 	}
-return 0.0;
+
+	/////////////////////////////////////////////////////
+	// FAILED TO CONVERGE, JUST RETURN THE BEST RESULT //
+	/////////////////////////////////////////////////////
+
+	while (nHeap > 0)
+	{
+		std::pop_heap(heap, &heap[nHeap], CompareFace);
+		nHeap--;
+		Face* closestFace = heap[nHeap];
+		if (closestFace->valid)
+		{
+			GJKSimplex closestTriangle;
+			closestTriangle.AddPoint(*closestFace->edge->vert);
+			closestTriangle.AddPoint(*closestFace->edge->next->vert);
+			closestTriangle.AddPoint(*closestFace->edge->next->next->vert);
+			MinkowskiPoint pt = closestTriangle.ClosestPointToOrigin(GJKSimplex());
+			pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
+			pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
+			return closestFace->distance;
+		}
+	}
+	return 0.0;
 }
 double Geometry::ComputeSeparation(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
