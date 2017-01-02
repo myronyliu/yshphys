@@ -222,6 +222,8 @@ double Geometry::ComputePenetration(
 	verts[2] = fullSimplex.m_pts[2];
 	verts[3] = fullSimplex.m_pts[3];
 
+	dVec3 box(0.0, 0.0, 0.0);
+
 	for (int i = 0; i < 4; ++i)
 	{
 		for (int j = 0; j < 4; ++j)
@@ -274,8 +276,16 @@ double Geometry::ComputePenetration(
 			faces[f].edge = &edges[4 * iB + iC];
 		}
 
+		const double d = B.Dot(n);
+
 		faces[f].normal = n;
-		faces[f].distance = B.Dot(n);
+		faces[f].distance = d;
+
+		const dVec3 v = n.Scale(d);
+
+		box.x = std::max(box.x, abs(v.x));
+		box.y = std::max(box.y, abs(v.y));
+		box.z = std::max(box.z, abs(v.z));
 	}
 
 	int nHeap = 4;
@@ -301,7 +311,7 @@ double Geometry::ComputePenetration(
 
 				const dVec3 D = pt0 - pt1;
 
-				if (abs((D.Dot(n) - closestFace->distance) / closestFace->distance) < 0.01)
+				if (abs(D.Dot(n)) < 0.0001 || abs((D.Dot(n) - closestFace->distance) / closestFace->distance) < 0.01)
 				{
 					GJKSimplex closestTriangle;
 					closestTriangle.AddPoint(*closestFace->edge->vert);
@@ -331,7 +341,7 @@ double Geometry::ComputePenetration(
 					
 					HalfEdge* nextEdge = nullptr;
 
-					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.0001)
+					if (!face->visited && (D - edge->vert->m_MinkDif).Dot(face->normal) < 0.000001)
 					{
 						horizon.push_back(edge->twin);
 						// Backcross the edge to return to the previous triangle
@@ -368,7 +378,7 @@ double Geometry::ComputePenetration(
 					visitedFace->visited = false;
 				}
 
-				int nHorizon = horizon.size();
+				const int nHorizon = (int)horizon.size();
 				for (int i = 0; i < nHorizon; ++i)
 				{
 					// We need to use a new face because of our sorted heap mumbo jumbo
@@ -385,8 +395,15 @@ double Geometry::ComputePenetration(
 					const dVec3 A = horizon[i]->twin->vert->m_MinkDif;
 					dVec3 n = (A - D).Cross(B - D);
 					n = n.Scale(1.0 / sqrt(n.Dot(n)));
+					const double d = D.Dot(n);
 					face->normal = n;
-					face->distance = D.Dot(n);
+					face->distance = d;
+
+					const dVec3 v = n.Scale(d);
+
+					box.x = std::max(box.x, abs(v.x));
+					box.y = std::max(box.y, abs(v.y));
+					box.z = std::max(box.z, abs(v.z));
 
 					heap[nHeap] = face;
 					nHeap++;
@@ -406,9 +423,104 @@ double Geometry::ComputePenetration(
 				}
 				for (int i = 0; i < nHorizon; ++i)
 				{
-					horizon[i]->next->twin = horizon[(i + 1) % nHorizon]->next->next;
-					horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
+					HalfEdge* horizon0 = horizon[(i + 0) % nHorizon];
+					HalfEdge* horizon1 = horizon[(i + 1) % nHorizon];
+
+					Face* face0 = horizon0->face;
+					Face* face1 = horizon1->face;
+
+					dVec3 center0 = (
+						face0->edge->vert->m_MinkDif +
+						face0->edge->next->vert->m_MinkDif +
+						face0->edge->next->next->vert->m_MinkDif
+						).Scale(1.0 / 3.0);
+					dVec3 center1 = (
+						face1->edge->vert->m_MinkDif +
+						face1->edge->next->vert->m_MinkDif +
+						face1->edge->next->next->vert->m_MinkDif
+						).Scale(1.0 / 3.0);
+
+					const double eps = 3.0 * (box.x + box.y + box.z) * DBL_EPSILON;
+
+					bool convex = face0->normal.Dot(center0 - center1) > eps && face1->normal.Dot(center1 - center0) > eps;
+
+					if (convex)
+					{
+						horizon[i]->next->twin = horizon[(i + 1) % nHorizon]->next->next;
+						horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
+					}
+					else
+					{
+						face1->valid = false;
+
+						horizon1->face = face0;
+
+						HalfEdge* e = horizon1;
+						HalfEdge* eNext = horizon1->next;
+						HalfEdge* eNextNext = horizon1->next->next;
+
+						while (eNextNext != horizon1)
+						{
+							e = eNext;
+							e->face = face0;
+
+							eNext = eNextNext;
+							eNextNext = eNextNext->next;
+						}
+
+						e->next = horizon0->next->next;
+						horizon0->next = horizon1;
+
+						// Compute best fit normal usign Newell's Method 
+
+						e = horizon0;
+						eNext = horizon0->next;
+
+						dVec3 n(0.0, 0.0, 0.0);
+
+						while (e != horizon0)
+						{
+							const dVec3& u = e->vert->m_MinkDif;
+							const dVec3& v = eNext->vert->m_MinkDif;
+
+							n.x += (u.y - v.y)*(u.z + v.z);
+							n.y += (u.z - v.z)*(u.x + v.x);
+							n.z += (u.x - v.x)*(u.y + v.y);
+
+							e = eNext;
+							eNext = eNext->next;
+						}
+
+						face0->normal = n.Scale(1.0 / sqrt(n.Dot(n)));
+					}
 				}
+
+#if 1 
+				int nF = 0;
+				std::set<void*> heSet;
+				std::set<MinkowskiPoint*> vSet;
+				for (int i = 0; i < nHeap; ++i)
+				{
+					if (heap[i]->valid)
+					{
+						nF++;
+
+						heSet.insert(heap[i]->edge);
+						heSet.insert(heap[i]->edge->next);
+						heSet.insert(heap[i]->edge->next->next);
+
+						vSet.insert(heap[i]->edge->vert);
+						vSet.insert(heap[i]->edge->next->vert);
+						vSet.insert(heap[i]->edge->next->next->vert);
+					}
+				}
+				int nHE = heSet.size();
+				assert(nHE % 2 == 0);
+				int nE = nHE / 2;
+
+				int nV = vSet.size();
+				assert(nV - nE + nF == 2);
+#endif
 				
 				break;
 			}
