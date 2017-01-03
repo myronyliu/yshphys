@@ -240,7 +240,7 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 	{
 		data.polygonType = GL_TRIANGLES;
 		data.nVertsPerPoly = 3;
-		data.nIndices = 3 * (nVerts - 1);
+		data.nIndices = 3 * (nVerts - 2);
 
 		int iA = 0;
 		int iD = nVerts - 1;
@@ -252,11 +252,6 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 
 		while (iB < iC)
 		{
-			iA++;
-			iB++;
-			iC--;
-			iD--;
-
 			data.indices[3 * iTriangle + 0] = iA;
 			data.indices[3 * iTriangle + 1] = iB;
 			data.indices[3 * iTriangle + 2] = iC;
@@ -266,6 +261,11 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 			data.indices[3 * iTriangle + 1] = iC;
 			data.indices[3 * iTriangle + 2] = iD;
 			iTriangle++;
+
+			iA++;
+			iB++;
+			iC--;
+			iD--;
 		}
 
 		if (iB == iC)
