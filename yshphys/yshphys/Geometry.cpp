@@ -172,10 +172,11 @@ double Geometry::ComputePenetration(
 
 	struct HalfEdge
 	{
-		HalfEdge*		twin = nullptr;
-		HalfEdge*		next = nullptr;
-		Face*	 		face = nullptr;
 		MinkowskiPoint*	vert = nullptr;
+		HalfEdge*		next = nullptr;
+		HalfEdge*		prev = nullptr;
+		HalfEdge*		twin = nullptr;
+		Face*	 		face = nullptr;
 	};
 	struct Face
 	{
@@ -186,7 +187,7 @@ double Geometry::ComputePenetration(
 
 		bool visited = false;
 
-		bool valid = true;
+		bool* valid;
 	};
 
 	bool (*CompareFace)(const Face*, const Face*) = [](const Face* face0, const Face* face1)
@@ -201,7 +202,7 @@ double Geometry::ComputePenetration(
 		}
 		else
 		{
-			return face0->edge > face1->edge;
+			return face0 > face1;
 		}
 	};
 
@@ -217,6 +218,15 @@ double Geometry::ComputePenetration(
 	Face faces[maxFaces];
 	MinkowskiPoint verts[maxVerts];
 	HalfEdge edges[maxEdges];
+
+	// ugh this is so ugly, but we cannot manipulate the sorted heap directly, hence the indirection
+	bool faceValidities[maxFaces];
+	std::memset(faceValidities, 0, sizeof(faceValidities));
+	for (int f = 0; f < maxFaces; ++f)
+	{
+		faces[f].valid = &faceValidities[f];
+	}
+
 	verts[0] = fullSimplex.m_pts[0];
 	verts[1] = fullSimplex.m_pts[1];
 	verts[2] = fullSimplex.m_pts[2];
@@ -249,32 +259,30 @@ double Geometry::ComputePenetration(
 
 		heap[f] = &faces[f];
 
+		HalfEdge * e[3];
+
 		if (n.Dot(B - A) < 0.0)
 		{
-			edges[4 * iC + iB].face = &faces[f];
-			edges[4 * iD + iC].face = &faces[f];
-			edges[4 * iB + iD].face = &faces[f];
-
-			edges[4 * iC + iB].next = &edges[4 * iB + iD];
-			edges[4 * iD + iC].next = &edges[4 * iC + iB];
-			edges[4 * iB + iD].next = &edges[4 * iD + iC];
-
-			faces[f].edge = &edges[4 * iC + iB];
+			e[0] = &edges[4 * iC + iB];
+			e[1] = &edges[4 * iB + iD];
+			e[2] = &edges[4 * iD + iC];
 
 			n = -n;
 		}
 		else
 		{
-			edges[4 * iB + iC].face = &faces[f];
-			edges[4 * iC + iD].face = &faces[f];
-			edges[4 * iD + iB].face = &faces[f];
-
-			edges[4 * iB + iC].next = &edges[4 * iC + iD];
-			edges[4 * iC + iD].next = &edges[4 * iD + iB];
-			edges[4 * iD + iB].next = &edges[4 * iB + iC];
-
-			faces[f].edge = &edges[4 * iB + iC];
+			e[0] = &edges[4 * iB + iC];
+			e[1] = &edges[4 * iC + iD];
+			e[2] = &edges[4 * iD + iB];
 		}
+
+		for (int i = 0; i < 3; ++i)
+		{
+			e[i]->next = e[(i + 1) % 3];
+			e[i]->prev = e[(i + 2) % 3];
+			e[i]->face = &faces[f];
+		}
+		faces[f].edge = e[0];
 
 		const double d = B.Dot(n);
 
@@ -303,7 +311,7 @@ double Geometry::ComputePenetration(
 			std::pop_heap(heap, &heap[nHeap], CompareFace);
 			nHeap--;
 			Face* closestFace = heap[nHeap];
-			if (closestFace->valid)
+			if (*closestFace->valid)
 			{
 				const dVec3& n = closestFace->normal;
 				pt0 = geom0->Support(pos0, rot0, n);
@@ -313,6 +321,7 @@ double Geometry::ComputePenetration(
 
 				if (abs(D.Dot(n)) < 0.0001 || abs((D.Dot(n) - closestFace->distance) / closestFace->distance) < 0.01)
 				{
+					// TODO: We need to check more than one triangle since we can now merge triangles into polygons
 					GJKSimplex closestTriangle;
 					closestTriangle.AddPoint(*closestFace->edge->vert);
 					closestTriangle.AddPoint(*closestFace->edge->next->vert);
@@ -379,20 +388,20 @@ double Geometry::ComputePenetration(
 				}
 
 				const int nHorizon = (int)horizon.size();
-				for (int i = 0; i < nHorizon; ++i)
+				for (HalfEdge* curr : horizon)
 				{
 					// We need to use a new face because of our sorted heap mumbo jumbo
 
 					Face* face = &faces[nFaces];
 					nFaces++;
+					HalfEdge* prev = &edges[nEdges];
+					nEdges++;
 					HalfEdge* next = &edges[nEdges];
 					nEdges++;
-					HalfEdge* nextNext = &edges[nEdges];
-					nEdges++;
 
-					face->edge = horizon[i];
-					const dVec3 B = horizon[i]->vert->m_MinkDif;
-					const dVec3 A = horizon[i]->twin->vert->m_MinkDif;
+					face->edge = curr;
+					const dVec3 B = curr->vert->m_MinkDif;
+					const dVec3 A = curr->twin->vert->m_MinkDif;
 					dVec3 n = (A - D).Cross(B - D);
 					n = n.Scale(1.0 / sqrt(n.Dot(n)));
 					const double d = D.Dot(n);
@@ -409,111 +418,140 @@ double Geometry::ComputePenetration(
 					nHeap++;
 					std::push_heap(heap, &heap[nHeap], CompareFace);
 
-					horizon[i]->face->valid = false;
-					horizon[i]->face = face;
+					*curr->face->valid = false;
+
+					prev->face = face;
+					curr->face = face;
 					next->face = face;
-					nextNext->face = face;
 
+					prev->vert = curr->twin->vert;
 					next->vert = &verts[nVerts - 1];
-					nextNext->vert = horizon[i]->twin->vert;
 
-					horizon[i]->next = next;
-					next->next = nextNext;
-					nextNext->next = horizon[i];
+					prev->next = curr;
+					curr->next = next;
+					next->next = prev;
+
+					prev->prev = next;
+					curr->prev = prev;
+					next->prev = curr;
 				}
 				for (int i = 0; i < nHorizon; ++i)
 				{
-					HalfEdge* horizon0 = horizon[(i + 0) % nHorizon];
-					HalfEdge* horizon1 = horizon[(i + 1) % nHorizon];
-
-					Face* face0 = horizon0->face;
-					Face* face1 = horizon1->face;
-
-					dVec3 center0 = (
-						face0->edge->vert->m_MinkDif +
-						face0->edge->next->vert->m_MinkDif +
-						face0->edge->next->next->vert->m_MinkDif
-						).Scale(1.0 / 3.0);
-					dVec3 center1 = (
-						face1->edge->vert->m_MinkDif +
-						face1->edge->next->vert->m_MinkDif +
-						face1->edge->next->next->vert->m_MinkDif
-						).Scale(1.0 / 3.0);
-
-					const double eps = 3.0 * (box.x + box.y + box.z) * DBL_EPSILON;
-
-					bool convex = face0->normal.Dot(center0 - center1) > eps && face1->normal.Dot(center1 - center0) > eps;
-
-					if (convex)
+					auto EdgeIsConvex = [&](HalfEdge* edge0)
 					{
-						horizon[i]->next->twin = horizon[(i + 1) % nHorizon]->next->next;
-						horizon[i]->next->next->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
-					}
-					else
-					{
-						face1->valid = false;
+						HalfEdge* edge1 = edge0->twin;
 
-						horizon1->face = face0;
+						Face* face0 = edge0->face;
+						Face* face1 = edge1->face;
 
-						HalfEdge* e = horizon1;
-						HalfEdge* eNext = horizon1->next;
-						HalfEdge* eNextNext = horizon1->next->next;
-
-						while (eNextNext != horizon1)
+						auto Centroid = [](const HalfEdge* edge)
 						{
-							e = eNext;
-							e->face = face0;
+							const dVec3 n = edge->face->normal;
 
-							eNext = eNextNext;
-							eNextNext = eNextNext->next;
-						}
+							const HalfEdge* e = edge;
 
-						e->next = horizon0->next->next;
-						horizon0->next = horizon1;
+							double a = 0;
+							dVec3 c(0.0, 0.0, 0.0);
 
-						// Compute best fit normal usign Newell's Method 
+							do
+							{
+								const dVec3& u = e->vert->m_MinkDif;
+								const dVec3& v = e->next->vert->m_MinkDif;
 
-						e = horizon0;
-						eNext = horizon0->next;
+								const double da = u.Cross(v).Dot(n);
+
+								a += da;
+								c = c + (u + v).Scale(da);
+
+								e = e->next;
+							} while (e != edge);
+
+							return c.Scale(1.0 / 3.0 / a);
+						};
+
+						const dVec3 centroid0 = Centroid(edge0);
+						const dVec3 centroid1 = Centroid(edge1);
+
+						const double eps = 3.0 * (box.x + box.y + box.z) * DBL_EPSILON;
+
+						return face0->normal.Dot(centroid0 - centroid1) > eps
+							&& face1->normal.Dot(centroid1 - centroid0) > eps;
+					};
+
+					auto MergeFacesAlongEdge = [&](HalfEdge* edge0)
+					{
+						HalfEdge* edge1 = edge0->twin;
+						*edge1->face->valid = false;
+
+						Face* face = edge0->face;
+						face->edge = edge0->next;
+
+						HalfEdge* e = edge1;
+						do
+						{
+							e->face = face;
+							e = e->next;
+						} while (e != edge1);
+
+						edge1->prev->next = edge0->next;
+						edge1->next->prev = edge0->prev;
+						edge0->prev->next = edge1->next;
+						edge0->next->prev = edge1->prev;
+
+						// Compute best fit normal using Newell's Method 
+
+						e = e->prev;
+						const HalfEdge* const eInit = e;
 
 						dVec3 n(0.0, 0.0, 0.0);
 
-						while (e != horizon0)
+						do
 						{
 							const dVec3& u = e->vert->m_MinkDif;
-							const dVec3& v = eNext->vert->m_MinkDif;
+							const dVec3& v = e->next->vert->m_MinkDif;
 
 							n.x += (u.y - v.y)*(u.z + v.z);
 							n.y += (u.z - v.z)*(u.x + v.x);
 							n.z += (u.x - v.x)*(u.y + v.y);
 
-							e = eNext;
-							eNext = eNext->next;
-						}
+							e = e->next;
+						} while (e != eInit);
 
-						face0->normal = n.Scale(1.0 / sqrt(n.Dot(n)));
+						face->normal = n.Scale(1.0 / sqrt(n.Dot(n)));
+					};
+
+					horizon[i]->next->twin = horizon[(i + 1) % nHorizon]->prev;
+					horizon[i]->prev->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
+
+					if (!EdgeIsConvex(horizon[i]))
+					{
+						MergeFacesAlongEdge(horizon[i]);
 					}
 				}
 
 #if 1 
 				int nF = 0;
-				std::set<void*> heSet;
+				std::set<HalfEdge*> heSet;
 				std::set<MinkowskiPoint*> vSet;
 				for (int i = 0; i < nHeap; ++i)
 				{
-					if (heap[i]->valid)
+					if (*heap[i]->valid)
 					{
 						nF++;
-
-						heSet.insert(heap[i]->edge);
-						heSet.insert(heap[i]->edge->next);
-						heSet.insert(heap[i]->edge->next->next);
-
-						vSet.insert(heap[i]->edge->vert);
-						vSet.insert(heap[i]->edge->next->vert);
-						vSet.insert(heap[i]->edge->next->next->vert);
+						HalfEdge* e = heap[i]->edge;
+						do
+						{
+							heSet.insert(e);
+							e = e->next ;
+						} while (e != heap[i]->edge);
 					}
 				}
+
+				for (HalfEdge* he : heSet)
+				{
+					vSet.insert(he->vert);
+				}
+
 				int nHE = heSet.size();
 				assert(nHE % 2 == 0);
 				int nE = nHE / 2;
@@ -536,7 +574,7 @@ double Geometry::ComputePenetration(
 		std::pop_heap(heap, &heap[nHeap], CompareFace);
 		nHeap--;
 		Face* closestFace = heap[nHeap];
-		if (closestFace->valid)
+		if (*closestFace->valid)
 		{
 			GJKSimplex closestTriangle;
 			closestTriangle.AddPoint(*closestFace->edge->vert);
