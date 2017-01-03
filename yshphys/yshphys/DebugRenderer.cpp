@@ -157,6 +157,127 @@ void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& r
 	m_objects.push_back(data);
 }
 
+void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C, const fVec3& color, bool wireFrame)
+{
+	DebugDrawData data;
+	data.pos = fVec3(0.0, 0.0, 0.0);
+	data.rot = fQuat::Identity();
+	data.color[0] = color.x;
+	data.color[1] = color.y;
+	data.color[2] = color.z;
+
+	data.nVertices = 3;
+
+	data.vertices[0][0] = A[0];
+	data.vertices[0][1] = A[1];
+	data.vertices[0][2] = A[2];
+
+	data.vertices[1][0] = B[0];
+	data.vertices[1][1] = B[1];
+	data.vertices[1][2] = B[2];
+
+	data.vertices[2][0] = C[0];
+	data.vertices[2][1] = C[1];
+	data.vertices[2][2] = C[2];
+
+	if (wireFrame)
+	{
+		data.polygonType = GL_LINES;
+		data.nVertsPerPoly = 2;
+		data.nIndices = 6;
+
+		data.indices[0] = 0;
+		data.indices[1] = 1;
+
+		data.indices[2] = 1;
+		data.indices[3] = 2;
+
+		data.indices[4] = 2;
+		data.indices[5] = 0;
+	}
+	else
+	{
+		data.polygonType = GL_TRIANGLES;
+		data.nVertsPerPoly = 3;
+		data.nIndices = 3;
+		data.indices[0] = 0;
+		data.indices[1] = 1;
+		data.indices[2] = 2;
+	}
+	m_objects.push_back(data);
+}
+void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& color, bool wireFrame)
+{
+	DebugDrawData data;
+	data.pos = fVec3(0.0, 0.0, 0.0);
+	data.rot = fQuat::Identity();
+	data.color[0] = color.x;
+	data.color[1] = color.y;
+	data.color[2] = color.z;
+
+	data.nVertices = nVerts;
+
+	for (int i = 0; i < nVerts; ++i)
+	{
+		data.vertices[i][0] = verts[i][0];
+		data.vertices[i][1] = verts[i][1];
+		data.vertices[i][2] = verts[i][2];
+	}
+
+	if (wireFrame)
+	{
+		data.polygonType = GL_LINES;
+		data.nVertsPerPoly = 2;
+		data.nIndices = 2 * nVerts;
+
+		for (int i = 0; i < nVerts; ++i)
+		{
+			data.indices[2 * i + 0] = (i + 0) % nVerts;
+			data.indices[2 * i + 1] = (i + 1) % nVerts;
+		}
+	}
+	else
+	{
+		data.polygonType = GL_TRIANGLES;
+		data.nVertsPerPoly = 3;
+		data.nIndices = 3 * (nVerts - 1);
+
+		int iA = 0;
+		int iD = nVerts - 1;
+
+		int iB = 1;
+		int iC = nVerts - 2;
+
+		int iTriangle = 0;
+
+		while (iB < iC)
+		{
+			iA++;
+			iB++;
+			iC--;
+			iD--;
+
+			data.indices[3 * iTriangle + 0] = iA;
+			data.indices[3 * iTriangle + 1] = iB;
+			data.indices[3 * iTriangle + 2] = iC;
+			iTriangle++;
+
+			data.indices[3 * iTriangle + 0] = iA;
+			data.indices[3 * iTriangle + 1] = iC;
+			data.indices[3 * iTriangle + 2] = iD;
+			iTriangle++;
+		}
+
+		if (iB == iC)
+		{
+			data.indices[3 * iTriangle + 0] = iA;
+			data.indices[3 * iTriangle + 1] = iC;
+			data.indices[3 * iTriangle + 2] = iD;
+		}
+	}
+	m_objects.push_back(data);
+
+}
 void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame)
 {
 	DebugDrawData data;
