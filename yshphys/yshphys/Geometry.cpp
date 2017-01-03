@@ -221,7 +221,7 @@ double Geometry::ComputePenetration(
 
 	// ugh this is so ugly, but we cannot manipulate the sorted heap directly, hence the indirection
 	bool faceValidities[maxFaces];
-	std::memset(faceValidities, 0, sizeof(faceValidities));
+	std::memset(faceValidities, 1, sizeof(faceValidities));
 	for (int f = 0; f < maxFaces; ++f)
 	{
 		faces[f].valid = &faceValidities[f];
