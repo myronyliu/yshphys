@@ -43,11 +43,27 @@ private:
 
 	struct HalfEdge
 	{
-		const MinkowskiPoint*	vert = nullptr;
-		HalfEdge*				next = nullptr;
-		HalfEdge*				prev = nullptr;
-		HalfEdge*				twin = nullptr;
-		Face*	 				face = nullptr;
+		const MinkowskiPoint*	vert;
+		HalfEdge*				next;
+		HalfEdge*				prev;
+		HalfEdge*				twin;
+		Face*	 				face;
+
+		int						index;
+
+		mutable bool			isHorizon;
+
+		HalfEdge() : vert(nullptr), next(nullptr), prev(nullptr), twin(nullptr), face(nullptr), isHorizon(false), index(-1) {}
+		void Reset()
+		{
+			vert = nullptr;
+			next = nullptr;
+			prev = nullptr;
+			twin = nullptr;
+			face = nullptr;
+
+			isHorizon = false;
+		}
 
 		bool IsConvex(double faceThickness) const;
 	};
@@ -56,8 +72,10 @@ private:
 		double			distance;
 		dVec3			normal;
 		HalfEdge*		edge;
+
+		int				index;
+
 		mutable bool	visited;
-		short			index;
 
 		Face() : edge(nullptr), visited(false), index(-1) {}
 		void Reset()
@@ -77,11 +95,13 @@ private:
 	HalfEdge		m_edges[EPAHULL_MAXEDGES];
 
 	int				m_freeFaces[EPAHULL_MAXFACES];
+	int				m_nFreeFaces;
+
+	int				m_freeEdges[EPAHULL_MAXEDGES];
+	int				m_nFreeEdges;
 
 	int				m_nFacesInHeap;
-	int				m_nFreeFaces;
 	int				m_nVerts;
-	int				m_nEdges;
 
 	mutable HalfEdge*	m_horizonEdges[EPAHULL_MAXHORIZONEDGES];
 	mutable int			m_nHorizonEdges;
@@ -123,7 +143,18 @@ private:
 		return &m_faces[m_freeFaces[m_nFreeFaces]];
 	}
 
-	void ComputeHorizon(const dVec3& eye, const Face* visibleFace);
+	void PushFreeEdge(HalfEdge* edge)
+	{
+		m_freeEdges[m_nFreeEdges] = edge->index;
+		m_nFreeEdges++;
+	}
+	HalfEdge* PopFreeEdge()
+	{
+		m_nFreeEdges--;
+		return &m_edges[m_freeEdges[m_nFreeEdges]];
+	}
+
+	void CarveHorizon(const dVec3& eye, const Face* visibleFace);
 	void PatchHorizon(const MinkowskiPoint* eye);
 	void EnforceHorizonConvexity();
 };

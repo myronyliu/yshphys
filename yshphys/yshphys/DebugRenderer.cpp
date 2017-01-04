@@ -77,7 +77,8 @@ void DebugRenderer::DrawObjects(const Viewport& viewport) const
 		const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
 		// Pass in the transpose because OpenGL likes to be all edgy with its
 		// column major matrices while we are row major like everybody else.
-		glUniform1i(useNormalsLoc, data.polygonType == GL_TRIANGLES);
+		bool useNormals = (data.polygonType == GL_LINES) ? false : data.shaded;
+		glUniform1i(useNormalsLoc, useNormals);
 		glUniform3fv(colorLoc, 1, data.color);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
@@ -124,13 +125,14 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 	m_objects.push_back(data);
 }
 
-void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& radius, const fVec3& color)
+void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& radius, const fVec3& color, bool shaded)
 {
 	DebugDrawData data;
 	data.pos = base;
 	data.color[0] = color.x;
 	data.color[1] = color.y;
 	data.color[2] = color.z;
+	data.shaded = shaded;
 
 	const fVec3 axis = tip - base;
 	const float h = sqrtf(axis.Dot(axis));
@@ -170,7 +172,7 @@ void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& r
 	m_objects.push_back(data);
 }
 
-void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C, const fVec3& color, bool wireFrame)
+void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C, const fVec3& color, bool wireFrame, bool shaded)
 {
 	DebugDrawData data;
 	data.pos = fVec3(0.0, 0.0, 0.0);
@@ -178,6 +180,7 @@ void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C,
 	data.color[0] = color.x;
 	data.color[1] = color.y;
 	data.color[2] = color.z;
+	data.shaded = shaded;
 
 	data.nVertices = 3;
 
@@ -217,14 +220,21 @@ void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C,
 	}
 	m_objects.push_back(data);
 }
-void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& color, bool wireFrame)
+
+void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& color, bool wireFrame, bool shaded)
+{
+	DrawPolygon(verts, nVerts, fVec3(0.0, 0.0, 0.0), fQuat::Identity(), color, wireFrame, shaded);
+}
+
+void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame, bool shaded)
 {
 	DebugDrawData data;
-	data.pos = fVec3(0.0, 0.0, 0.0);
-	data.rot = fQuat::Identity();
+	data.pos = pos;
+	data.rot = rot;
 	data.color[0] = color.x;
 	data.color[1] = color.y;
 	data.color[2] = color.z;
+	data.shaded = shaded;
 
 	data.nVertices = nVerts;
 
@@ -306,38 +316,38 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 	m_objects.push_back(data);
 
 }
-void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame)
+void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, const fVec3& pos, const fQuat& rot, const fVec3& color, bool wireFrame, bool shaded)
 {
-	DebugDrawData data;
-	data.pos = pos;
-	data.rot = rot;
-	data.color[0] = color.x;
-	data.color[1] = color.y;
-	data.color[2] = color.z;
-
-	auto iVertex = [](int i, int j, int k)
-	{
-		return i + 2 * j + 4 * k;
-	};
-
-	data.nVertices = 8;
-
-	for (int k = 0; k < 2; ++k)
-	{
-		for (int j = 0; j < 2; ++j)
-		{
-			for (int i = 0; i < 2; ++i)
-			{
-				const int idx = iVertex(i, j, k);
-				data.vertices[idx][0] = float(2 * i - 1)*halfDimX;
-				data.vertices[idx][1] = float(2 * j - 1)*halfDimY;
-				data.vertices[idx][2] = float(2 * k - 1)*halfDimZ;
-			}
-		}
-	}
-
 	if (wireFrame)
 	{
+		DebugDrawData data;
+		data.pos = pos;
+		data.rot = rot;
+		data.color[0] = color.x;
+		data.color[1] = color.y;
+		data.color[2] = color.z;
+
+		auto iVertex = [](int i, int j, int k)
+		{
+			return i + 2 * j + 4 * k;
+		};
+
+		data.nVertices = 8;
+
+		for (int k = 0; k < 2; ++k)
+		{
+			for (int j = 0; j < 2; ++j)
+			{
+				for (int i = 0; i < 2; ++i)
+				{
+					const int idx = iVertex(i, j, k);
+					data.vertices[idx][0] = float(2 * i - 1)*halfDimX;
+					data.vertices[idx][1] = float(2 * j - 1)*halfDimY;
+					data.vertices[idx][2] = float(2 * k - 1)*halfDimZ;
+				}
+			}
+		}
+
 		data.polygonType = GL_LINES;
 		data.nIndices = 24;
 
@@ -380,65 +390,61 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 
 		data.indices[22] = iVertex(0, 1, 0);
 		data.indices[23] = iVertex(0, 1, 1);
+
+		m_objects.push_back(data);
 	}
 	else
 	{
-		data.polygonType = GL_TRIANGLES;
-		data.nIndices = 36;
-		
-		data.indices[0] = iVertex(0, 0, 0);
-		data.indices[1] = iVertex(0, 1, 1);
-		data.indices[2] = iVertex(0, 1, 0);
+		fVec3 corners[2][2][2];
 
-		data.indices[3] = iVertex(0, 0, 0);
-		data.indices[4] = iVertex(0, 0, 1);
-		data.indices[5] = iVertex(0, 1, 1);
-		
-		data.indices[6] = iVertex(1, 0, 0);
-		data.indices[7] = iVertex(1, 1, 0);
-		data.indices[8] = iVertex(1, 1, 1);
+		for (int k = 0; k < 2; ++k)
+		{
+			for (int j = 0; j < 2; ++j)
+			{
+				for (int i = 0; i < 2; ++i)
+				{
+					corners[i][j][k].x = float(2 * i - 1)*halfDimX;
+					corners[i][j][k].y = float(2 * j - 1)*halfDimY;
+					corners[i][j][k].z = float(2 * k - 1)*halfDimZ;
+				}
+			}
+		}
 
-		data.indices[9] = iVertex(1, 0, 0);
-		data.indices[10] = iVertex(1, 1, 1);
-		data.indices[11] = iVertex(1, 0, 1);
+		fVec3 rect[4];
 
-		////////////////////////////////////
+		rect[0] = corners[0][0][0];
+		rect[1] = corners[0][0][1];
+		rect[2] = corners[0][1][1];
+		rect[3] = corners[0][1][0];
+		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
+		rect[0] = corners[1][0][0];
+		rect[1] = corners[1][1][0];
+		rect[2] = corners[1][1][1];
+		rect[3] = corners[1][0][1];
+		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
 
-		data.indices[12] = iVertex(0, 0, 0);
-		data.indices[13] = iVertex(1, 0, 1);
-		data.indices[14] = iVertex(0, 0, 1);
+		rect[0] = corners[0][0][0];
+		rect[3] = corners[1][0][0];
+		rect[2] = corners[1][0][1];
+		rect[1] = corners[0][0][1];
+		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
+		rect[0] = corners[0][1][0];
+		rect[3] = corners[0][1][1];
+		rect[2] = corners[1][1][1];
+		rect[1] = corners[1][1][0];
+		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
 
-		data.indices[15] = iVertex(0, 0, 0);
-		data.indices[16] = iVertex(1, 0, 0);
-		data.indices[17] = iVertex(1, 0, 1);
-
-		data.indices[18] = iVertex(0, 1, 0);
-		data.indices[19] = iVertex(0, 1, 1);
-		data.indices[20] = iVertex(1, 1, 1);
-
-		data.indices[21] = iVertex(0, 1, 0);
-		data.indices[22] = iVertex(1, 1, 1);
-		data.indices[23] = iVertex(1, 1, 0);
-
-		////////////////////////////////////
-
-		data.indices[24] = iVertex(0, 0, 0);
-		data.indices[25] = iVertex(1, 1, 0);
-		data.indices[26] = iVertex(1, 0, 0);
-
-		data.indices[27] = iVertex(0, 0, 0);
-		data.indices[28] = iVertex(0, 1, 0);
-		data.indices[29] = iVertex(1, 1, 0);
-	
-		data.indices[30] = iVertex(0, 0, 1);
-		data.indices[31] = iVertex(1, 0, 1);
-		data.indices[32] = iVertex(1, 1, 1);
-
-		data.indices[33] = iVertex(0, 0, 1);
-		data.indices[34] = iVertex(1, 1, 1);
-		data.indices[35] = iVertex(0, 1, 1);
+		rect[0] = corners[0][0][0];
+		rect[1] = corners[0][1][0];
+		rect[2] = corners[1][1][0];
+		rect[3] = corners[1][0][0];
+		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
+		rect[0] = corners[0][0][1];
+		rect[1] = corners[1][0][1];
+		rect[2] = corners[1][1][1];
+		rect[3] = corners[0][1][1];
+		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
 	}
-	m_objects.push_back(data);
 }
 
 void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)

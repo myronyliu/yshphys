@@ -118,6 +118,10 @@ EPAHull::EPAHull(
 	{
 		m_faces[f].index = f;
 	}
+	for (int e = 0; e < EPAHULL_MAXEDGES; ++e)
+	{
+		m_edges[e].index = e;
+	}
 
 	m_verts[0] = tetrahedron.m_pts[0];
 	m_verts[1] = tetrahedron.m_pts[1];
@@ -192,24 +196,35 @@ EPAHull::EPAHull(
 	{
 		m_freeFaces[i] = (EPAHULL_MAXFACES - 1) - i;
 	}
+	for (int i = 0; i < EPAHULL_MAXEDGES- 12; ++i)
+	{
+		m_freeEdges[i] = (EPAHULL_MAXEDGES - 1) - i;
+	}
 
 	m_nFreeFaces = EPAHULL_MAXFACES - 4;
+	m_nFreeEdges = EPAHULL_MAXEDGES - 12;
+
 	m_nFacesInHeap = 4;
 	m_nVerts = 4;
-	m_nEdges = 12;
 	std::make_heap(m_faceHeap, &m_faceHeap[4], CompareFacesByDistance);
 }
 
-void EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace)
+void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 {
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		m_horizonEdges[i]->isHorizon = false;
+	}
 	m_nHorizonEdges = 0;
 
 	std::vector<const Face*> visitedFaces;
 	visitedFaces.push_back(visibleFace);
 
-	const HalfEdge* initialEdge = visibleFace->edge;
+	HalfEdge* const initialEdge = visibleFace->edge;
 	HalfEdge* edge = initialEdge->next->twin;
 	visibleFace->visited = true;
+
+	int nFreedEdges = 0;
 
 	while (edge != initialEdge)
 	{
@@ -221,6 +236,8 @@ void EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace)
 		{
 			m_horizonEdges[m_nHorizonEdges] = edge->twin;
 			m_nHorizonEdges++;
+
+			edge->twin->isHorizon = true;
 
 			// Backcross the edge to return to the previous triangle
 			nextEdge = edge->twin;
@@ -238,6 +255,18 @@ void EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace)
 				}
 				else if (nextEdge == edge->twin)
 				{
+					// We've come full circle, which means that we are working our way back to the root. Since this is depth first search,
+					// this will be the last time we pass through this face, so put any non-horizon halfEdges of this face on the free list.
+					HalfEdge* e = edge;
+					do
+					{
+						if (!e->isHorizon)
+						{
+							PushFreeEdge(e);
+							nFreedEdges++;
+						}
+					} while (e != edge);
+
 					nextEdge = edge->next->twin;
 					break;
 				}
@@ -252,6 +281,17 @@ void EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace)
 		edge = nextEdge;
 	}
 
+	HalfEdge* e = initialEdge;
+	do
+	{
+		if (!e->isHorizon)
+		{
+			PushFreeEdge(e);
+			nFreedEdges++;
+		}
+	} while (e != initialEdge);
+
+
 	for (const Face* visitedFace : visitedFaces)
 	{
 		visitedFace->visited = false;
@@ -261,6 +301,8 @@ void EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace)
 	{
 		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
 	}
+
+	std::cout << nFreedEdges << std::endl;
 }
 
 void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
@@ -273,10 +315,8 @@ void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
 
 		Face* face = PopFreeFace();
 
-		HalfEdge* prev = &m_edges[m_nEdges];
-		m_nEdges++;
-		HalfEdge* next = &m_edges[m_nEdges];
-		m_nEdges++;
+		HalfEdge* prev = PopFreeEdge();
+		HalfEdge* next = PopFreeEdge();
 
 		face->edge = curr;
 		const dVec3& B = curr->vert->m_MinkDif;
@@ -351,7 +391,7 @@ bool EPAHull::Expand()
 			m_box.y = std::max(m_box.y, abs(D.y));
 			m_box.z = std::max(m_box.z, abs(D.z));
 
-			ComputeHorizon(D, closestFace);
+			CarveHorizon(D, closestFace);
 
 			MinkowskiPoint* newVert = &m_verts[m_nVerts];
 			newVert->m_MinkDif = pt0 - pt1;
@@ -361,8 +401,8 @@ bool EPAHull::Expand()
 			PatchHorizon(newVert);
 //			EnforceHorizonConvexity();
 
-//			const int eulerCharacteristic = EulerCharacteristic();
-//			assert(eulerCharacteristic == 2);
+			const int eulerCharacteristic = EulerCharacteristic();
+			assert(eulerCharacteristic == 2);
 
 			PushFreeFace(closestFace);
 			return true;
@@ -496,6 +536,25 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 
 	for (HalfEdge* edge : heSet)
 	{
-		renderer->DrawLine(edge->vert->m_MinkDif, edge->twin->vert->m_MinkDif, fVec3(0.0f, 0.0f, 0.0f));
+		fVec3 color = (edge->isHorizon || edge->twin->isHorizon) ? fVec3(0.0f, 1.0f, 0.0f) : fVec3(0.0f, 0.0f, 0.0f);
+//		renderer->DrawLine(edge->vert->m_MinkDif, edge->twin->vert->m_MinkDif, color);
+
+		const fVec3 A(edge->vert->m_MinkDif);
+		const fVec3 B(edge->twin->vert->m_MinkDif);
+
+		fVec3 v = B - A;
+		float vLen = sqrtf(v.Dot(v));
+		fVec3 n = v.Scale(1.0f / vLen);
+		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
+		float sin = sqrtf(cross.Dot(cross));
+		float cos = n.z;
+
+		fQuat rot = fQuat::Identity();
+		if (sin > 0.00001f)
+		{
+			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
+		}
+
+		renderer->DrawBox(0.02f, 0.02f, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
 	}
 }
