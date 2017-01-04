@@ -188,8 +188,13 @@ EPAHull::EPAHull(
 		m_faces[f].distance = d;
 	}
 
+	for (int i = 0; i < EPAHULL_MAXFACES - 4; ++i)
+	{
+		m_freeFaces[i] = (EPAHULL_MAXFACES - 1) - i;
+	}
+
+	m_nFreeFaces = EPAHULL_MAXFACES - 4;
 	m_nFacesInHeap = 4;
-	m_nFaces = 4;
 	m_nVerts = 4;
 	m_nEdges = 12;
 	std::make_heap(m_faceHeap, &m_faceHeap[4], CompareFacesByDistance);
@@ -266,8 +271,8 @@ void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
 
 		// We need to use a new face because of our sorted heap mumbo jumbo
 
-		Face* face = &m_faces[m_nFaces];
-		m_nFaces++;
+		Face* face = PopFreeFace();
+
 		HalfEdge* prev = &m_edges[m_nEdges];
 		m_nEdges++;
 		HalfEdge* next = &m_edges[m_nEdges];
@@ -356,11 +361,13 @@ bool EPAHull::Expand()
 			PatchHorizon(newVert);
 //			EnforceHorizonConvexity();
 
-			const int eulerCharacteristic = EulerCharacteristic();
-			assert(eulerCharacteristic == 2);
+//			const int eulerCharacteristic = EulerCharacteristic();
+//			assert(eulerCharacteristic == 2);
 
+			PushFreeFace(closestFace);
 			return true;
 		}
+		PushFreeFace(closestFace);
 	}
 	return false;
 }

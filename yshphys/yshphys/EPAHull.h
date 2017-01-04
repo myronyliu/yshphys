@@ -2,10 +2,10 @@
 #include "Geometry.h"
 #include "DebugRenderer.h"
 
-#define EPAHULL_MAXITERS 16
+#define EPAHULL_MAXITERS 64 
 
 #define EPAHULL_MAXFACES 128
-#define EPAHULL_MAXEDGES 256
+#define EPAHULL_MAXEDGES 1024
 #define EPAHULL_MAXVERTS (4 + EPAHULL_MAXITERS)
 
 #define EPAHULL_MAXHORIZONEDGES 16
@@ -60,6 +60,11 @@ private:
 		short			index;
 
 		Face() : edge(nullptr), visited(false), index(-1) {}
+		void Reset()
+		{
+			edge = nullptr;
+			visited = false;
+		}
 
 		MinkowskiPoint ComputeClosestPointToOrigin() const;
 	};
@@ -71,8 +76,10 @@ private:
 	MinkowskiPoint	m_verts[EPAHULL_MAXVERTS];
 	HalfEdge		m_edges[EPAHULL_MAXEDGES];
 
+	int				m_freeFaces[EPAHULL_MAXFACES];
+
 	int				m_nFacesInHeap;
-	int				m_nFaces;
+	int				m_nFreeFaces;
 	int				m_nVerts;
 	int				m_nEdges;
 
@@ -100,6 +107,20 @@ private:
 		std::pop_heap(m_faceHeap, &m_faceHeap[m_nFacesInHeap], CompareFacesByDistance);
 		m_nFacesInHeap--;
 		return m_faceHeap[m_nFacesInHeap];
+	}
+
+	void PushFreeFace(Face* face)
+	{
+		m_freeFaces[m_nFreeFaces] = face->index;
+		m_nFreeFaces++;
+
+		face->Reset();
+		m_faceValidities[face->index] = true;
+	}
+	Face* PopFreeFace()
+	{
+		m_nFreeFaces--;
+		return &m_faces[m_freeFaces[m_nFreeFaces]];
 	}
 
 	void ComputeHorizon(const dVec3& eye, const Face* visibleFace);
