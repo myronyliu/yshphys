@@ -327,29 +327,11 @@ bool EPAHull::Expand()
 
 dMinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
 {
-	const dMinkowskiPoint pivot = *edge->vert;
-
-	double dSqrMin = 88888888.0;
-	dMinkowskiPoint closestPoint;
-
-	HalfEdge* e = edge->next;
-	do
-	{
-		GJKSimplex triangle;
-		triangle.AddPoint(pivot);
-		triangle.AddPoint(*e->vert);
-		triangle.AddPoint(*e->next->vert);
-		dMinkowskiPoint x = triangle.ClosestPointToOrigin(GJKSimplex());
-		double dSqr = x.m_MinkDif.Dot(x.m_MinkDif);
-
-		if (dSqr < dSqrMin)
-		{
-			closestPoint = x;
-			dSqrMin = dSqr;
-		}
-	} while (e != edge->prev);
-
-	return closestPoint;
+	GJKSimplex triangle;
+	triangle.AddPoint(dMinkowskiPoint(*edge->vert));
+	triangle.AddPoint(dMinkowskiPoint(*edge->next->vert));
+	triangle.AddPoint(dMinkowskiPoint(*edge->prev->vert));
+	return triangle.ClosestPointToOrigin(GJKSimplex());
 }
 
 double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
@@ -424,9 +406,9 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 		{
 			fVec3 ABC[3];
 
-			ABC[0] = fVec3(face->edge->vert->m_MinkDif);
-			ABC[1] = fVec3(face->edge->next->vert->m_MinkDif);
-			ABC[2] = fVec3(face->edge->next->next->vert->m_MinkDif);
+			ABC[0] = face->edge->vert->m_MinkDif;
+			ABC[1] = face->edge->next->vert->m_MinkDif;
+			ABC[2] = face->edge->next->next->vert->m_MinkDif;
 
 			float x[5] = { boxMin.x, ABC[0].x, ABC[1].x, ABC[2].x, boxMax.x };
 			float y[5] = { boxMin.y, ABC[0].y, ABC[1].y, ABC[2].y, boxMax.y };
@@ -467,8 +449,8 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 		fVec3 color = (edge->isHorizon || edge->twin->isHorizon) ? fVec3(0.0f, 1.0f, 0.0f) : fVec3(0.0f, 0.0f, 0.0f);
 //		renderer->DrawLine(edge->vert->m_MinkDif, edge->twin->vert->m_MinkDif, color);
 
-		const fVec3 A(edge->vert->m_MinkDif);
-		const fVec3 B(edge->twin->vert->m_MinkDif);
+		const fVec3& A = edge->vert->m_MinkDif;
+		const fVec3& B = edge->twin->vert->m_MinkDif;
 
 		fVec3 v = B - A;
 		float vLen = sqrtf(v.Dot(v));
