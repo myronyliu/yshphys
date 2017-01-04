@@ -161,34 +161,35 @@ void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 		}
 		else
 		{
-			nextEdge = edge->next->twin;
-
-			while (true)
+			HalfEdge* next = edge->next;
+			assert(m_faceValidities[next->face->index]);
+			if (!next->twin->face->visited)
 			{
-				assert(m_faceValidities[nextEdge->face->index]);
-				if (!nextEdge->face->visited)
+				nextEdge = next->twin;
+			}
+			else
+			{
+				HalfEdge* prev = edge->prev;
+				assert(m_faceValidities[prev->face->index]);
+				if (!prev->twin->face->visited)
 				{
-					break;
+					nextEdge = prev->twin;
 				}
-				else if (nextEdge == edge->twin)
+				else
 				{
+					nextEdge = next->twin;
+
 					// We've come full circle, which means that we are working our way back to the root. Since this is depth first search,
 					// this will be the last time we pass through this face, so put any non-horizon halfEdges of this face on the free list.
-					HalfEdge* e = edge;
-					do
+					for (HalfEdge* e : { edge, next, prev })
 					{
 						if (!e->isHorizon)
 						{
 							PushFreeEdge(e);
 							nFreedEdges++;
 						}
-						e = e->next;
-					} while (e != edge);
-
-					nextEdge = edge->next->twin;
-					break;
+					}
 				}
-				nextEdge = nextEdge->twin->next->twin;
 			}
 		}
 		if (!face->visited)
@@ -199,17 +200,14 @@ void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 		edge = nextEdge;
 	}
 
-	HalfEdge* e = initialEdge;
-	do
+	for (HalfEdge* e : { initialEdge, initialEdge->next, initialEdge->prev })
 	{
 		if (!e->isHorizon)
 		{
 			PushFreeEdge(e);
 			nFreedEdges++;
 		}
-		e = e->next;
-	} while (e != initialEdge);
-
+	}
 
 	for (const Face* visitedFace : visitedFaces)
 	{
