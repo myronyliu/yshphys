@@ -44,10 +44,10 @@ EPAHull::EPAHull(
 		m_edges[e].index = e;
 	}
 
-	m_verts[0] = tetrahedron.m_pts[0];
-	m_verts[1] = tetrahedron.m_pts[1];
-	m_verts[2] = tetrahedron.m_pts[2];
-	m_verts[3] = tetrahedron.m_pts[3];
+	m_verts[0] = fMinkowskiPoint(tetrahedron.m_pts[0]);
+	m_verts[1] = fMinkowskiPoint(tetrahedron.m_pts[1]);
+	m_verts[2] = fMinkowskiPoint(tetrahedron.m_pts[2]);
+	m_verts[3] = fMinkowskiPoint(tetrahedron.m_pts[3]);
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -62,16 +62,25 @@ EPAHull::EPAHull(
 			m_edges[3 * i + (j - 1)].vert = &m_verts[j];
 		}
 	}
+
+	const dVec3 v[4] =
+	{
+		dVec3(m_verts[0].m_MinkDif),
+		dVec3(m_verts[1].m_MinkDif),
+		dVec3(m_verts[2].m_MinkDif),
+		dVec3(m_verts[3].m_MinkDif)
+	};
+
 	for (int f = 0; f < 4; ++f)
 	{
 		const int iA = (f + 0) % 4;
 		const int iB = (f + 1) % 4;
 		const int iC = (f + 2) % 4;
 		const int iD = (f + 3) % 4;
-		const dVec3& A = m_verts[iA].m_MinkDif;
-		const dVec3& B = m_verts[iB].m_MinkDif;
-		const dVec3& C = m_verts[iC].m_MinkDif;
-		const dVec3& D = m_verts[iD].m_MinkDif;
+		const dVec3& A = v[iA];
+		const dVec3& B = v[iB];
+		const dVec3& C = v[iC];
+		const dVec3& D = v[iD];
 
 		dVec3 n = (C - B).Cross(D - B);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
@@ -105,8 +114,8 @@ EPAHull::EPAHull(
 
 		const double d = B.Dot(n);
 
-		m_faces[f].normal = n;
-		m_faces[f].distance = d;
+		m_faces[f].normal = fVec3(n);
+		m_faces[f].distance = (float)d;
 	}
 
 	for (int i = 0; i < EPAHULL_MAXFACES - 4; ++i)
@@ -126,8 +135,9 @@ EPAHull::EPAHull(
 	std::make_heap(m_faceHeap, &m_faceHeap[4], CompareFacesByDistance);
 }
 
-void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
+void EPAHull::CarveHorizon(const fVec3& fEye, const Face* visibleFace)
 {
+	const dVec3 dEye(fEye);
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
 		m_horizonEdges[i]->isHorizon = false;
@@ -149,7 +159,7 @@ void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 
 		HalfEdge* nextEdge = nullptr;
 
-		if (!face->visited && (eye - edge->vert->m_MinkDif).Dot(face->normal) < 0.00000001)
+		if (!face->visited && (dEye - dVec3(edge->vert->m_MinkDif)).Dot(dVec3(face->normal)) <= 0.0)
 		{
 			m_horizonEdges[m_nHorizonEdges] = edge->twin;
 			m_nHorizonEdges++;
@@ -222,7 +232,7 @@ void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 	std::cout << nFreedEdges << std::endl;
 }
 
-void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
+void EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 {
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
@@ -236,14 +246,14 @@ void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
 		HalfEdge* next = PopFreeEdge();
 
 		face->edge = curr;
-		const dVec3& B = curr->vert->m_MinkDif;
-		const dVec3& A = curr->twin->vert->m_MinkDif;
-		const dVec3& D = eye->m_MinkDif;
+		const dVec3 B(curr->vert->m_MinkDif);
+		const dVec3 A(curr->twin->vert->m_MinkDif);
+		const dVec3 D(eye->m_MinkDif);
 		dVec3 n = (A - D).Cross(B - D);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 		const double d = D.Dot(n);
-		face->normal = n;
-		face->distance = d;
+		face->normal = fVec3(n);
+		face->distance = (float)d;
 
 		PushFaceHeap(face);
 
@@ -279,23 +289,25 @@ bool EPAHull::Expand()
 		Face* closestFace = PopFaceHeap();
 		if (m_faceValidities[closestFace->index])
 		{
-			const dVec3& n = closestFace->normal;
+			const dVec3 n(closestFace->normal);
 			const dVec3 pt0 = m_geom0.Support(n);
 			const dVec3 pt1 = m_geom1.Support(-n);
 
-			const dVec3 D = pt0 - pt1;
-			if (abs(D.Dot(n)) < 0.0001 || abs((D.Dot(n) - closestFace->distance) / closestFace->distance) < 0.01)
+			const fVec3 eye(pt0 - pt1);
+			const float deltaDist = eye.Dot(fVec3(n)) - closestFace->distance;
+			
+			if (deltaDist < 0.0001f || (closestFace->distance > FLT_EPSILON && deltaDist / closestFace->distance < 0.01f))
 			{
 				// The new point is so close to the face, that it doesnt warrant adding. So put the face back in the heap.
 				PushFaceHeap(closestFace);
 				return false;
 			}
 
-			CarveHorizon(D, closestFace);
+			CarveHorizon(eye, closestFace);
 
-			MinkowskiPoint* newVert = &m_verts[m_nVerts];
-			newVert->m_MinkDif = pt0 - pt1;
-			newVert->m_MinkSum = pt0 + pt1;
+			fMinkowskiPoint* newVert = &m_verts[m_nVerts];
+			newVert->m_MinkDif = eye;
+			newVert->m_MinkSum = fVec3(pt0 + pt1);
 			m_nVerts++;
 
 			PatchHorizon(newVert);
@@ -313,12 +325,12 @@ bool EPAHull::Expand()
 	return false;
 }
 
-MinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
+dMinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
 {
-	const MinkowskiPoint pivot = *edge->vert;
+	const dMinkowskiPoint pivot = *edge->vert;
 
 	double dSqrMin = 88888888.0;
-	MinkowskiPoint closestPoint;
+	dMinkowskiPoint closestPoint;
 
 	HalfEdge* e = edge->next;
 	do
@@ -327,7 +339,7 @@ MinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
 		triangle.AddPoint(pivot);
 		triangle.AddPoint(*e->vert);
 		triangle.AddPoint(*e->next->vert);
-		MinkowskiPoint x = triangle.ClosestPointToOrigin(GJKSimplex());
+		dMinkowskiPoint x = triangle.ClosestPointToOrigin(GJKSimplex());
 		double dSqr = x.m_MinkDif.Dot(x.m_MinkDif);
 
 		if (dSqr < dSqrMin)
@@ -349,7 +361,7 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 			Face* closestFace = PopFaceHeap();
 			PushFaceHeap(closestFace);
 
-			MinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
+			dMinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
 			pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
 			pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
 
@@ -359,7 +371,7 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 	Face* closestFace = PopFaceHeap();
 	PushFaceHeap(closestFace);
 
-	MinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
+	dMinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
 	pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
 	pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
 
@@ -370,7 +382,7 @@ int EPAHull::EulerCharacteristic() const
 {
 	int nF = 0;
 	std::set<HalfEdge*> heSet;
-	std::set<const MinkowskiPoint*> vSet;
+	std::set<const fMinkowskiPoint*> vSet;
 	for (int i = 0; i < m_nFacesInHeap; ++i)
 	{
 		if (m_faceValidities[m_faceHeap[i]->index])

@@ -43,7 +43,7 @@ private:
 
 	struct HalfEdge
 	{
-		const MinkowskiPoint*	vert;
+		const fMinkowskiPoint*	vert;
 		HalfEdge*				next;
 		HalfEdge*				prev;
 		HalfEdge*				twin;
@@ -67,8 +67,8 @@ private:
 	};
 	struct Face
 	{
-		double			distance;
-		dVec3			normal;
+		float			distance;
+		fVec3			normal;
 		HalfEdge*		edge;
 
 		int				index;
@@ -82,14 +82,14 @@ private:
 			visited = false;
 		}
 
-		MinkowskiPoint ComputeClosestPointToOrigin() const;
+		dMinkowskiPoint ComputeClosestPointToOrigin() const;
 	};
 
 	static bool CompareFacesByDistance(const Face*, const Face*);
 
 	Face*			m_faceHeap[EPAHULL_MAXFACES];
 	Face			m_faces[EPAHULL_MAXFACES];
-	MinkowskiPoint	m_verts[EPAHULL_MAXVERTS];
+	fMinkowskiPoint	m_verts[EPAHULL_MAXVERTS]; // store data in single precision, but do computations in double precision
 	HalfEdge		m_edges[EPAHULL_MAXEDGES];
 
 	int				m_freeFaces[EPAHULL_MAXFACES];
@@ -148,6 +148,6 @@ private:
 		return &m_edges[m_freeEdges[m_nFreeEdges]];
 	}
 
-	void CarveHorizon(const dVec3& eye, const Face* visibleFace);
-	void PatchHorizon(const MinkowskiPoint* eye);
+	void CarveHorizon(const fVec3& eye, const Face* visibleFace);
+	void PatchHorizon(const fMinkowskiPoint* eye);
 };
