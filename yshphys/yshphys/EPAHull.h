@@ -2,9 +2,9 @@
 #include "Geometry.h"
 #include "DebugRenderer.h"
 
-#define EPAHULL_MAXITERS 64 
+#define EPAHULL_MAXITERS 1024 
 
-#define EPAHULL_MAXFACES 128
+#define EPAHULL_MAXFACES 1024
 #define EPAHULL_MAXEDGES 1024
 #define EPAHULL_MAXVERTS (4 + EPAHULL_MAXITERS)
 
@@ -64,8 +64,6 @@ private:
 
 			isHorizon = false;
 		}
-
-		bool IsConvex(double faceThickness) const;
 	};
 	struct Face
 	{
@@ -112,10 +110,6 @@ private:
 	OrientedGeometry	m_geom0;
 	OrientedGeometry	m_geom1;
 
-	dVec3			m_box;
-
-	void MergeFacesAlongEdge(HalfEdge* edge0);
-
 	void PushFaceHeap(Face* face)
 	{
 		m_faceHeap[m_nFacesInHeap] = face;
@@ -156,5 +150,4 @@ private:
 
 	void CarveHorizon(const dVec3& eye, const Face* visibleFace);
 	void PatchHorizon(const MinkowskiPoint* eye);
-	void EnforceHorizonConvexity();
 };

@@ -17,90 +17,11 @@ bool EPAHull::CompareFacesByDistance(const Face* face0, const Face* face1)
 	}
 }
 
-bool EPAHull::HalfEdge::IsConvex(double faceThickness) const
-{
-	Face* face0 = face;
-	Face* face1 = twin->face;
-
-	auto Centroid = [](const HalfEdge* edge)
-	{
-		const dVec3 n = edge->face->normal;
-
-		const HalfEdge* e = edge;
-
-		double a = 0;
-		dVec3 c(0.0, 0.0, 0.0);
-
-		do
-		{
-			const dVec3& u = e->vert->m_MinkDif;
-			const dVec3& v = e->next->vert->m_MinkDif;
-
-			const double da = u.Cross(v).Dot(n);
-
-			a += da;
-			c = c + (u + v).Scale(da);
-
-			e = e->next;
-		} while (e != edge);
-
-		return c.Scale(1.0 / 3.0 / a);
-	};
-
-	const dVec3 centroid0 = Centroid(this);
-	const dVec3 centroid1 = Centroid(twin);
-
-	return face0->normal.Dot(centroid0 - centroid1) > faceThickness 
-		&& face1->normal.Dot(centroid1 - centroid0) > faceThickness;
-}
-
-void EPAHull::MergeFacesAlongEdge(HalfEdge* edge0)
-{
-	HalfEdge* edge1 = edge0->twin;
-	m_faceValidities[edge1->face->index] = false;
-
-	Face* face = edge0->face;
-	face->edge = edge0->next;
-
-	HalfEdge* e = edge1->next;
-	do
-	{
-		e->face = face;
-		e = e->next;
-	} while (e != edge1);
-
-	edge1->prev->next = edge0->next;
-	edge1->next->prev = edge0->prev;
-	edge0->prev->next = edge1->next;
-	edge0->next->prev = edge1->prev;
-
-	// Compute best fit normal using Newell's Method 
-
-	e = e->prev;
-	const HalfEdge* const eInit = e;
-
-	dVec3 n(0.0, 0.0, 0.0);
-
-	do
-	{
-		const dVec3& u = e->vert->m_MinkDif;
-		const dVec3& v = e->next->vert->m_MinkDif;
-
-		n.x += (u.y - v.y)*(u.z + v.z);
-		n.y += (u.z - v.z)*(u.x + v.x);
-		n.z += (u.x - v.x)*(u.y + v.y);
-
-		e = e->next;
-	} while (e != eInit);
-
-	face->normal = n.Scale(1.0 / sqrt(n.Dot(n)));
-}
 
 EPAHull::EPAHull(
 		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0,
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1,
-		const GJKSimplex& tetrahedron) :
-	m_box(0.0,0.0,0.0)
+		const GJKSimplex& tetrahedron)
 {
 	assert(tetrahedron.GetNumPoints() == 4);
 
@@ -151,10 +72,6 @@ EPAHull::EPAHull(
 		const dVec3& B = m_verts[iB].m_MinkDif;
 		const dVec3& C = m_verts[iC].m_MinkDif;
 		const dVec3& D = m_verts[iD].m_MinkDif;
-
-		m_box.x = std::max(m_box.x, abs(A.x));
-		m_box.y = std::max(m_box.y, abs(A.y));
-		m_box.z = std::max(m_box.z, abs(A.z));
 
 		dVec3 n = (C - B).Cross(D - B);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
@@ -355,19 +272,6 @@ void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
 	}
 }
 
-void EPAHull::EnforceHorizonConvexity()
-{
-	const double eps = 3.0 * (m_box.x + m_box.y + m_box.z) * DBL_EPSILON;
-	for (int i = 0; i < m_nHorizonEdges; ++i)
-	{
-		HalfEdge* edge = m_horizonEdges[i];
-		if (!edge->IsConvex(eps))
-		{
-			MergeFacesAlongEdge(edge);
-		}
-	}
-}
-
 bool EPAHull::Expand()
 {
 	while (m_nFacesInHeap > 0)
@@ -387,10 +291,6 @@ bool EPAHull::Expand()
 				return false;
 			}
 
-			m_box.x = std::max(m_box.x, abs(D.x));
-			m_box.y = std::max(m_box.y, abs(D.y));
-			m_box.z = std::max(m_box.z, abs(D.z));
-
 			CarveHorizon(D, closestFace);
 
 			MinkowskiPoint* newVert = &m_verts[m_nVerts];
@@ -399,7 +299,6 @@ bool EPAHull::Expand()
 			m_nVerts++;
 
 			PatchHorizon(newVert);
-//			EnforceHorizonConvexity();
 
 			const int eulerCharacteristic = EulerCharacteristic();
 			assert(eulerCharacteristic == 2);
@@ -500,22 +399,33 @@ int EPAHull::EulerCharacteristic() const
 
 void EPAHull::DebugDraw(DebugRenderer* renderer) const
 {
+	fVec3 boxMin(0.0f, 0.0f, 0.0f);
+	fVec3 boxMax(0.0f, 0.0f, 0.0f);
+
 	for (int i = 0; i < m_nFacesInHeap; ++i)
 	{
-		if (m_faceValidities[m_faceHeap[i]->index])
+		Face* face = m_faceHeap[i];
+		if (m_faceValidities[face->index])
 		{
-			fVec3 x[EPAHULL_MAXVERTS];
-			int n = 0;
+			fVec3 ABC[3];
 
-			HalfEdge* e0 = m_faceHeap[i]->edge;
-			HalfEdge* e = e0;
-			do
-			{
-				x[n++] = e->vert->m_MinkDif;
-				e = e->next;
-			} while (e != e0);
+			ABC[0] = fVec3(face->edge->vert->m_MinkDif);
+			ABC[1] = fVec3(face->edge->next->vert->m_MinkDif);
+			ABC[2] = fVec3(face->edge->next->next->vert->m_MinkDif);
 
-			renderer->DrawPolygon(x, n, fVec3(1.0f, 1.0f, 1.0f), false);
+			float x[5] = { boxMin.x, ABC[0].x, ABC[1].x, ABC[2].x, boxMax.x };
+			float y[5] = { boxMin.y, ABC[0].y, ABC[1].y, ABC[2].y, boxMax.y };
+			float z[5] = { boxMin.z, ABC[0].z, ABC[1].z, ABC[2].z, boxMax.z };
+
+			boxMin.x = *std::min_element(x, x + 4);
+			boxMin.y = *std::min_element(y, y + 4);
+			boxMin.z = *std::min_element(z, z + 4);
+
+			boxMax.x = *std::max_element(x + 1, x + 5);
+			boxMax.y = *std::max_element(y + 1, y + 5);
+			boxMax.z = *std::max_element(z + 1, z + 5);
+
+			renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false);
 		}
 	}
 
@@ -533,6 +443,9 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 			} while (e != e0);
 		}
 	}
+
+	float hullSpan[3] = { boxMax.x - boxMin.x, boxMax.y - boxMin.y, boxMax.z - boxMin.z };
+	float edgeWidth = *std::min_element(hullSpan, hullSpan + 3) * 0.001f;
 
 	for (HalfEdge* edge : heSet)
 	{
@@ -555,6 +468,6 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
 		}
 
-		renderer->DrawBox(0.02f, 0.02f, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
+		renderer->DrawBox(edgeWidth, edgeWidth, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
 	}
 }
