@@ -62,7 +62,7 @@ void EPAHull::MergeFacesAlongEdge(HalfEdge* edge0)
 	Face* face = edge0->face;
 	face->edge = edge0->next;
 
-	HalfEdge* e = edge1;
+	HalfEdge* e = edge1->next;
 	do
 	{
 		e->face = face;
@@ -148,6 +148,10 @@ EPAHull::EPAHull(
 		const dVec3& C = m_verts[iC].m_MinkDif;
 		const dVec3& D = m_verts[iD].m_MinkDif;
 
+		m_box.x = std::max(m_box.x, abs(A.x));
+		m_box.y = std::max(m_box.y, abs(A.y));
+		m_box.z = std::max(m_box.z, abs(A.z));
+
 		dVec3 n = (C - B).Cross(D - B);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
@@ -182,12 +186,6 @@ EPAHull::EPAHull(
 
 		m_faces[f].normal = n;
 		m_faces[f].distance = d;
-
-		const dVec3 v = n.Scale(d);
-
-		m_box.x = std::max(m_box.x, abs(v.x));
-		m_box.y = std::max(m_box.y, abs(v.y));
-		m_box.z = std::max(m_box.z, abs(v.z));
 	}
 
 	m_nFacesInHeap = 4;
@@ -283,12 +281,6 @@ void EPAHull::PatchHorizon(std::vector<HalfEdge*> horizon, const MinkowskiPoint*
 		face->normal = n;
 		face->distance = d;
 
-		const dVec3 v = n.Scale(d);
-
-		m_box.x = std::max(m_box.x, abs(v.x));
-		m_box.y = std::max(m_box.y, abs(v.y));
-		m_box.z = std::max(m_box.z, abs(v.z));
-
 		PushFaceHeap(face);
 
 		m_faceValidities[curr->face->index] = false;
@@ -347,20 +339,81 @@ bool EPAHull::Expand()
 				PushFaceHeap(closestFace);
 				return false;
 			}
+
+			m_box.x = std::max(m_box.x, abs(D.x));
+			m_box.y = std::max(m_box.y, abs(D.y));
+			m_box.z = std::max(m_box.z, abs(D.z));
+
 			std::vector<HalfEdge*> horizon = ComputeHorizon(D, closestFace);
 
 			MinkowskiPoint* newVert = &m_verts[m_nVerts];
 			newVert->m_MinkDif = pt0 - pt1;
-			newVert->m_MinkDif = pt0 + pt1;
+			newVert->m_MinkSum = pt0 + pt1;
 			m_nVerts++;
 
 			PatchHorizon(horizon, newVert);
 			EnforceHorizonConvexity(horizon);
 
+			const int eulerCharacteristic = EulerCharacteristic();
+			assert(eulerCharacteristic == 2);
+
 			return true;
 		}
 	}
 	return false;
+}
+
+MinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
+{
+	const MinkowskiPoint pivot = *edge->vert;
+
+	double dSqrMin = 88888888.0;
+	MinkowskiPoint closestPoint;
+
+	HalfEdge* e = edge->next;
+	do
+	{
+		GJKSimplex triangle;
+		triangle.AddPoint(pivot);
+		triangle.AddPoint(*e->vert);
+		triangle.AddPoint(*e->next->vert);
+		MinkowskiPoint x = triangle.ClosestPointToOrigin(GJKSimplex());
+		double dSqr = x.m_MinkDif.Dot(x.m_MinkDif);
+
+		if (dSqr < dSqrMin)
+		{
+			closestPoint = x;
+			dSqrMin = dSqr;
+		}
+	} while (e != edge->prev);
+
+	return closestPoint;
+}
+
+double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
+{
+	for (int i = 0; i < EPAHULL_MAXITERS; ++i)
+	{
+		if (!Expand())
+		{
+			Face* closestFace = PopFaceHeap();
+			PushFaceHeap(closestFace);
+
+			MinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
+			pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
+			pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
+
+			return sqrt((pt0 - pt1).Dot(pt0 - pt1));
+		}
+	}
+	Face* closestFace = PopFaceHeap();
+	PushFaceHeap(closestFace);
+
+	MinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
+	pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
+	pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
+
+	return sqrt((pt0 - pt1).Dot(pt0 - pt1));
 }
 
 int EPAHull::EulerCharacteristic() const
@@ -394,4 +447,29 @@ int EPAHull::EulerCharacteristic() const
 
 	const int nV = (int)vSet.size();
 	return nV - nE + nF;
+}
+
+void EPAHull::DebugDraw(DebugRenderer* renderer) const
+{
+	fVec3 color(1.0f, 1.0f, 1.0f);
+
+	for (int i = 0; i < m_nFacesInHeap; ++i)
+	{
+		if (m_faceValidities[m_faceHeap[i]->index])
+		{
+			fVec3 x[EPAHULL_MAXVERTS];
+			int n = 0;
+
+			HalfEdge* e0 = m_faceHeap[i]->edge;
+			HalfEdge* e = e0;
+			do
+			{
+				x[n++] = e->vert->m_MinkDif;
+				e = e->next;
+			} while (e != e0);
+
+			renderer->DrawPolygon(x, n, color, false);
+			color = color.Scale(0.8f);
+		}
+	}
 }

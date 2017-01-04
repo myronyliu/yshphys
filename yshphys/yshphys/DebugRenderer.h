@@ -36,11 +36,10 @@ protected:
 	struct DebugDrawData
 	{
 		float vertices[SINGLE_DRAW_VERTEX_BUFFER_SIZE][3];
+		float normals[SINGLE_DRAW_VERTEX_BUFFER_SIZE][3];
 		unsigned int indices[SINGLE_DRAW_INDEX_BUFFER_SIZE];
 		unsigned int nVertices = 0;
 		unsigned int nIndices= 0;
-
-		unsigned int nVertsPerPoly = 0;
 
 		GLenum polygonType = GL_TRIANGLES;
 
@@ -51,7 +50,8 @@ protected:
 
 	std::vector<DebugDrawData> m_objects;
 	GLuint m_VAO;
-	GLuint m_VBO;
+	GLuint m_xVBO;
+	GLuint m_nVBO;
 	GLuint m_IBO;
 	Shader_FlatUniformColor m_shader;
 

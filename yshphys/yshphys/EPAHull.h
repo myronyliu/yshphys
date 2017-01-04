@@ -1,5 +1,6 @@
 #include "Simplex3D.h"
 #include "Geometry.h"
+#include "DebugRenderer.h"
 
 #define EPAHULL_MAXITERS 16
 
@@ -28,9 +29,15 @@ public:
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1,
 		const GJKSimplex& tetrahedron);
 
+	double ComputePenetration(dVec3& pt0, dVec3& pt1);
+
 	std::vector<HalfEdge*> ComputeHorizon(const dVec3& eye, const Face* visibleFace) const;
 
 	int EulerCharacteristic() const;
+	
+	bool Expand();
+
+	void DebugDraw(DebugRenderer* renderer) const;
 
 private:
 
@@ -53,13 +60,13 @@ private:
 		short			index;
 
 		Face() : edge(nullptr), visited(false), index(-1) {}
+
+		MinkowskiPoint ComputeClosestPointToOrigin() const;
 	};
 
 	static bool CompareFacesByDistance(const Face*, const Face*);
 
-	struct
-
-		Face*			m_faceHeap[EPAHULL_MAXFACES];
+	Face*			m_faceHeap[EPAHULL_MAXFACES];
 	Face			m_faces[EPAHULL_MAXFACES];
 	MinkowskiPoint	m_verts[EPAHULL_MAXVERTS];
 	HalfEdge		m_edges[EPAHULL_MAXEDGES];
@@ -78,8 +85,6 @@ private:
 	dVec3			m_box;
 
 	void MergeFacesAlongEdge(HalfEdge* edge0);
-
-	bool Expand();
 
 	void PushFaceHeap(Face* face)
 	{

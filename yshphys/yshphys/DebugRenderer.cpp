@@ -6,18 +6,24 @@
 DebugRenderer::DebugRenderer()
 {
 	glGenVertexArrays(1, &m_VAO);
-	glGenBuffers(1, &m_VBO);
+	glGenBuffers(1, &m_xVBO);
+	glGenBuffers(1, &m_nVBO);
 	glGenBuffers(1, &m_IBO);
 
 	glBindVertexArray(m_VAO);
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, m_xVBO);
 		{
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, m_nVBO);
+		{
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 	}
 	glBindVertexArray(0);
 }
@@ -27,10 +33,12 @@ DebugRenderer::~DebugRenderer()
 {
 	glBindVertexArray(m_VAO);
 	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
 	glBindVertexArray(0);
 
 	glDeleteVertexArrays(1, &m_VAO);
-	glDeleteBuffers(1, &m_VBO);
+	glDeleteBuffers(1, &m_xVBO);
+	glDeleteBuffers(1, &m_nVBO);
 	glDeleteBuffers(1, &m_IBO);
 }
 
@@ -42,7 +50,6 @@ void DebugRenderer::DrawObjects(const Viewport& viewport) const
 	const GLuint program = m_shader.GetProgram();
 	glUseProgram(program);
 	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 
 	for (int i = 0; i < m_objects.size(); ++i)
@@ -53,16 +60,24 @@ void DebugRenderer::DrawObjects(const Viewport& viewport) const
 			HomogeneousTransformation_t<float>::CreateTranslation(data.pos)*
 			HomogeneousTransformation_t<float>::CreateRotation(data.rot);
 
+		glBindBuffer(GL_ARRAY_BUFFER, m_xVBO);
 		glBufferData(GL_ARRAY_BUFFER, 3 * data.nVertices * sizeof(GL_FLOAT), data.vertices, GL_DYNAMIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_nVBO);
+		glBufferData(GL_ARRAY_BUFFER, 3 * data.nVertices * sizeof(GL_FLOAT), data.normals, GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.nIndices * sizeof(GL_UNSIGNED_INT), data.indices, GL_DYNAMIC_DRAW);
 
+		const GLint useNormalsLoc = glGetUniformLocation(program, "useNormals");
 		const GLint colorLoc = glGetUniformLocation(program, "color");
 		const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
 		const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
 		const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
 		// Pass in the transpose because OpenGL likes to be all edgy with its
 		// column major matrices while we are row major like everybody else.
+		glUniform1i(useNormalsLoc, data.polygonType == GL_TRIANGLES);
 		glUniform3fv(colorLoc, 1, data.color);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
@@ -104,7 +119,6 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 	data.indices[1] = 1;
 
 	data.polygonType = GL_LINES;
-	data.nVertsPerPoly = 2;
 	data.nIndices = 2;
 
 	m_objects.push_back(data);
@@ -151,7 +165,6 @@ void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& r
 	data.vertices[nBase][2] = h;
 
 	data.polygonType = GL_TRIANGLES;
-	data.nVertsPerPoly = 3;
 	data.nIndices = 3 * nBase;
 
 	m_objects.push_back(data);
@@ -183,7 +196,6 @@ void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C,
 	if (wireFrame)
 	{
 		data.polygonType = GL_LINES;
-		data.nVertsPerPoly = 2;
 		data.nIndices = 6;
 
 		data.indices[0] = 0;
@@ -198,7 +210,6 @@ void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C,
 	else
 	{
 		data.polygonType = GL_TRIANGLES;
-		data.nVertsPerPoly = 3;
 		data.nIndices = 3;
 		data.indices[0] = 0;
 		data.indices[1] = 1;
@@ -227,7 +238,6 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 	if (wireFrame)
 	{
 		data.polygonType = GL_LINES;
-		data.nVertsPerPoly = 2;
 		data.nIndices = 2 * nVerts;
 
 		for (int i = 0; i < nVerts; ++i)
@@ -239,7 +249,6 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 	else
 	{
 		data.polygonType = GL_TRIANGLES;
-		data.nVertsPerPoly = 3;
 		data.nIndices = 3 * (nVerts - 2);
 
 		int iA = 0;
@@ -273,6 +282,25 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& col
 			data.indices[3 * iTriangle + 0] = iA;
 			data.indices[3 * iTriangle + 1] = iC;
 			data.indices[3 * iTriangle + 2] = iD;
+		}
+
+		fVec3 n(0.0f, 0.0f, 0.0f);
+		for (int i = 0; i < nVerts; ++i)
+		{
+			const fVec3& u = verts[(i + 0) % nVerts];
+			const fVec3& v = verts[(i + 1) % nVerts];
+
+			n.x += (u.y - v.y)*(u.z + v.z);
+			n.y += (u.z - v.z)*(u.x + v.x);
+			n.z += (u.x - v.x)*(u.y + v.y);
+		}
+		n = n.Scale(1.0f / sqrtf(n.Dot(n)));
+
+		for (int i = 0; i < nVerts; ++i)
+		{
+			data.normals[i][0] = n[0];
+			data.normals[i][1] = n[1];
+			data.normals[i][2] = n[2];
 		}
 	}
 	m_objects.push_back(data);
@@ -311,7 +339,6 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 	if (wireFrame)
 	{
 		data.polygonType = GL_LINES;
-		data.nVertsPerPoly = 2;
 		data.nIndices = 24;
 
 		data.indices[0] = iVertex(0, 0, 0);
@@ -357,7 +384,6 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 	else
 	{
 		data.polygonType = GL_TRIANGLES;
-		data.nVertsPerPoly = 3;
 		data.nIndices = 36;
 		
 		data.indices[0] = iVertex(0, 0, 0);
