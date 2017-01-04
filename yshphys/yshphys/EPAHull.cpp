@@ -182,6 +182,7 @@ void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 							PushFreeEdge(e);
 							nFreedEdges++;
 						}
+						e = e->next;
 					} while (e != edge);
 
 					nextEdge = edge->next->twin;
@@ -206,6 +207,7 @@ void EPAHull::CarveHorizon(const dVec3& eye, const Face* visibleFace)
 			PushFreeEdge(e);
 			nFreedEdges++;
 		}
+		e = e->next;
 	} while (e != initialEdge);
 
 
@@ -300,10 +302,12 @@ bool EPAHull::Expand()
 
 			PatchHorizon(newVert);
 
+			PushFreeFace(closestFace); // Only after we are done working with the horizon can we push the closestFace onto the free list
+			assert(m_nFacesInHeap + m_nFreeFaces == EPAHULL_MAXFACES);
+
 			const int eulerCharacteristic = EulerCharacteristic();
 			assert(eulerCharacteristic == 2);
 
-			PushFreeFace(closestFace);
 			return true;
 		}
 		PushFreeFace(closestFace);
@@ -391,6 +395,7 @@ int EPAHull::EulerCharacteristic() const
 
 	const int nHE = (int)heSet.size();
 	assert(nHE % 2 == 0);
+	assert(nHE + m_nFreeEdges == EPAHULL_MAXEDGES);
 	int nE = nHE / 2;
 
 	const int nV = (int)vSet.size();
