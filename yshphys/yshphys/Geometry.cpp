@@ -94,11 +94,83 @@ bool Geometry::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, 
 	return false;
 }
 
+GJKSimplex CompleteSimplex(
+	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
+	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
+	const GJKSimplex& simplex)
+{
+	GJKSimplex fullSimplex = simplex;
+	switch (simplex.GetNumPoints())
+	{
+//	case 1:
+//	{
+//		MinkowskiPoint singlePt = simplex.m_pts[0];
+//		pt0 = (singlePt.m_MinkSum + singlePt.m_MinkDif).Scale(0.5);
+//		pt1 = (singlePt.m_MinkSum - singlePt.m_MinkDif).Scale(0.5);
+//		return (pt0 - pt1).Dot(pt0 - pt1);
+//	}
+	case 2:
+	{
+		const dVec3& A = simplex.m_pts[0].m_MinkDif;
+		const dVec3& B = simplex.m_pts[1].m_MinkDif;
+		const dVec3 AB = B - A;
+		const dVec3 AB_AB = AB.Times(AB);
+		dVec3 n;
+		for (int i = 0; i < 3; ++i)
+		{
+			int j = (i + 1) % 3;
+			int k = (i + 2) % 3;
+			if (AB_AB[i] <= AB_AB[j] && AB_AB[i] <= AB_AB[k])
+			{
+				n[i] = 0.0;
+				n[j] = AB[k];
+				n[k] = -AB[j];
+
+				MinkowskiPoint newSimplexPt;
+				dVec3 p0 = geom0->Support(pos0, rot0, -n);
+				dVec3 p1 = geom1->Support(pos1, rot1, n);
+				const dVec3& C = p0 - p1;
+				newSimplexPt.m_MinkDif = C;
+				newSimplexPt.m_MinkSum = p0 + p1;
+				fullSimplex.AddPoint(newSimplexPt);
+
+				n = (B - A).Cross(C - A);
+				p0 = geom0->Support(pos0, rot0, -n);
+				p1 = geom1->Support(pos1, rot1, n);
+				newSimplexPt.m_MinkDif = p0 - p1;
+				newSimplexPt.m_MinkSum = p0 + p1;
+				fullSimplex.AddPoint(newSimplexPt);
+
+				break;
+			}
+		}
+
+		break;
+	}
+	case 3:
+	{
+		const dVec3& A = simplex.m_pts[0].m_MinkDif;
+		const dVec3& B = simplex.m_pts[1].m_MinkDif;
+		const dVec3& C = simplex.m_pts[2].m_MinkDif;
+		const dVec3 n = (B - A).Cross(C - A);
+		MinkowskiPoint newSimplexPt;
+		const dVec3 p0 = geom0->Support(pos0, rot0, -n);
+		const dVec3 p1 = geom1->Support(pos1, rot1, n);
+		newSimplexPt.m_MinkDif = p0 - p1;
+		newSimplexPt.m_MinkSum = p0 + p1;
+		fullSimplex.AddPoint(newSimplexPt);
+		break;
+	}
+	}
+	return fullSimplex;
+}
+
 double Geometry::ComputePenetration(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	const GJKSimplex& simplex)
 {
+	return 0.0;
 	// COMPLETE THE TETRAHEDRON IF THE SIMPLEX HAS FEWER THAN 4 POINTS
 
 	GJKSimplex fullSimplex = simplex;
@@ -362,6 +434,7 @@ double Geometry::ComputePenetration(
 
 						while (true)
 						{
+							assert(*nextEdge->face->valid);
 							if (!nextEdge->face->visited)
 							{
 								break;
@@ -557,7 +630,7 @@ double Geometry::ComputePenetration(
 				int nE = nHE / 2;
 
 				int nV = vSet.size();
-				assert(nV - nE + nF == 2);
+//				assert(nV - nE + nF == 2);
 #endif
 				
 				break;
@@ -637,10 +710,19 @@ double Geometry::ComputeSeparation(
 			double vSqr = v.Dot(v);
 			if (vSqr < MIN_SUPPORT_SQR)
 			{
+				if (simplex.GetNumPoints() == 1)
+				{
+					MinkowskiPoint singlePt = simplex.m_pts[0];
+					pt0 = (singlePt.m_MinkSum + singlePt.m_MinkDif).Scale(0.5);
+					pt1 = (singlePt.m_MinkSum - singlePt.m_MinkDif).Scale(0.5);
+					return 0.0;
+				}
+				else
+				{
+					simplex = CompleteSimplex(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+					return 0.0;
+				}
 				return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
-//				pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
-//				pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
-//				return 0.0;
 			}
 			pt0 = geom0->Support(pos0, rot0, -v);
 			pt1 = geom1->Support(pos1, rot1, v);

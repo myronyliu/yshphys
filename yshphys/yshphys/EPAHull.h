@@ -8,6 +8,8 @@
 #define EPAHULL_MAXEDGES 256
 #define EPAHULL_MAXVERTS (4 + EPAHULL_MAXITERS)
 
+#define EPAHULL_MAXHORIZONEDGES 16
+
 struct OrientedGeometry
 {
 	const Geometry* geom;
@@ -30,8 +32,6 @@ public:
 		const GJKSimplex& tetrahedron);
 
 	double ComputePenetration(dVec3& pt0, dVec3& pt1);
-
-	std::vector<HalfEdge*> ComputeHorizon(const dVec3& eye, const Face* visibleFace) const;
 
 	int EulerCharacteristic() const;
 	
@@ -76,6 +76,9 @@ private:
 	int				m_nVerts;
 	int				m_nEdges;
 
+	mutable HalfEdge*	m_horizonEdges[EPAHULL_MAXHORIZONEDGES];
+	mutable int			m_nHorizonEdges;
+
 	// ugh this is so ugly, but we cannot manipulate the sorted heap directly, hence the indirection
 	bool			m_faceValidities[EPAHULL_MAXFACES];
 
@@ -99,6 +102,7 @@ private:
 		return m_faceHeap[m_nFacesInHeap];
 	}
 
-	void PatchHorizon(std::vector<HalfEdge*> horizon, const MinkowskiPoint* eye);
-	void EnforceHorizonConvexity(std::vector<HalfEdge*> horizon);
+	void ComputeHorizon(const dVec3& eye, const Face* visibleFace);
+	void PatchHorizon(const MinkowskiPoint* eye);
+	void EnforceHorizonConvexity();
 };

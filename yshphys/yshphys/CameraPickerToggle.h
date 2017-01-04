@@ -15,6 +15,8 @@ public:
 
 	virtual void ProcessInput(const MouseState& mouseState, KeyState* keyStates, int dt_ms);
 
+	Game* game;
+
 protected:
 
 	enum KeyActions

@@ -84,4 +84,16 @@ void Tests::CreateGJKTest(Game* game)
 
 		game->AddGameObject(gameObject);
 	}
+
+	GJKSimplex simplex;
+
+	Geometry::ComputeSeparation(
+		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(), dVec3(),
+		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(), dVec3(),
+		simplex);
+
+	game->epa = new EPAHull(
+		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(),
+		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(),
+		simplex);
 }

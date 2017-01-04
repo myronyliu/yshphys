@@ -207,6 +207,9 @@
     <ClInclude Include="Trimesh.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="EPAHull.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -31,6 +31,7 @@ int main(int argc, char *args[])
 
 	Game game;
 	picker.m_game = &game;
+	toggle.game = &game;
 	game.m_inputManager.AddInputHandler(&camera);
 	game.m_inputManager.AddInputHandler(&picker);
 	game.m_inputManager.AddInputHandler(&toggle);

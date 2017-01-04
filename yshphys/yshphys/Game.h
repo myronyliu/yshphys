@@ -3,6 +3,7 @@
 #include "RenderScene.h"
 #include "PhysicsScene.h"
 #include "GameNode.h"
+#include "EPAHull.h"
 
 #define MAX_GAME_NODES 1024
 
@@ -25,6 +26,7 @@ public:
 	Window* m_window; // The window into which the rendered scene is displayed and from which the inputManager gets its mouse coordinates
 
 	RigidBody* rb[2];
+	EPAHull* epa;
 
 protected:
 

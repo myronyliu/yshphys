@@ -195,9 +195,10 @@ EPAHull::EPAHull(
 	std::make_heap(m_faceHeap, &m_faceHeap[4], CompareFacesByDistance);
 }
 
-std::vector<EPAHull::HalfEdge*> EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace) const
+void EPAHull::ComputeHorizon(const dVec3& eye, const Face* visibleFace)
 {
-	std::vector<HalfEdge*> horizon;
+	m_nHorizonEdges = 0;
+
 	std::vector<const Face*> visitedFaces;
 	visitedFaces.push_back(visibleFace);
 
@@ -211,9 +212,11 @@ std::vector<EPAHull::HalfEdge*> EPAHull::ComputeHorizon(const dVec3& eye, const 
 
 		HalfEdge* nextEdge = nullptr;
 
-		if (!face->visited && (eye - edge->vert->m_MinkDif).Dot(face->normal) < 0.000001)
+		if (!face->visited && (eye - edge->vert->m_MinkDif).Dot(face->normal) < 0.00000001)
 		{
-			horizon.push_back(edge->twin);
+			m_horizonEdges[m_nHorizonEdges] = edge->twin;
+			m_nHorizonEdges++;
+
 			// Backcross the edge to return to the previous triangle
 			nextEdge = edge->twin;
 		}
@@ -249,19 +252,18 @@ std::vector<EPAHull::HalfEdge*> EPAHull::ComputeHorizon(const dVec3& eye, const 
 		visitedFace->visited = false;
 	}
 
-	const int nHorizon = (int)horizon.size();
-	for (int i = 0; i < nHorizon; ++i)
+	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
-		assert(horizon[(i + 1) % nHorizon]->twin->vert == horizon[i]->vert);
+		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
 	}
-
-	return horizon;
 }
 
-void EPAHull::PatchHorizon(std::vector<HalfEdge*> horizon, const MinkowskiPoint* eye)
+void EPAHull::PatchHorizon(const MinkowskiPoint* eye)
 {
-	for (HalfEdge* curr : horizon)
+	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
+		HalfEdge* curr = m_horizonEdges[i];
+
 		// We need to use a new face because of our sorted heap mumbo jumbo
 
 		Face* face = &m_faces[m_nFaces];
@@ -301,19 +303,19 @@ void EPAHull::PatchHorizon(std::vector<HalfEdge*> horizon, const MinkowskiPoint*
 		next->prev = curr;
 	}
 
-	const int nHorizon = (int)horizon.size();
-	for (int i = 0; i < nHorizon; ++i)
+	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
-		horizon[i]->next->twin = horizon[(i + 1) % nHorizon]->prev;
-		horizon[i]->prev->twin = horizon[(i - 1 + nHorizon) % nHorizon]->next;
+		m_horizonEdges[i]->next->twin = m_horizonEdges[(i + 1) % m_nHorizonEdges]->prev;
+		m_horizonEdges[i]->prev->twin = m_horizonEdges[(i - 1 + m_nHorizonEdges) % m_nHorizonEdges]->next;
 	}
 }
 
-void EPAHull::EnforceHorizonConvexity(std::vector<EPAHull::HalfEdge*> horizon)
+void EPAHull::EnforceHorizonConvexity()
 {
 	const double eps = 3.0 * (m_box.x + m_box.y + m_box.z) * DBL_EPSILON;
-	for (HalfEdge* edge : horizon)
+	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
+		HalfEdge* edge = m_horizonEdges[i];
 		if (!edge->IsConvex(eps))
 		{
 			MergeFacesAlongEdge(edge);
@@ -344,15 +346,15 @@ bool EPAHull::Expand()
 			m_box.y = std::max(m_box.y, abs(D.y));
 			m_box.z = std::max(m_box.z, abs(D.z));
 
-			std::vector<HalfEdge*> horizon = ComputeHorizon(D, closestFace);
+			ComputeHorizon(D, closestFace);
 
 			MinkowskiPoint* newVert = &m_verts[m_nVerts];
 			newVert->m_MinkDif = pt0 - pt1;
 			newVert->m_MinkSum = pt0 + pt1;
 			m_nVerts++;
 
-			PatchHorizon(horizon, newVert);
-			EnforceHorizonConvexity(horizon);
+			PatchHorizon(newVert);
+//			EnforceHorizonConvexity();
 
 			const int eulerCharacteristic = EulerCharacteristic();
 			assert(eulerCharacteristic == 2);
@@ -451,8 +453,6 @@ int EPAHull::EulerCharacteristic() const
 
 void EPAHull::DebugDraw(DebugRenderer* renderer) const
 {
-	fVec3 color(1.0f, 1.0f, 1.0f);
-
 	for (int i = 0; i < m_nFacesInHeap; ++i)
 	{
 		if (m_faceValidities[m_faceHeap[i]->index])
@@ -468,8 +468,27 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 				e = e->next;
 			} while (e != e0);
 
-			renderer->DrawPolygon(x, n, color, false);
-			color = color.Scale(0.8f);
+			renderer->DrawPolygon(x, n, fVec3(1.0f, 1.0f, 1.0f), false);
 		}
+	}
+
+	std::set<HalfEdge*> heSet;
+	for (int i = 0; i < m_nFacesInHeap; ++i)
+	{
+		if (m_faceValidities[m_faceHeap[i]->index])
+		{
+			HalfEdge* e0 = m_faceHeap[i]->edge;
+			HalfEdge* e = e0;
+			do
+			{
+				heSet.insert(e);
+				e = e->next;
+			} while (e != e0);
+		}
+	}
+
+	for (HalfEdge* edge : heSet)
+	{
+		renderer->DrawLine(edge->vert->m_MinkDif, edge->twin->vert->m_MinkDif, fVec3(0.0f, 0.0f, 0.0f));
 	}
 }

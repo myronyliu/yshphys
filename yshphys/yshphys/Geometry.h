@@ -33,12 +33,11 @@ public:
 		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1);
 
-protected:
-
 	static double ComputeSeparation(
 		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 		GJKSimplex& simplex);
+protected:
 
 	static double ComputePenetration(
 		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
