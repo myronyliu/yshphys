@@ -180,6 +180,8 @@ void EPAHull::CarveHorizon(const fVec3& fEye, const Face* visibleFace)
 		const dVec3 x(edge->vert->m_MinkDif);
 		const double dot = (dEye - x).Dot(n);
 
+		assert(abs(dot) > 8.0*FLT_MIN);
+
 		if ((float)dot > 0.0f)
 		{
 			if (!twin->prev->twin->face->visible)
@@ -206,6 +208,7 @@ void EPAHull::CarveHorizon(const fVec3& fEye, const Face* visibleFace)
 	HalfEdge* edge = horizon;
 	do
 	{
+		assert(m_nHorizonEdges < EPAHULL_MAXHORIZONEDGES);
 		m_horizonEdges[m_nHorizonEdges++] = edge;
 		edge->isHorizon = true;
 
@@ -314,6 +317,8 @@ bool EPAHull::Expand()
 
 			PatchHorizon(newVert);
 
+			SanityCheck();
+
 			PushFreeFace(closestFace); // Only after we are done working with the horizon can we push the closestFace onto the free list
 			assert(m_nFacesInHeap + m_nFreeFaces == EPAHULL_MAXFACES);
 
@@ -393,7 +398,27 @@ int EPAHull::EulerCharacteristic() const
 	int nE = nHE / 2;
 
 	const int nV = (int)vSet.size();
+	assert(nV == m_nVerts);
 	return nV - nE + nF;
+}
+
+void EPAHull::SanityCheck() const
+{
+	for (int i = 0; i < m_nFacesInHeap; ++i)
+	{
+		if (m_faceValidities[m_faceHeap[i]->index])
+		{
+			HalfEdge* e[3];
+			e[0] = m_faceHeap[i]->edge;
+			e[1] = m_faceHeap[i]->edge->next;
+			e[2] = m_faceHeap[i]->edge->prev;
+
+			for (int j = 0; j < 3; ++j)
+			{
+				assert(e[j]->vert == e[(j + 1) % 3]->twin->vert);
+			}
+		}
+	}
 }
 
 void EPAHull::DebugDraw(DebugRenderer* renderer) const

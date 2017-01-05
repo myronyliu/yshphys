@@ -3,6 +3,7 @@
 #include "MathUtils.h"
 #include "Point.h"
 #include "Ray.h"
+#include "EPAHull.h"
 
 #define MIN_SUPPORT_SQR 0.0001
 #define GJK_TERMINATION_RATIO 0.01
@@ -170,7 +171,8 @@ double Geometry::ComputePenetration(
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 	const GJKSimplex& simplex)
 {
-	return 0.0;
+	EPAHull hull(geom0, pos0, rot0, geom1, pos1, rot1, simplex);
+	return hull.ComputePenetration(pt0, pt1);
 }
 double Geometry::ComputeSeparation(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
@@ -231,9 +233,8 @@ double Geometry::ComputeSeparation(
 				else
 				{
 					simplex = CompleteSimplex(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
-					return 0.0;
+					return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
 				}
-				return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
 			}
 			pt0 = geom0->Support(pos0, rot0, -v);
 			pt1 = geom1->Support(pos1, rot1, v);

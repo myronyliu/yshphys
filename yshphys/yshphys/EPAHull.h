@@ -34,6 +34,7 @@ public:
 	double ComputePenetration(dVec3& pt0, dVec3& pt1);
 
 	int EulerCharacteristic() const;
+	void SanityCheck() const;
 	
 	bool Expand();
 

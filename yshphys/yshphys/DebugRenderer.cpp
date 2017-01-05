@@ -497,7 +497,7 @@ void DebugRenderer::DrawPicker(const Picker& picker, const fVec3& color)
 		const dVec3 pickerPos = picker.GetPosition();
 
 		DrawLine(grabPos, pickerPos, color);
-		DrawBox(0.2f, 0.2f, 0.2f, grabPos, fQuat::Identity(), color, false);
+		DrawBox(0.2f, 0.2f, 0.2f, grabPos, fQuat::Identity(), color, false, false);
 //		const dVec3 coneAxis = pickerPos - grabPos;
 //		const double coneRadius = sqrtf(coneAxis.Dot(coneAxis)) / 16.0f;
 //		DrawCone(grabPos, pickerPos, coneRadius, color);
