@@ -67,19 +67,19 @@ private:
 	};
 	struct Face
 	{
-		float			distance;
-		fVec3			normal;
+		double			distance;
+		dVec3			normal;
 		HalfEdge*		edge;
 
 		int				index;
 
-		mutable bool	visited;
+		mutable bool	visible;
 
-		Face() : edge(nullptr), visited(false), index(-1) {}
+		Face() : edge(nullptr), visible(false), index(-1) {}
 		void Reset()
 		{
 			edge = nullptr;
-			visited = false;
+			visible = false;
 		}
 
 		dMinkowskiPoint ComputeClosestPointToOrigin() const;

@@ -20,7 +20,10 @@ void main(void)
 	ex_color = color;
 	if (useNormals == 1)
 	{
-		float colorScale = (mat3(viewModelMatrix) * in_normal).z;
+		float cosTheta = (mat3(viewModelMatrix) * in_normal).z;
+		float theta = acos(cosTheta);
+//		float colorScale = sqrt((1.0f + cosTheta) * 0.5f);
+		float colorScale = cos(theta * 0.7f);
 		ex_color *= colorScale;
 	}
 }

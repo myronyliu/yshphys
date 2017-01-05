@@ -114,8 +114,8 @@ EPAHull::EPAHull(
 
 		const double d = B.Dot(n);
 
-		m_faces[f].normal = fVec3(n);
-		m_faces[f].distance = (float)d;
+		m_faces[f].normal = n;
+		m_faces[f].distance = d;
 	}
 
 	for (int i = 0; i < EPAHULL_MAXFACES - 4; ++i)
@@ -144,90 +144,91 @@ void EPAHull::CarveHorizon(const fVec3& fEye, const Face* visibleFace)
 	}
 	m_nHorizonEdges = 0;
 
-	std::vector<const Face*> visitedFaces;
-	visitedFaces.push_back(visibleFace);
-
-	HalfEdge* const initialEdge = visibleFace->edge;
-	HalfEdge* edge = initialEdge->next->twin;
-	visibleFace->visited = true;
-
 	int nFreedEdges = 0;
 
-	while (edge != initialEdge)
+	std::vector<const Face*> visibleFaces;
+
+	struct EdgeStack
 	{
-		Face* face = edge->face;
+	public:
+		void Push(HalfEdge* edge) { e[n++] = edge; }
+		HalfEdge* Pop() { return e[--n]; }
+		bool Empty() const { return n == 0; }
+	private:
+		HalfEdge* e[1024];
+		int n = 0;
+	}
+	edgeStack;
 
-		HalfEdge* nextEdge = nullptr;
+	visibleFace->visible = true;
+	visibleFaces.push_back(visibleFace);
 
-		if (!face->visited && (dEye - dVec3(edge->vert->m_MinkDif)).Dot(dVec3(face->normal)) <= 0.0)
+	edgeStack.Push(visibleFace->edge);
+	edgeStack.Push(visibleFace->edge->prev);
+	edgeStack.Push(visibleFace->edge->next);
+
+	HalfEdge* horizon = nullptr;
+
+	while (!edgeStack.Empty())
+	{
+		HalfEdge* edge = edgeStack.Pop();
+		HalfEdge* twin = edge->twin;
+
+		Face* opposingFace = twin->face;
+
+		const dVec3& n = opposingFace->normal;
+		const dVec3 x(edge->vert->m_MinkDif);
+		const double dot = (dEye - x).Dot(n);
+
+		if ((float)dot > 0.0f)
 		{
-			m_horizonEdges[m_nHorizonEdges] = edge->twin;
-			m_nHorizonEdges++;
+			if (!twin->prev->twin->face->visible)
+			{
+				edgeStack.Push(twin->prev);
+			}
+			if (!twin->next->twin->face->visible)
+			{
+				edgeStack.Push(twin->next);
+			}
+			PushFreeEdge(edge);
+			PushFreeEdge(twin);
+			nFreedEdges += 2;
 
-			edge->twin->isHorizon = true;
-
-			// Backcross the edge to return to the previous triangle
-			nextEdge = edge->twin;
+			opposingFace->visible = true;
+			visibleFaces.push_back(opposingFace);
 		}
 		else
 		{
-			HalfEdge* next = edge->next;
-			assert(m_faceValidities[next->face->index]);
-			if (!next->twin->face->visited)
-			{
-				nextEdge = next->twin;
-			}
-			else
-			{
-				HalfEdge* prev = edge->prev;
-				assert(m_faceValidities[prev->face->index]);
-				if (!prev->twin->face->visited)
-				{
-					nextEdge = prev->twin;
-				}
-				else
-				{
-					nextEdge = next->twin;
-
-					// We've come full circle, which means that we are working our way back to the root. Since this is depth first search,
-					// this will be the last time we pass through this face, so put any non-horizon halfEdges of this face on the free list.
-					for (HalfEdge* e : { edge, next, prev })
-					{
-						if (!e->isHorizon)
-						{
-							PushFreeEdge(e);
-							nFreedEdges++;
-						}
-					}
-				}
-			}
+			horizon = edge;
 		}
-		if (!face->visited)
-		{
-			face->visited = true;
-			visitedFaces.push_back(face);
-		}
-		edge = nextEdge;
 	}
 
-	for (HalfEdge* e : { initialEdge, initialEdge->next, initialEdge->prev })
+	HalfEdge* edge = horizon;
+	do
 	{
-		if (!e->isHorizon)
-		{
-			PushFreeEdge(e);
-			nFreedEdges++;
-		}
-	}
+		m_horizonEdges[m_nHorizonEdges++] = edge;
+		edge->isHorizon = true;
 
-	for (const Face* visitedFace : visitedFaces)
-	{
-		visitedFace->visited = false;
-	}
+		do
+		{
+			edge = edge->next->twin;
+
+		} while (edge->face->visible);
+
+		edge = edge->twin;
+
+	} while (edge != horizon);
 
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
 		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
 	}
+
+	for (const Face* visibleFace : visibleFaces)
+	{
+		visibleFace->visible = false;
+	}
+
 
 	std::cout << nFreedEdges << std::endl;
 }
@@ -252,8 +253,8 @@ void EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 		dVec3 n = (A - D).Cross(B - D);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 		const double d = D.Dot(n);
-		face->normal = fVec3(n);
-		face->distance = (float)d;
+		face->normal = n;
+		face->distance = d;
 
 		PushFaceHeap(face);
 
@@ -289,24 +290,25 @@ bool EPAHull::Expand()
 		Face* closestFace = PopFaceHeap();
 		if (m_faceValidities[closestFace->index])
 		{
-			const dVec3 n(closestFace->normal);
+			const dVec3& n = closestFace->normal;
 			const dVec3 pt0 = m_geom0.Support(n);
 			const dVec3 pt1 = m_geom1.Support(-n);
 
-			const fVec3 eye(pt0 - pt1);
-			const float deltaDist = eye.Dot(fVec3(n)) - closestFace->distance;
+			const dVec3 dEye(pt0 - pt1);
+			const double deltaDist = dEye.Dot(n) - closestFace->distance;
 			
-			if (deltaDist < 0.0001f || (closestFace->distance > FLT_EPSILON && deltaDist / closestFace->distance < 0.01f))
+			if (deltaDist < 0.0001 || (closestFace->distance > FLT_EPSILON && deltaDist / closestFace->distance < 0.01))
 			{
 				// The new point is so close to the face, that it doesnt warrant adding. So put the face back in the heap.
 				PushFaceHeap(closestFace);
 				return false;
 			}
 
-			CarveHorizon(eye, closestFace);
+			const fVec3 fEye(dEye);
+			CarveHorizon(fEye, closestFace);
 
 			fMinkowskiPoint* newVert = &m_verts[m_nVerts];
-			newVert->m_MinkDif = eye;
+			newVert->m_MinkDif = fEye;
 			newVert->m_MinkSum = fVec3(pt0 + pt1);
 			m_nVerts++;
 
