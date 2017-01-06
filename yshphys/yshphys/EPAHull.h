@@ -74,12 +74,14 @@ private:
 
 		int				index;
 
+		mutable bool	visited;
 		mutable bool	visible;
 
-		Face() : edge(nullptr), visible(false), index(-1) {}
+		Face() : edge(nullptr), visited(false), visible(false), index(-1) {}
 		void Reset()
 		{
 			edge = nullptr;
+			visited = false;
 			visible = false;
 		}
 
@@ -106,40 +108,76 @@ private:
 	mutable int			m_nHorizonEdges;
 
 	// ugh this is so ugly, but we cannot manipulate the sorted heap directly, hence the indirection
-	bool			m_faceValidities[EPAHULL_MAXFACES];
+	struct FaceStatus
+	{
+		bool active = false;
+		bool inHeap = false;
+	}
+	m_faceStatuses[EPAHULL_MAXFACES];
 
 	OrientedGeometry	m_geom0;
 	OrientedGeometry	m_geom1;
 
+	// When we add a face to the heap, it is assumed to be ACTIVE
 	void PushFaceHeap(Face* face)
 	{
+		for (int i = 0; i < m_nFacesInHeap; ++i)
+		{
+			assert(face != m_faceHeap[i]);
+		}
 		m_faceHeap[m_nFacesInHeap] = face;
 		m_nFacesInHeap++;
+
+		m_faceStatuses[face->index].active = true;
+		m_faceStatuses[face->index].inHeap = true;
+
 		std::push_heap(m_faceHeap, &m_faceHeap[m_nFacesInHeap], CompareFacesByDistance);
 	}
 	Face* PopFaceHeap()
 	{
 		std::pop_heap(m_faceHeap, &m_faceHeap[m_nFacesInHeap], CompareFacesByDistance);
 		m_nFacesInHeap--;
-		return m_faceHeap[m_nFacesInHeap];
+		Face* face = m_faceHeap[m_nFacesInHeap];
+
+		m_faceStatuses[face->index].inHeap = false;
+
+		return face;
 	}
 
+	// When we free a face, it becomes INACTIVE
 	void PushFreeFace(Face* face)
 	{
-		m_freeFaces[m_nFreeFaces] = face->index;
-		m_nFreeFaces++;
+		if (!m_faceStatuses[face->index].inHeap)
+		{
+			for (int i = 0; i < m_nFacesInHeap; ++i)
+			{
+				assert(face != m_faceHeap[i]);
+			}
+			for (int i = 0; i < m_nFreeFaces; ++i)
+			{
+				assert(face->index != m_freeFaces[i]);
+			}
 
-		face->Reset();
-		m_faceValidities[face->index] = true;
+			m_freeFaces[m_nFreeFaces] = face->index;
+			m_nFreeFaces++;
+		}
+		m_faceStatuses[face->index].active = false;
 	}
 	Face* PopFreeFace()
 	{
 		m_nFreeFaces--;
-		return &m_faces[m_freeFaces[m_nFreeFaces]];
+		Face* face = &m_faces[m_freeFaces[m_nFreeFaces]];
+		face->Reset();
+		return face;
 	}
 
 	void PushFreeEdge(HalfEdge* edge)
 	{
+		for (int i = 0; i < m_nFreeEdges; ++i)
+		{
+			assert(edge->index != m_freeEdges[i]);
+		}
+
 		m_freeEdges[m_nFreeEdges] = edge->index;
 		m_nFreeEdges++;
 	}
@@ -149,6 +187,11 @@ private:
 		return &m_edges[m_freeEdges[m_nFreeEdges]];
 	}
 
-	void CarveHorizon(const fVec3& eye, const Face* visibleFace);
+	bool FaceIsActive(const Face* face) const
+	{
+		return m_faceStatuses[face->index].active;
+	}
+
+	void CarveHorizon(const fVec3& eye, Face* visibleFace);
 	void PatchHorizon(const fMinkowskiPoint* eye);
 };

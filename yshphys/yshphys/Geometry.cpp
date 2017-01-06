@@ -63,7 +63,7 @@ bool Geometry::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, 
 
 	while (true)
 	{
-		double sep = Geometry::ComputeSeparation(&pt, hit, dQuat::Identity(), dummy, this, pos, rot, closest, simplex);
+		double sep = Geometry::ComputeSeparation(&pt, hit, dQuat::Identity(), dummy, this, pos, rot, closest, simplex, true);
 
 		const dVec3 hit2closest = closest - hit;
 
@@ -165,15 +165,6 @@ GJKSimplex CompleteSimplex(
 	}
 	return fullSimplex;
 }
-
-double Geometry::ComputePenetration(
-	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
-	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
-	const GJKSimplex& simplex)
-{
-	EPAHull hull(geom0, pos0, rot0, geom1, pos1, rot1, simplex);
-	return hull.ComputePenetration(pt0, pt1);
-}
 double Geometry::ComputeSeparation(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1)
@@ -188,7 +179,7 @@ double Geometry::ComputeSeparation(
 double Geometry::ComputeSeparation(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
-	GJKSimplex& simplex)
+	GJKSimplex& simplex, bool bypassPenetration)
 {
 	if (simplex.GetNumPoints() == 0)
 	{
@@ -215,7 +206,9 @@ double Geometry::ComputeSeparation(
 
 		if (closestFeature.GetNumPoints() == 4)
 		{
-			return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+//			return 0.0;
+			EPAHull hull(geom0, pos0, rot0, geom1, pos1, rot1, simplex);
+			return -hull.ComputePenetration(pt0, pt1);
 		}
 		else
 		{
@@ -223,17 +216,18 @@ double Geometry::ComputeSeparation(
 			double vSqr = v.Dot(v);
 			if (vSqr < MIN_SUPPORT_SQR)
 			{
-				if (simplex.GetNumPoints() == 1)
+				if (bypassPenetration || simplex.GetNumPoints() == 1)
 				{
-					dMinkowskiPoint singlePt = simplex.m_pts[0];
-					pt0 = (singlePt.m_MinkSum + singlePt.m_MinkDif).Scale(0.5);
-					pt1 = (singlePt.m_MinkSum - singlePt.m_MinkDif).Scale(0.5);
+					pt0 = (closestSimplexPt.m_MinkSum + closestSimplexPt.m_MinkDif).Scale(0.5);
+					pt1 = (closestSimplexPt.m_MinkSum - closestSimplexPt.m_MinkDif).Scale(0.5);
 					return 0.0;
 				}
 				else
 				{
 					simplex = CompleteSimplex(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
-					return -ComputePenetration(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1, simplex);
+//					return 0.0;
+					EPAHull hull(geom0, pos0, rot0, geom1, pos1, rot1, simplex);
+					return -hull.ComputePenetration(pt0, pt1);
 				}
 			}
 			pt0 = geom0->Support(pos0, rot0, -v);

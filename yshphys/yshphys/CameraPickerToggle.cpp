@@ -36,6 +36,9 @@ void CameraPickerToggle::ProcessInput(const MouseState& mouseState, KeyState* ke
 	if (keyStates[TOGGLE].m_state == KeyState::State::PRESSED &&
 		keyStates[TOGGLE].m_duration == 0)
 	{
+//		game->epa->Expand();
+//		return;
+
 		if (m_cameraEnabled)
 		{
 			m_camera->DisableInput();
@@ -49,7 +52,5 @@ void CameraPickerToggle::ProcessInput(const MouseState& mouseState, KeyState* ke
 			SDL_SetRelativeMouseMode(SDL_TRUE);
 		}
 		m_cameraEnabled = !m_cameraEnabled;
-
-//		game->epa->Expand();
 	}
 }

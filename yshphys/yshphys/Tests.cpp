@@ -56,11 +56,20 @@ void Tests::CreateGJKTest(Game* game)
 	geometry->SetHalfHeight(1.0);
 
 	dVec3 pos[2] = { dVec3(0.0,16.0,-1.5),dVec3(0.3,16.0,1.5) };
+
 //	dVec3 pos[2] = { dVec3(0.0,16.0,-1.9),dVec3(0.0,16.0,1.9) };
 //	dVec3 pos[2] = { dVec3(-1.2,16.0,0.0),dVec3(1.2,16.0,0.00001) };
-	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI / 6.0) };
-//	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
+//	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI / 6.0) };
+	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
 
+	pos[1].x = -0.79866617714921184;
+	pos[1].y = 16.152170115377011;
+	pos[1].z = -0.79866617714921184;
+	rot[1].x = 0.34889840206991107;
+	rot[1].y = 0.012641419504320241;
+	rot[1].z = 0.019273762916590956;
+	rot[1].w = 0.93687630227467378;
+	
 	for (int i = 0; i < 2; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
