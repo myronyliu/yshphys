@@ -402,27 +402,6 @@ void EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 		m_horizonEdges[i]->next->twin = m_horizonEdges[(i + 1) % m_nHorizonEdges]->prev;
 		m_horizonEdges[i]->prev->twin = m_horizonEdges[(i - 1 + m_nHorizonEdges) % m_nHorizonEdges]->next;
 	}
-
-	/////////////////////////////
-	//// BEGIN SANITY CHECKS ////
-	/////////////////////////////
-
-	for (int i = 0; i < m_nHorizonEdges; ++i)
-	{
-		const dVec3& n0 = m_horizonEdges[i]->face->normal;
-		for (HalfEdge* e : { m_horizonEdges[i], m_horizonEdges[i]->next, m_horizonEdges[i]->prev })
-		{
-			const dVec3& n1 = e->twin->face->normal;
-
-			const dVec3 v(e->vert->m_MinkDif - e->twin->vert->m_MinkDif);
-
-			assert(v.Dot(v) > FLT_MIN);
-
-			float k = (float)n0.Cross(n1).Dot(v.Scale(1.0 / sqrt(v.Dot(v))));
-
-//			assert(k > 8.0f*FLT_MIN);
-		}
-	}
 }
 
 bool EPAHull::Expand()
@@ -458,11 +437,6 @@ bool EPAHull::Expand()
 
 			SanityCheck();
 
-			assert(m_nFacesInHeap + m_nFreeFaces == EPAHULL_MAXFACES);
-
-			const int eulerCharacteristic = EulerCharacteristic();
-			assert(eulerCharacteristic == 2);
-
 			return true;
 		}
 		PushFreeFace(closestFace);
@@ -486,7 +460,6 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 	{
 		if (!Expand())
 		{
-			bool dummy;
 			Face* closestFace = PopFaceHeap();
 			PushFaceHeap(closestFace);
 
@@ -497,7 +470,6 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 			return sqrt((pt0 - pt1).Dot(pt0 - pt1));
 		}
 	}
-	bool dummy;
 	Face* closestFace = PopFaceHeap();
 	PushFaceHeap(closestFace);
 
@@ -508,135 +480,132 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 	return sqrt((pt0 - pt1).Dot(pt0 - pt1));
 }
 
-int EPAHull::EulerCharacteristic() const
+void EPAHull::SanityCheck() const
 {
 	int nF = 0;
 	int nHE = 0;
-	std::vector<HalfEdge*> heSet;
-	std::set<const fMinkowskiPoint*> vSet;
+
+	std::vector<const HalfEdge*> edges;
+	std::set<const fMinkowskiPoint*> verts;
+
 	for (int i = 0; i < m_nFacesInHeap; ++i)
 	{
-		if (FaceIsActive(m_faceHeap[i]))
-		{
-			nF++;
-			HalfEdge* e0 = m_faceHeap[i]->edge;
-			HalfEdge* e = e0;
+		Face* f = m_faceHeap[i];
 
-			int nSides = 0;
-
-			do
-			{
-				nHE++;
-				heSet.push_back(e);
-				e = e->next;
-				nSides++;
-			} while (e != e0);
-			assert(nSides == 3);
-
-			nSides = 0;
-			do
-			{
-				e = e->prev;
-				nSides++;
-			} while (e != e0);
-			assert(nSides == 3);
-		}
-	}
-	assert(nHE + m_nFreeEdges == EPAHULL_MAXEDGES);
-
-	assert(nF % 2 == 0);
-	assert(nHE % 2 == 0);
-
-	for (HalfEdge* he : heSet)
-	{
-		vSet.insert(he->vert);
-	}
-
-	int nE = nHE / 2;
-
-	const int nV = (int)vSet.size();
-	assert(nV == m_nVerts);
-	return nV - nE + nF;
-}
-
-void EPAHull::SanityCheck() const
-{
-	for (int i = 0; i < m_nFacesInHeap; ++i)
-	{
-		if (FaceIsActive(m_faceHeap[i]))
+		if (FaceIsActive(f))
 		{
 			HalfEdge* e[3];
-			e[0] = m_faceHeap[i]->edge;
-			e[1] = m_faceHeap[i]->edge->next;
-			e[2] = m_faceHeap[i]->edge->prev;
+			e[0] = f->edge;
+			e[1] = f->edge->next;
+			e[2] = f->edge->prev;
 
-			for (int j = 0; j < 3; ++j)
-			{
-				assert(e[j]->vert == e[(j + 1) % 3]->twin->vert);
-			}
+			// Verify that the face is a triangle
+			assert(e[0]->next->next->next == e[0]);
+			assert(e[0]->prev->prev->prev == e[0]);
+
+			// Verify the two endpoints of each edge
+			assert(e[0]->vert == e[1]->twin->vert);
+			assert(e[1]->vert == e[2]->twin->vert);
+			assert(e[2]->vert == e[0]->twin->vert);
+
+			edges.push_back(e[0]);
+			edges.push_back(e[1]);
+			edges.push_back(e[2]);
+
+			nF++;
+			nHE += 3;
 		}
 	}
 
-//	for (int i = 0; i < m_nFreeFaces; ++i)
-//	{
-//		assert(!m_faceActive[m_freeFaces[i]]);
-//	}
+	// Verify that there are an even number of triangles
+	assert(nF % 2 == 0);
+
+	for (const HalfEdge* e : edges)
+	{
+		verts.insert(e->vert);
+	}
+	const int nV = (int)verts.size();
+
+	// Verify that each point we added in the expansion ended up on the hull
+	assert(nV == m_nVerts);
+
+	const int nE = nHE / 2;
+
+	// Verify EULER'S CHARACTERISTIC
+	assert(nV - nE + nF == 2);
+
+	// Verify that all the new edges and the horizon are convex
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		const dVec3& n0 = m_horizonEdges[i]->face->normal;
+		for (HalfEdge* e : { m_horizonEdges[i], m_horizonEdges[i]->next, m_horizonEdges[i]->prev })
+		{
+			const dVec3& n1 = e->twin->face->normal;
+
+			const dVec3 AB(e->vert->m_MinkDif - e->twin->vert->m_MinkDif);
+
+			const double AB_AB = AB.Dot(AB);
+
+			assert((float)AB_AB > FLT_MIN);
+
+			const dVec3 v = AB.Scale(1.0 / sqrt(AB_AB));
+
+			assert((float)n0.Cross(n1).Dot(v) >= 0.0f);
+		}
+	}
+
+	// Verify the heap data structure
+	for (int i = 0; i < m_nFreeFaces; ++i)
+	{
+		assert(!m_faceStatuses[m_freeFaces[i]].active);
+		assert(!m_faceStatuses[m_freeFaces[i]].inHeap);
+	}
+
+	// Verify the freelists
+	assert(nHE + m_nFreeEdges == EPAHULL_MAXEDGES);
+	assert(m_nFacesInHeap + m_nFreeFaces == EPAHULL_MAXFACES);
 }
 
 void EPAHull::DebugDraw(DebugRenderer* renderer) const
 {
-	fVec3 boxMin(0.0f, 0.0f, 0.0f);
-	fVec3 boxMax(0.0f, 0.0f, 0.0f);
+	std::set<const HalfEdge*> edges;
 
 	for (int i = 0; i < m_nFacesInHeap; ++i)
 	{
 		Face* face = m_faceHeap[i];
 		if (FaceIsActive(face))
 		{
+			HalfEdge* es[3];
+			es[0] = face->edge;
+			es[1] = face->edge->next;
+			es[2] = face->edge->prev;
+
 			fVec3 ABC[3];
-
-			ABC[0] = face->edge->vert->m_MinkDif;
-			ABC[1] = face->edge->next->vert->m_MinkDif;
-			ABC[2] = face->edge->next->next->vert->m_MinkDif;
-
-			float x[5] = { boxMin.x, ABC[0].x, ABC[1].x, ABC[2].x, boxMax.x };
-			float y[5] = { boxMin.y, ABC[0].y, ABC[1].y, ABC[2].y, boxMax.y };
-			float z[5] = { boxMin.z, ABC[0].z, ABC[1].z, ABC[2].z, boxMax.z };
-
-			boxMin.x = *std::min_element(x, x + 4);
-			boxMin.y = *std::min_element(y, y + 4);
-			boxMin.z = *std::min_element(z, z + 4);
-
-			boxMax.x = *std::max_element(x + 1, x + 5);
-			boxMax.y = *std::max_element(y + 1, y + 5);
-			boxMax.z = *std::max_element(z + 1, z + 5);
+			ABC[0] = es[0]->vert->m_MinkDif;
+			ABC[1] = es[1]->vert->m_MinkDif;
+			ABC[2] = es[2]->vert->m_MinkDif;
 
 			renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false);
-		}
-	}
 
-	std::set<HalfEdge*> heSet;
-	for (int i = 0; i < m_nFacesInHeap; ++i)
-	{
-		if (FaceIsActive(m_faceHeap[i]))
-		{
-			HalfEdge* e0 = m_faceHeap[i]->edge;
-			HalfEdge* e = e0;
-			do
+			for (const HalfEdge* e : es)
 			{
-				heSet.insert(e);
-				e = e->next;
-			} while (e != e0);
+				if (edges.find(e->twin) == edges.end())
+				{
+					edges.insert(e);
+				}
+			}
 		}
 	}
 
-	float hullSpan[3] = { boxMax.x - boxMin.x, boxMax.y - boxMin.y, boxMax.z - boxMin.z };
-	float edgeWidth = *std::min_element(hullSpan, hullSpan + 3) * 0.001f;
-
-	for (HalfEdge* edge : heSet)
+	for (const HalfEdge* edge : edges)
 	{
-		fVec3 color = (edge->isHorizon || edge->twin->isHorizon) ? fVec3(0.0f, 1.0f, 0.0f) : fVec3(0.0f, 0.0f, 0.0f);
-//		renderer->DrawLine(edge->vert->m_MinkDif, edge->twin->vert->m_MinkDif, color);
+		fVec3 color(0.0f, 0.0f, 0.0f);
+		float kWidth = 0.01f;
+		if (edge->isHorizon || edge->twin->isHorizon)
+		{
+			color = fVec3(0.0f, 1.0f, 0.0f);
+			kWidth *= 2.0f;
+		}
 
 		const fVec3& A = edge->vert->m_MinkDif;
 		const fVec3& B = edge->twin->vert->m_MinkDif;
@@ -663,7 +632,7 @@ void EPAHull::DebugDraw(DebugRenderer* renderer) const
 			return sqrtf(cross.Dot(cross));
 		};
 
-		edgeWidth = sqrtf(std::min(FaceArea(edge->face), FaceArea(edge->twin->face)))* 0.01f;
+		const float edgeWidth = sqrtf(std::min(FaceArea(edge->face), FaceArea(edge->twin->face)))* kWidth;
 
 		renderer->DrawBox(edgeWidth, edgeWidth, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
 	}
