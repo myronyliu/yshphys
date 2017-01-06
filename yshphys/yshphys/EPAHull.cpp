@@ -271,12 +271,6 @@ void EPAHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 	//// BEGIN SANITY CHECKS ////
 	/////////////////////////////
 
-	for (int i = 0; i < m_nHorizonEdges; ++i)
-	{
-		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
-		assert(std::find(m_horizonEdges, m_horizonEdges + m_nHorizonEdges, m_horizonEdges[i]->twin) == m_horizonEdges + m_nHorizonEdges);
-	}
-
 	return;
 
 	std::vector<const Face*> visibleFaces_brute;
@@ -291,8 +285,6 @@ void EPAHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 			const dVec3& n = face->normal;
 			const dVec3 x(face->edge->vert->m_MinkDif);
 			const double dot = (dEye - x).Dot(n);
-
-//			assert(abs(dot) > 8.0*FLT_MIN);
 
 			if ((float)dot > 0.0f)
 			{
@@ -327,8 +319,6 @@ void EPAHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 			const dVec3 x(f->edge->vert->m_MinkDif);
 			const double dot = (dEye - x).Dot(n);
 
-//			assert(abs(dot) > 8.0*FLT_MIN);
-
 			if ((float)dot <= 0.0f)
 			{
 				horizon_brute.push_back(e);
@@ -344,12 +334,6 @@ void EPAHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
 		assert(horizon[i] == horizon_brute[i]);
-	}
-
-	for (const Face face : m_faces)
-	{
-		assert(!face.visited);
-		assert(!face.visible);
 	}
 }
 
@@ -534,6 +518,13 @@ void EPAHull::SanityCheck() const
 	// Verify EULER'S CHARACTERISTIC
 	assert(nV - nE + nF == 2);
 
+	// Verify that the horizon forms a cycle and that the horizon has no "coinciding" edges
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
+		assert(std::find(m_horizonEdges, m_horizonEdges + m_nHorizonEdges, m_horizonEdges[i]->twin) == m_horizonEdges + m_nHorizonEdges);
+	}
+
 	// Verify that all the new edges and the horizon are convex
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
@@ -564,6 +555,13 @@ void EPAHull::SanityCheck() const
 	// Verify the freelists
 	assert(nHE + m_nFreeEdges == EPAHULL_MAXEDGES);
 	assert(m_nFacesInHeap + m_nFreeFaces == EPAHULL_MAXFACES);
+
+	// Verify that all mutable face attributes are reset for the next pass
+	for (const Face face : m_faces)
+	{
+		assert(!face.visited);
+		assert(!face.visible);
+	}
 }
 
 void EPAHull::DebugDraw(DebugRenderer* renderer) const
