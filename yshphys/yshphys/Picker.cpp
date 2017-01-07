@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "Picker.h"
-
+#include "Force_Spring.h"
+#include "Force_Constant.h"
 
 Picker::Picker() : m_depth(1.0f)
 {
 	m_mappedKeys[PICK] = YSH_INPUT_LMOUSEBUTTON;
 
-	m_springCoeff.k = 10.0f;
-	m_springCoeff.b = 2 * sqrt(m_springCoeff.k);
+	m_springCoeff.k = 8.0f;
+	m_springCoeff.b = 2.0f * sqrtf(m_springCoeff.k);
 }
 
 Picker::~Picker()
@@ -68,21 +69,15 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 			double mInv;
 			double m = m_pickedObject->GetMass(mInv);
 
-			const dVec3 aaGrabOffset = m_pickedObject->GetRotation().Transform(m_grabOffset);
-			const dVec3 x = m_pickedObject->GetPosition() + aaGrabOffset;
-			const dVec3 v = m_pickedObject->GetLinearVelocity() + m_pickedObject->GetAngularVelocity().Cross(aaGrabOffset);
-
 			m_pos = ray.GetOrigin() + rayDir.Scale(m_depth / rayDir.Dot(viewDir));
 
-			const dVec3 compression = m_pos - x;
-			const double compressionSqr = compression.Dot(compression);
-			const dVec3 compressionRate = (compressionSqr < 0.0001) ? dVec3(0.0, 0.0, 0.0) : compression.Scale(v.Dot(compression) / compressionSqr);
-
-//			dVec3 force = (compression.Scale(m_springCoeff.k) - compressionRate.Scale(m_springCoeff.b)).Scale(m);
-			dVec3 force = (compression.Scale(m_springCoeff.k) - v.Scale(m_springCoeff.b)).Scale(m);
-
-			m_pickedObject->ApplyForce(force, x);
-//			m_pickedObject->ApplyForceAtCenterOfMass(force);
+			Force_Spring* force = new Force_Spring();
+			force->length = 0.0;
+			force->offset = m_grabOffset;
+			force->anchor = m_pos;
+			force->k = m_springCoeff.k*m;
+			force->b = m_springCoeff.b*m;
+			m_pickedObject->ApplyForce(force);
 		}
 	}
 }

@@ -265,7 +265,7 @@ void EPAHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 		face->visited = false;
 	}
 
-	std::cout << nFreedEdges << std::endl;
+//	std::cout << nFreedEdges << std::endl;
 
 	/////////////////////////////
 	//// BEGIN SANITY CHECKS ////

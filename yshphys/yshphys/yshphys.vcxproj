@@ -166,6 +166,9 @@
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="EPAHull.h" />
+    <ClInclude Include="Force.h" />
+    <ClInclude Include="Force_Constant.h" />
+    <ClInclude Include="Force_Spring.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameNode.h" />
     <ClInclude Include="GameObject.h" />
@@ -220,6 +223,9 @@
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="EPAHull.cpp" />
+    <ClCompile Include="Force.cpp" />
+    <ClCompile Include="Force_Constant.cpp" />
+    <ClCompile Include="Force_Spring.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameNode.cpp" />
     <ClCompile Include="GameObject.cpp" />

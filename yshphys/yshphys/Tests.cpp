@@ -4,6 +4,7 @@
 #include "Capsule.h"
 #include "Shader.h"
 #include "Shader_Default.h"
+#include "Cylinder.h"
 
 void Tests::CreateBVTest(Game* game)
 {
@@ -52,6 +53,7 @@ void Tests::CreateGJKTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
 	Capsule* geometry = new Capsule;
+//	Cylinder* geometry = new Cylinder;
 	geometry->SetRadius(1.0);
 	geometry->SetHalfHeight(1.0);
 

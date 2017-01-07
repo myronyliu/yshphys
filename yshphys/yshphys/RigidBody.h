@@ -3,6 +3,8 @@
 #include "Geometry.h"
 #include "PhysicsObject.h"
 
+class Force;
+
 // See http://www.cs.cmu.edu/~baraff/sigcourse/notesd1.pdf
 // and http://www.cs.cmu.edu/~baraff/sigcourse/notesd2.pdf
 
@@ -38,67 +40,57 @@ public:
 	void SetRotation(const dQuat& q);
 	void SetGeometry(Geometry* geometry);
 	void SetMass(double m);
-	void SetInertia(dMat33 Ibody);
+	void SetInertia(const dMat33& Ibody);
+	void SetInertia(const dQuat& principleAxes, const dVec3& interia);
 
-	void ApplyForce(const dVec3& F, const dVec3& applicationPt);
-	void ApplyForceAtCenterOfMass(const dVec3& F);
-
-	void ApplySpringPenalty(const dVec3& worldAnchor, const dVec3& localBodyAnchor, double kOverM, double bOverM);
+	void ApplyForce(Force* force);
 
 	virtual void UpdateAABB();
 
 	virtual void Step(double dt);
 
-	dVec3 m_P; // linear  momentum
-	dVec3 m_L; // angular momentum
 	dVec3 m_dP; // linear impulse
 	dVec3 m_dL; // angular impulse
-protected:
 
-	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const; // no need to compute LDot; we know that it's equal to m_T
-	void Compute_stateDot(
-		const dVec3& x, const dVec3& P, const dQuat& q, const dVec3& L,
-		dVec3& x_dot, dVec3& P_dot, dQuat& q_dot, dVec3& L_dot);
+	struct State
+	{
+		dVec3 P; // linear  momentum
+		dVec3 L; // angular momentum
+		dVec3 x; // position
+		dQuat q; // orientation
+	};
+	struct Inertia
+	{
+		// CONSTANTS
+		double m;
+		double minv;
+		dMat33 Ibody; // in the local frame of itself
+		dMat33 Ibodyinv;
+	};
+protected:
 
 	Geometry* m_geometry;
 
-	// CONSTANTS
-	double m_m;
-	double m_minv;
-	dMat33 m_Ibody; // in the local frame of itself
-	dMat33 m_Ibodyinv;
-
-	// STATE VARIABLES
-	dVec3 m_x; // position
-	dQuat m_q; // orientation
-
-//	dVec3 m_P; // linear  momentum
-//	dVec3 m_L; // angular momentum
+	RigidBody::State m_state;
+	RigidBody::Inertia m_inertia;
 
 	// DERIVED STATE VARIABLES
 	dMat33 m_Iinv;
 	dVec3 m_v; // linear  velocity
 	dVec3 m_w; // angular velocity
 
-	// COMPUTED
-	dVec3 m_F; // force
-	dVec3 m_T; // torque
-
-	dVec3 m_Fprev;
-	dVec3 m_Tprev;
-
-//	dVec3 m_dP; // linear impulse
-//	dVec3 m_dL; // angular impulse
-
-	struct SpringPenalty
+	void UpdateDependentStateVariables()
 	{
-		dVec3 worldAnchor;
-		dVec3 localBodyAnchor;
-		double kOverM;
-		double bOverM;
-	};
+		dMat33 R(m_state.q);
+		m_Iinv = R*m_inertia.Ibodyinv*R.Transpose();
+		m_w = m_Iinv.Transform(m_state.L);
+		m_v = m_state.P.Scale(m_inertia.minv);
+	}
 	
-	SpringPenalty m_springPenalties[16];
-	int m_nSpringPenalties;
+	Force* m_forces[64];
+	int m_nForces;
+
+	void Compute_xDot(const dVec3& P, dVec3& xDot) const;
+	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const;
 };
 

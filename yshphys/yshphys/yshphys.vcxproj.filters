@@ -49,6 +49,12 @@
     <Filter Include="Physics\Scene">
       <UniqueIdentifier>{1076a568-54b3-4bc5-ae62-d07e399762d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Collision">
+      <UniqueIdentifier>{4acbcccd-288c-42c7-a27c-8ac4bdea40f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Forces">
+      <UniqueIdentifier>{37be4c97-961f-421b-aa84-596a1f1bad72}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -62,9 +68,6 @@
     </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Simplex3D.h">
-      <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
@@ -208,7 +211,19 @@
       <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="EPAHull.h">
-      <Filter>Physics</Filter>
+      <Filter>Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Simplex3D.h">
+      <Filter>Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Force.h">
+      <Filter>Physics\Forces</Filter>
+    </ClInclude>
+    <ClInclude Include="Force_Spring.h">
+      <Filter>Physics\Forces</Filter>
+    </ClInclude>
+    <ClInclude Include="Force_Constant.h">
+      <Filter>Physics\Forces</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -217,9 +232,6 @@
     </ClCompile>
     <ClCompile Include="yshphys.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Simplex3D.cpp">
-      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Vec3.cpp">
       <Filter>Math\Vec</Filter>
@@ -360,7 +372,19 @@
       <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="EPAHull.cpp">
-      <Filter>Physics</Filter>
+      <Filter>Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Simplex3D.cpp">
+      <Filter>Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Force.cpp">
+      <Filter>Physics\Forces</Filter>
+    </ClCompile>
+    <ClCompile Include="Force_Constant.cpp">
+      <Filter>Physics\Forces</Filter>
+    </ClCompile>
+    <ClCompile Include="Force_Spring.cpp">
+      <Filter>Physics\Forces</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
