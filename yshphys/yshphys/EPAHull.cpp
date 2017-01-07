@@ -438,6 +438,8 @@ dMinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
 	return triangle.ClosestPointToOrigin(GJKSimplex());
 }
 
+static int maxIters = 0;
+
 double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 {
 	for (int i = 0; i < EPAHULL_MAXITERS; ++i)
@@ -451,6 +453,12 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 			pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
 			pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
 
+			if (i > maxIters)
+			{
+				maxIters = i;
+				std::printf("EPA worst case iterations till convergence: %d\n", maxIters);
+			}
+
 			return sqrt((pt0 - pt1).Dot(pt0 - pt1));
 		}
 	}
@@ -460,6 +468,8 @@ double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
 	dMinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
 	pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
 	pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
+
+	assert(false);
 
 	return sqrt((pt0 - pt1).Dot(pt0 - pt1));
 }
