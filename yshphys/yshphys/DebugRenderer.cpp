@@ -456,6 +456,15 @@ void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 		return;
 	}
 
+	std::vector<BVNodePair> intersectingLeaves = root->FindIntersectingLeaves();
+	std::set<const BVNode*> collisionCandidates;
+
+	for (BVNodePair pair : intersectingLeaves)
+	{
+		collisionCandidates.insert(pair.nodes[0]);
+		collisionCandidates.insert(pair.nodes[1]);
+	}
+
 	std::stack<const BVNode*> nodeStack;
 	nodeStack.push(root);
 	while (!nodeStack.empty())
@@ -470,11 +479,17 @@ void DebugRenderer::DrawBVTree(const BVTree& tree, const fVec3& color)
 			float(aabb.max.y + aabb.min.y)*0.5f,
 			float(aabb.max.z + aabb.min.z)*0.5f);
 
+		fVec3 c = color;
+		if (collisionCandidates.find(node) != collisionCandidates.end())
+		{
+			c = fVec3(0.0f, 1.0f, 0.0f);
+		}
+
 		DrawBox(
 			float(aabb.max.x - aabb.min.x)*0.5f,
 			float(aabb.max.y - aabb.min.y)*0.5f,
 			float(aabb.max.z - aabb.min.z)*0.5f,
-			aabbCenter, fQuat::Identity(), color, true
+			aabbCenter, fQuat::Identity(), c, true
 		);
 
 		if (!node->IsLeaf())

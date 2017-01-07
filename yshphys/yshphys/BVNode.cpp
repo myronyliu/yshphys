@@ -107,17 +107,14 @@ std::vector<BVNode*> BVNode::FindLeftToRightLeafOrder() const
 			BVNode* node = nodeStack.top();
 			nodeStack.pop();
 
-			BVNode* left = node->m_left;
-			BVNode* right = node->m_right;
-
 			if (node->IsLeaf())
 			{
 				leaves.push_back(node);
 			}
 			else
 			{
-				nodeStack.push(right);
-				nodeStack.push(left);
+				nodeStack.push(node->m_right);
+				nodeStack.push(node->m_left);
 			}
 		}
 	}
@@ -130,49 +127,59 @@ std::vector<BVNodePair> BVNode::FindIntersectingLeaves() const
 
 	std::vector<BVNode*> leaves = FindLeftToRightLeafOrder();
 
-	for (std::vector<BVNode*>::iterator it = leaves.begin(); it != leaves.end(); ++it)
+	for (int i = 0; i < leaves.size() - 1; ++i)
 	{
-		BVNode* leaf = *it;
-		BVNode* pivot = leaf;
+		BVNode* leaf = leaves[i];
 		const AABB& leafAABB = leaf->m_AABB;
 
-		while (pivot != this)
+		BVNode* pivotPrev = leaf;
+		BVNode* pivot = leaf->m_parent;
+
+		while (pivot != m_parent)
 		{
-			pivot = pivot->m_parent;
-			BVNode* subTree = pivot->m_right;
-
-			if (leafAABB.Overlaps(subTree->m_AABB))
+			if (pivot->m_right != pivotPrev)
 			{
-				std::stack<BVNode*> nodes;
-				nodes.push(subTree);
-				while (!nodes.empty())
+				BVNode* subTree = pivot->m_right;
+
+				if (leafAABB.Overlaps(subTree->m_AABB))
 				{
-					BVNode* node = nodes.top();
-					nodes.pop();
-
-					BVNode* left = node->m_left;
-					BVNode* right = node->m_right;
-
-					if (node->IsLeaf())
+					std::stack<BVNode*> nodes;
+					nodes.push(subTree);
+					while (!nodes.empty())
 					{
-						BVNodePair pair;
-						pair.nodes[0] = leaf;
-						pair.nodes[1] = node;
-						intersectingLeaves.push_back(pair);
-					}
-					else
-					{
-						if (leafAABB.Overlaps(left->m_AABB))
+						BVNode* node = nodes.top();
+						nodes.pop();
+
+						BVNode* left = node->m_left;
+						BVNode* right = node->m_right;
+
+						if (node->IsLeaf())
 						{
-							nodes.push(left);
+							assert(leaf != node);
+							if (leafAABB.Overlaps(node->m_AABB))
+							{
+								BVNodePair pair;
+								pair.nodes[0] = leaf;
+								pair.nodes[1] = node;
+								intersectingLeaves.push_back(pair);
+							}
 						}
-						if (leafAABB.Overlaps(right->m_AABB))
+						else
 						{
-							nodes.push(right);
+							if (leafAABB.Overlaps(right->m_AABB))
+							{
+								nodes.push(right);
+							}
+							if (leafAABB.Overlaps(left->m_AABB))
+							{
+								nodes.push(left);
+							}
 						}
 					}
 				}
 			}
+			pivotPrev = pivot;
+			pivot = pivot->m_parent;
 		}
 	}
 	return intersectingLeaves;

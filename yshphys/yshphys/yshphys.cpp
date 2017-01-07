@@ -40,8 +40,8 @@ int main(int argc, char *args[])
 
 	game.m_renderScene.DebugDrawSystem().m_picker = &picker;
 
-//	Tests::CreateBVTest(&game);
-	Tests::CreateGJKTest(&game);
+	Tests::CreateBVTest(&game);
+//	Tests::CreateGJKTest(&game);
 
 	game.Run();
 
