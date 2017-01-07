@@ -110,7 +110,7 @@ std::vector<BVNode*> BVNode::FindLeftToRightLeafOrder() const
 			BVNode* left = node->m_left;
 			BVNode* right = node->m_right;
 
-			if (IsLeaf())
+			if (node->IsLeaf())
 			{
 				leaves.push_back(node);
 			}
@@ -153,7 +153,7 @@ std::vector<BVNodePair> BVNode::FindIntersectingLeaves() const
 					BVNode* left = node->m_left;
 					BVNode* right = node->m_right;
 
-					if (IsLeaf())
+					if (node->IsLeaf())
 					{
 						BVNodePair pair;
 						pair.nodes[0] = leaf;
