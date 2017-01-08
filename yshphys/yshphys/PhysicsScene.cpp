@@ -127,12 +127,16 @@ PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
 
 		RigidBody* rigidBody = (RigidBody*)candidateLeaves[i].node->GetContent();
 
-		const dVec3 x0_shifted = rigidBody->GetPosition() - (o + d.Scale(tMin_AABB)); // SHIFTED!
 		const dQuat q0 = rigidBody->GetRotation();
-		const dVec3 x1 = rigidBody->GetGeometry()->GetPosition();
-		const dQuat q1 = rigidBody->GetGeometry()->GetRotation();
-		const dVec3 x_shifted = x0_shifted + q0.Transform(x1);
-		const dQuat q = q0*q1;
+
+		dVec3 x;
+		dQuat q;
+
+		rigidBody->GetGeometry();
+		rigidBody->GetGeometryGlobalTransform(x, q);
+
+		const dVec3 x0_shifted = rigidBody->GetPosition() - (o + d.Scale(tMin_AABB));
+		const dVec3 x_shifted = x - (o + d.Scale(tMin_AABB));
 
 		double tMin_shifted, tMax_shifted;
 		if (ray_shifted.IntersectOOBB(rigidBody->GetGeometry()->GetLocalOOBB(), x_shifted, q, tMin_shifted, tMax_shifted))
@@ -213,5 +217,71 @@ void PhysicsScene::Step(double dt)
 	{
 		node->GetPhysicsObject()->Step(dt);
 		node = node->GetNext();
+	}
+}
+
+void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
+{
+	const BVNode* root = m_bvTree.Root();
+	assert(root->GetParent() == nullptr);
+	if (!root)
+	{
+		return;
+	}
+
+	std::vector<BVNodePair> intersectingLeaves = root->FindIntersectingLeaves();
+	for (BVNodePair pair: intersectingLeaves)
+	{
+		RigidBody* rb0 = (RigidBody*)pair.nodes[0]->GetContent();
+		RigidBody* rb1 = (RigidBody*)pair.nodes[1]->GetContent();
+
+		Geometry* geom0 = rb0->GetGeometry();
+		Geometry* geom1 = rb1->GetGeometry();
+
+		dVec3 pos0, pos1;
+		dQuat rot0, rot1;
+
+		rb0->GetGeometryGlobalTransform(pos0, rot0);
+		rb1->GetGeometryGlobalTransform(pos1, rot1);
+
+		dVec3 pt0, pt1;
+
+		Geometry::ComputeSeparation(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1);
+
+		const float k = 0.1f;
+		const fVec3 c = fVec3(1.0f, 0.0f, 0.0f);
+
+		renderer->DrawBox(k, k, k, pt0, rot0, c, false, false);
+		renderer->DrawBox(k, k, k, pt1, rot1, c, false, false);
+
+		renderer->DrawLine(pt0, pt1, c);
+	}
+
+	std::stack<const BVNode*> nodeStack;
+	nodeStack.push(root);
+	while (!nodeStack.empty())
+	{
+		const BVNode* node = nodeStack.top();
+		nodeStack.pop();
+
+		const AABB aabb = node->GetAABB();
+
+		const fVec3 aabbCenter(
+			float(aabb.max.x + aabb.min.x)*0.5f,
+			float(aabb.max.y + aabb.min.y)*0.5f,
+			float(aabb.max.z + aabb.min.z)*0.5f);
+
+		renderer->DrawBox(
+			float(aabb.max.x - aabb.min.x)*0.5f,
+			float(aabb.max.y - aabb.min.y)*0.5f,
+			float(aabb.max.z - aabb.min.z)*0.5f,
+			aabbCenter, fQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), true
+		);
+
+		if (!node->IsLeaf())
+		{
+			nodeStack.push(node->GetLeftChild());
+			nodeStack.push(node->GetRightChild());
+		}
 	}
 }

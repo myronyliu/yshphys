@@ -8,36 +8,17 @@
 #define MIN_SUPPORT_SQR 0.0001
 #define GJK_TERMINATION_RATIO 0.01
 
-Geometry::Geometry() : m_pos(0.0, 0.0, 0.0), m_rot(0.0, 0.0, 0.0, 1.0)
+Geometry::Geometry()
 {
 }
-
 
 Geometry::~Geometry()
 {
 }
 
-dVec3 Geometry::GetPosition() const
-{
-	return m_pos;
-}
-dQuat Geometry::GetRotation() const
-{
-	return m_rot;
-}
 BoundingBox Geometry::GetLocalOOBB() const
 {
 	return m_localOOBB;
-}
-
-void Geometry::SetPosition(const dVec3& pos)
-{
-	m_pos = pos;
-}
-
-void Geometry::SetRotation(const dQuat& rot)
-{
-	m_rot = rot;
 }
 
 dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const

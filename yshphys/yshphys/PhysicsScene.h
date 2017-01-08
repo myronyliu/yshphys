@@ -3,6 +3,7 @@
 #include "RigidBody.h"
 #include "PhysicsObject.h"
 #include "PhysicsNode.h"
+#include "DebugRenderer.h"
 #include "Ray.h"
 
 #define MAX_PHYSICS_NODES 1024
@@ -27,6 +28,8 @@ public:
 	const BVTree& GetBVTree() const;
 
 	void Step(double dt);
+
+	void DebugDraw(DebugRenderer* renderer) const;
 
 protected:
 	std::stack<FreedPhysicsNode> m_freedNodeStack;

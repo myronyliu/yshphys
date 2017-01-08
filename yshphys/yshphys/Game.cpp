@@ -110,22 +110,23 @@ void Game::Run()
 				node->GetGameObject()->PropagatePhysicsTransform();
 				node = node->GetNext();
 			}
-			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
+//			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
 			m_renderScene.DebugDrawSystem().DrawPicker(*m_renderScene.DebugDrawSystem().m_picker, fVec3(0.0f, 1.0f, 0.0f));
+			m_physicsScene.DebugDraw(&m_renderScene.DebugDrawSystem());
 
-			if (rb[0] != nullptr && rb[1] != nullptr)
-			{
-				dVec3 x0, x1;
-				const double sep = Geometry::ComputeSeparation(
-					rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(), x0,
-					rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), x1);
+//			if (rb[0] != nullptr && rb[1] != nullptr)
+//			{
+//				dVec3 x0, x1;
+//				const double sep = Geometry::ComputeSeparation(
+//					rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(), x0,
+//					rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), x1);
 
-				fVec3 color = (sep > 0.0) ? fVec3(1.0f, 0.0f, 0.0f) : fVec3(0.0f, 1.0f, 0.0f);
+//				fVec3 color = (sep > 0.0) ? fVec3(1.0f, 0.0f, 0.0f) : fVec3(0.0f, 1.0f, 0.0f);
 
-				m_renderScene.DebugDrawSystem().DrawLine(x0, x1, fVec3(0.0f, 0.0f, 1.0f));
-				m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x0, fQuat::Identity(), color, false);
-				m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x1, fQuat::Identity(), color, false);
-			}
+//				m_renderScene.DebugDrawSystem().DrawLine(x0, x1, fVec3(0.0f, 0.0f, 1.0f));
+//				m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x0, fQuat::Identity(), color, false, false);
+//				m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x1, fQuat::Identity(), color, false, false);
+//			}
 			
 //			epa->DebugDraw(&m_renderScene.DebugDrawSystem());
 

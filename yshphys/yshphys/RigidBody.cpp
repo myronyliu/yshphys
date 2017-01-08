@@ -18,9 +18,12 @@ void QuantizeAABB(AABB& aabb)
 }
 
 RigidBody::RigidBody() :
-	m_geometry(nullptr),
 	m_nForces(0)
 {
+	m_geometry.geom = nullptr;
+	m_geometry.pos = dVec3(0.0, 0.0, 0.0);
+	m_geometry.rot = dQuat::Identity();
+
 	m_state.P = dVec3(0.0, 0.0, 0.0);
 	m_state.x = dVec3(0.0, 0.0, 0.0);
 
@@ -74,7 +77,18 @@ dVec3 RigidBody::GetAngularVelocity() const
 }
 Geometry* RigidBody::GetGeometry() const
 {
-	return m_geometry;
+	return m_geometry.geom;
+}
+void RigidBody::GetGeometryLocalTransform(dVec3& pos, dQuat& rot) const
+{
+	pos = m_geometry.pos;
+	rot = m_geometry.rot;
+}
+void RigidBody::GetGeometryGlobalTransform(dVec3& pos, dQuat& rot) const
+{
+	rot = m_state.q*m_geometry.rot;
+	pos = m_state.x + rot.Transform(m_geometry.pos);
+
 }
 void RigidBody::SetPosition(const dVec3& x)
 {
@@ -87,9 +101,11 @@ void RigidBody::SetRotation(const dQuat& q)
 	UpdateDependentStateVariables();
 	UpdateAABB();
 }
-void RigidBody::SetGeometry(Geometry* geometry)
+void RigidBody::SetGeometry(Geometry* geometry, const dVec3& pos, const dQuat& rot)
 {
-	m_geometry = geometry;
+	m_geometry.geom = geometry;
+	m_geometry.pos = pos;
+	m_geometry.rot = rot;
 	UpdateAABB();
 }
 void RigidBody::SetMass(double m)
@@ -128,12 +144,12 @@ void RigidBody::UpdateAABB()
 	const dVec3 x = m_state.x;
 	const dQuat q = m_state.q;
 
-	const BoundingBox oobb = m_geometry->GetLocalOOBB();
+	const BoundingBox oobb = m_geometry.geom->GetLocalOOBB();
 	const dVec3 oobbCenter = (oobb.min + oobb.max).Scale(0.5); // center of the OOBB in geom's local frame
 	const dVec3 oobbSpan = (oobb.max - oobb.min).Scale(0.5); // span of the OOBB
 
-	const dVec3 aabbCenter = x + q.Transform(m_geometry->GetPosition() + oobbCenter);
-	const dQuat geomRot = q*m_geometry->GetRotation();
+	const dVec3 aabbCenter = x + q.Transform(m_geometry.pos + oobbCenter);
+	const dQuat geomRot = q*m_geometry.rot;
 
 	const dVec3 aabbSpan = dMat33(geomRot).Abs().Transform(oobbSpan);
 

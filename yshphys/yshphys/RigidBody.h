@@ -17,9 +17,9 @@ struct DampedOscillatorCoefficients
 
 struct CollisionGeometry
 {
-	Geometry* m_geometry;
-	dVec3 m_pos;
-	dVec3 m_rot;
+	Geometry* geom;
+	dVec3 pos;
+	dQuat rot;
 };
 
 class RigidBody : public PhysicsObject
@@ -35,10 +35,12 @@ public:
 	dVec3 GetLinearVelocity() const;
 	dVec3 GetAngularVelocity() const;
 	Geometry* GetGeometry() const;
+	void GetGeometryLocalTransform(dVec3& pos, dQuat& rot) const;
+	void GetGeometryGlobalTransform(dVec3& pos, dQuat& rot) const;
 
 	void SetPosition(const dVec3& x);
 	void SetRotation(const dQuat& q);
-	void SetGeometry(Geometry* geometry);
+	void SetGeometry(Geometry* geometry, const dVec3& relativePos, const dQuat& relativeRot);
 	void SetMass(double m);
 	void SetInertia(const dMat33& Ibody);
 	void SetInertia(const dQuat& principleAxes, const dVec3& interia);
@@ -69,7 +71,7 @@ public:
 	};
 protected:
 
-	Geometry* m_geometry;
+	CollisionGeometry m_geometry;
 
 	RigidBody::State m_state;
 	RigidBody::Inertia m_inertia;

@@ -27,7 +27,7 @@ void Tests::CreateBVTest(Game* game)
 		renderObj->SetShader(shader);
 
 		RigidBody* rigidBody = new RigidBody;
-		rigidBody->SetGeometry(geometry);
+		rigidBody->SetGeometry(geometry, dVec3(0.0, 0.0, 0.0), dQuat::Identity());
 		rigidBody->SetMass(1.0);
 		rigidBody->SetInertia(dMat33::Identity().Scale(100.0));
 
@@ -57,20 +57,9 @@ void Tests::CreateGJKTest(Game* game)
 	geometry->SetRadius(1.0);
 	geometry->SetHalfHeight(1.0);
 
-	dVec3 pos[2] = { dVec3(0.0,16.0,-1.5),dVec3(0.3,16.0,1.5) };
+	dVec3 pos[2] = { dVec3(-1.1,16.0,0.0),dVec3(1.1,16.0,0.0) };
 
-//	dVec3 pos[2] = { dVec3(0.0,16.0,-1.9),dVec3(0.0,16.0,1.9) };
-//	dVec3 pos[2] = { dVec3(-1.2,16.0,0.0),dVec3(1.2,16.0,0.00001) };
-//	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI / 6.0) };
 	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
-
-	pos[1].x = -0.79866617714921184;
-	pos[1].y = 16.152170115377011;
-	pos[1].z = -0.79866617714921184;
-	rot[1].x = 0.34889840206991107;
-	rot[1].y = 0.012641419504320241;
-	rot[1].z = 0.019273762916590956;
-	rot[1].w = 0.93687630227467378;
 	
 	for (int i = 0; i < 2; ++i)
 	{
@@ -81,7 +70,7 @@ void Tests::CreateGJKTest(Game* game)
 		renderObj->SetShader(shader);
 
 		RigidBody* rigidBody = new RigidBody;
-		rigidBody->SetGeometry(geometry);
+		rigidBody->SetGeometry(geometry, dVec3(0.0,0.0,0.0), dQuat::Identity());
 		rigidBody->SetMass(1.0);
 		rigidBody->SetInertia(dMat33::Identity().Scale(10.0));
 
@@ -97,15 +86,15 @@ void Tests::CreateGJKTest(Game* game)
 		game->AddGameObject(gameObject);
 	}
 
-	GJKSimplex simplex;
+//	GJKSimplex simplex;
 
-	Geometry::ComputeSeparation(
-		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(), dVec3(),
-		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(), dVec3(),
-		simplex);
+//	Geometry::ComputeSeparation(
+//		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(), dVec3(),
+//		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(), dVec3(),
+//		simplex);
 
-	game->epa = new EPAHull(
-		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(),
-		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(),
-		simplex);
+//	game->epa = new EPAHull(
+//		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(),
+//		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(),
+//		simplex);
 }

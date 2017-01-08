@@ -13,13 +13,7 @@ public:
 	Geometry();
 	virtual ~Geometry();
 
-	dVec3 GetPosition() const;
-	dQuat GetRotation() const;
-
 	BoundingBox GetLocalOOBB() const;
-
-	void SetPosition(const dVec3& pos);
-	void SetRotation(const dQuat& rot);
 
 	virtual bool RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hitPt) const;
 
@@ -38,9 +32,6 @@ public:
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
 		GJKSimplex& simplex, bool bypassPenetration = false);
 protected:
-
-	dVec3 m_pos; // position relative to linked RigidBody
-	dQuat m_rot; // rotation relative to linked RigidBody 
 
 	BoundingBox m_localOOBB; // assuming m_pos and m_rot are both zero
 };
