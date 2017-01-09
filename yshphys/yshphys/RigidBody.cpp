@@ -133,6 +133,15 @@ void RigidBody::SetInertia(const dMat33& Ibody)
 
 	UpdateDependentStateVariables();
 }
+void RigidBody::SetInertia(const dQuat& principleAxes, const dVec3& inertia)
+{
+	const dMat33 R(principleAxes);
+	dMat33 I;
+	I.SetRow(0, dVec3(inertia.x, 0.0, 0.0));
+	I.SetRow(1, dVec3(0.0, inertia.y, 0.0));
+	I.SetRow(2, dVec3(0.0, 0.0, inertia.z));
+	SetInertia(R.Transpose()*I*R);
+}
 
 void RigidBody::ApplyForce(Force* force)
 {

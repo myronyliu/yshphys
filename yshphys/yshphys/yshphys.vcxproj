@@ -163,6 +163,8 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraPickerToggle.h" />
     <ClInclude Include="Capsule.h" />
+    <ClInclude Include="Contact.h" />
+    <ClInclude Include="ContactBuffer.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="EPAHull.h" />
@@ -220,6 +222,8 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraPickerToggle.cpp" />
     <ClCompile Include="Capsule.cpp" />
+    <ClCompile Include="Contact.cpp" />
+    <ClCompile Include="ContactBuffer.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="EPAHull.cpp" />

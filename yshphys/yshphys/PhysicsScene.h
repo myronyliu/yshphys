@@ -20,13 +20,14 @@ public:
 	PhysicsScene();
 	virtual ~PhysicsScene();
 
-	void AddPhysicsObject(PhysicsObject* physicsObject);
-	void RemovePhysicsObject(PhysicsObject* physicsObject);
+	void AddPhysicsObject(RigidBody* physicsObject);
+	void RemovePhysicsObject(RigidBody* physicsObject);
 
 	PhysicsRayCastHit RayCast(const Ray& ray) const;
 
 	const BVTree& GetBVTree() const;
 
+	void ComputeContacts() const;
 	void Step(double dt);
 
 	void DebugDraw(DebugRenderer* renderer) const;

@@ -225,6 +225,12 @@
     <ClInclude Include="Force_Constant.h">
       <Filter>Physics\Forces</Filter>
     </ClInclude>
+    <ClInclude Include="ContactBuffer.h">
+      <Filter>Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Contact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -385,6 +391,12 @@
     </ClCompile>
     <ClCompile Include="Force_Spring.cpp">
       <Filter>Physics\Forces</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactBuffer.cpp">
+      <Filter>Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Contact.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

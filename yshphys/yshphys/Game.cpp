@@ -50,7 +50,7 @@ void Game::AddGameObject(GameObject* gameObject)
 
 		m_freedNodeStack.pop();
 
-		if (PhysicsObject* physicsObject = gameObject->GetPhysicsObject())
+		if (RigidBody* physicsObject = gameObject->GetPhysicsObject())
 		{
 			m_physicsScene.AddPhysicsObject(physicsObject);
 		}

@@ -5,7 +5,7 @@
 #include "YshMath.h"
 
 class RenderObject;
-class PhysicsObject;
+class RigidBody;
 
 class GameObject
 {
@@ -17,10 +17,10 @@ public:
 	GameNode* GetGameNode() const;
 
 	void SetRenderObject(RenderObject* renderObject);
-	void SetPhysicsObject(PhysicsObject* physicsObject);
+	void SetPhysicsObject(RigidBody* physicsObject);
 
 	RenderObject* GetRenderObject() const;
-	PhysicsObject* GetPhysicsObject() const;
+	RigidBody* GetPhysicsObject() const;
 
 	void PropagatePhysicsTransform() const;
 
@@ -29,7 +29,7 @@ public:
 
 protected:
 	RenderObject* m_renderObject;
-	PhysicsObject* m_physicsObject;
+	RigidBody* m_physicsObject;
 
 	GameNode* m_node;
 };

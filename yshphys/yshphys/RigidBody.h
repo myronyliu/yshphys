@@ -2,6 +2,7 @@
 #include "YshMath.h"
 #include "Geometry.h"
 #include "PhysicsObject.h"
+#include "Contact.h"
 
 class Force;
 
@@ -43,7 +44,7 @@ public:
 	void SetGeometry(Geometry* geometry, const dVec3& relativePos, const dQuat& relativeRot);
 	void SetMass(double m);
 	void SetInertia(const dMat33& Ibody);
-	void SetInertia(const dQuat& principleAxes, const dVec3& interia);
+	void SetInertia(const dQuat& principleAxes, const dVec3& inertia);
 
 	void ApplyForce(Force* force);
 
@@ -91,6 +92,13 @@ protected:
 	
 	Force* m_forces[64];
 	int m_nForces;
+
+	RigidBody* m_contactBodies[64];
+	int m_nContactBodies;
+
+	mutable bool visited = false; // for internal use when constructing islands for the solver
+
+	Contact* m_contacts; // contacts where Contact::body[0] == this
 
 	void Compute_xDot(const dVec3& P, dVec3& xDot) const;
 	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const;

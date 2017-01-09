@@ -167,7 +167,7 @@ const BVTree& PhysicsScene::GetBVTree() const
 	return m_bvTree;
 }
 
-void PhysicsScene::AddPhysicsObject(PhysicsObject* physicsObject)
+void PhysicsScene::AddPhysicsObject(RigidBody* physicsObject)
 {
 	if (!m_freedNodeStack.empty())
 	{
@@ -191,7 +191,7 @@ void PhysicsScene::AddPhysicsObject(PhysicsObject* physicsObject)
 	}
 }
 
-void PhysicsScene::RemovePhysicsObject(PhysicsObject* physicsObject)
+void PhysicsScene::RemovePhysicsObject(RigidBody* physicsObject)
 {
 	if (PhysicsNode* node = physicsObject->GetPhysicsNode())
 	{
@@ -207,6 +207,29 @@ void PhysicsScene::RemovePhysicsObject(PhysicsObject* physicsObject)
 		m_freedNodeStack.push(freeNode);
 
 		physicsObject->GetBVNode()->Detach();
+	}
+}
+
+void PhysicsScene::ComputeContacts() const
+{
+	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
+	for (BVNodePair pair : intersectingLeaves)
+	{
+		RigidBody* rb0 = (RigidBody*)pair.nodes[0]->GetContent();
+		RigidBody* rb1 = (RigidBody*)pair.nodes[1]->GetContent();
+
+		Geometry* geom0 = rb0->GetGeometry();
+		Geometry* geom1 = rb1->GetGeometry();
+
+		dVec3 pos0, pos1;
+		dQuat rot0, rot1;
+
+		rb0->GetGeometryGlobalTransform(pos0, rot0);
+		rb1->GetGeometryGlobalTransform(pos1, rot1);
+
+		dVec3 pt0, pt1;
+
+		const double d = Geometry::ComputeSeparation(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1);
 	}
 }
 

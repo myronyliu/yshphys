@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameObject.h"
 #include "RenderObject.h"
-#include "PhysicsObject.h"
+#include "RigidBody.h"
 
 
 GameObject::GameObject() : m_renderPosOffset(0.0, 0.0, 0.0), m_renderRotOffset(fQuat::Identity())
@@ -18,7 +18,7 @@ void GameObject::SetRenderObject(RenderObject* renderObject)
 {
 	m_renderObject = renderObject;
 }
-void GameObject::SetPhysicsObject(PhysicsObject* physicsObject)
+void GameObject::SetPhysicsObject(RigidBody* physicsObject)
 {
 	m_physicsObject = physicsObject;
 }
@@ -26,7 +26,7 @@ RenderObject* GameObject::GetRenderObject() const
 {
 	return m_renderObject;
 }
-PhysicsObject* GameObject::GetPhysicsObject() const
+RigidBody* GameObject::GetPhysicsObject() const
 {
 	return m_physicsObject;
 }

@@ -5,13 +5,17 @@
 #include "Shader.h"
 #include "Shader_Default.h"
 #include "Cylinder.h"
+#include "Box.h"
 
 void Tests::CreateBVTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
-	Capsule* geometry = new Capsule;
+//	Capsule* geometry = new Capsule();
+	Cylinder* geometry = new Cylinder();
 	geometry->SetRadius(1.0);
 	geometry->SetHalfHeight(1.0);
+//	Box* geometry = new Box();
+//	geometry->SetDimensions(1.0, 1.0, 1.0);
 
 	dVec3 sceneCenter = dVec3(0.0, 32.0, 0.0);
 	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(8.0);
@@ -21,7 +25,9 @@ void Tests::CreateBVTest(Game* game)
 	for (int i = 0; i < 16; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
-		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateCylinder(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
 		renderObj->SetShader(shader);
