@@ -127,7 +127,9 @@ std::vector<BVNodePair> BVNode::FindIntersectingLeaves() const
 
 	std::vector<BVNode*> leaves = FindLeftToRightLeafOrder();
 
-	for (int i = 0; i < leaves.size() - 1; ++i)
+	const int iMax = (int)leaves.size() - 1;
+
+	for (int i = 0; i < iMax; ++i)
 	{
 		BVNode* leaf = leaves[i];
 		const AABB& leafAABB = leaf->m_AABB;

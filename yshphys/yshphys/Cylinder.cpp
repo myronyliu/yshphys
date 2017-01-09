@@ -21,8 +21,8 @@ void Cylinder::SetHalfHeight(double halfHeight)
 void Cylinder::SetRadius(double radius)
 {
 	m_radius = abs(radius);
-	m_localOOBB.max.x = -m_radius;
-	m_localOOBB.max.y = -m_radius;
+	m_localOOBB.min.x = -m_radius;
+	m_localOOBB.min.y = -m_radius;
 	m_localOOBB.max.x = m_radius;
 	m_localOOBB.max.y = m_radius;
 }
