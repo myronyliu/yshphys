@@ -268,17 +268,148 @@ void RenderMesh::CreateBox
 
 void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& color)
 {
+	const int nCirclePts = 32; // also the number of segments
+	const int nRadiusPts = 8;
+
+	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nCirclePts) + 1;
+
+	const int nWallVertices = nHeightPts*nCirclePts;
+	const int nWallTriangles = 2 * (nHeightPts - 1)*nCirclePts;
+
+	const int nCapVertices = 1 + (nRadiusPts - 1) * nCirclePts;
+	const int nCapTriangles = 2 * (nRadiusPts - 1) * nCirclePts + nCirclePts;
+
+	const int nVertices = nWallVertices + 2 * nCapVertices;
+	const int nTriangles = nWallTriangles + 2 * nCapTriangles;
+
+	AllocateMesh(nVertices, nTriangles);
+
+	int iVertex = 0;
+
+	for (int j = 0; j < nCirclePts; ++j)
+	{
+		const float phi = (float)j * 2.0f *fPI / nCirclePts;
+		const float cosPhi = cos(phi);
+		const float sinPhi = sin(phi);
+
+		for (int i = 0; i < nHeightPts; ++i, ++iVertex)
+		{
+			fVec3 position;
+			position.x = radius*cosPhi;
+			position.y = radius*sinPhi;
+			position.z = ((float)i*2.0f / (float)(nHeightPts - 1) - 1.0f) * halfHeight;
+			fVec3 normal;
+			normal.x = cosPhi;
+			normal.y = sinPhi;
+			normal.z = 0.0f;
+			SetVertex(iVertex, position, normal, color);
+		}
+	}
+
+	SetVertex(iVertex++, fVec3(0.0f, 0.0f, -halfHeight), fVec3(0.0f, 0.0f, -1.0f), color);
+	for (int j = 0; j < nCirclePts; ++j)
+	{
+		const float phi = (float)j * 2.0f *fPI / nCirclePts;
+		const float cosPhi = cos(phi);
+		const float sinPhi = sin(phi);
+
+		for (int i = 1; i < nRadiusPts; ++i, ++iVertex)
+		{
+			const float r = (float)i * radius / (float)(nRadiusPts - 1);
+
+			fVec3 position;
+			position.x = r*cosPhi;
+			position.y = r*sinPhi;
+			position.z = -halfHeight;
+			fVec3 normal;
+			normal.x = 0.0f;
+			normal.y = 0.0f;
+			normal.z = -1.0f;
+			SetVertex(iVertex, position, normal, color);
+		}
+	}
+	SetVertex(iVertex++, fVec3(0.0f, 0.0f, halfHeight), fVec3(0.0f, 0.0f, 1.0f), color);
+	for (int j = 0; j < nCirclePts; ++j)
+	{
+		const float phi = (float)j * 2.0f *fPI / nCirclePts;
+		const float cosPhi = cos(phi);
+		const float sinPhi = sin(phi);
+
+		for (int i = 1; i < nRadiusPts; ++i, ++iVertex)
+		{
+			const float r = (float)i * radius / (float)(nRadiusPts - 1);
+
+			fVec3 position;
+			position.x = r*cosPhi;
+			position.y = r*sinPhi;
+			position.z = halfHeight;
+			fVec3 normal;
+			normal.x = 0.0f;
+			normal.y = 0.0f;
+			normal.z = 1.0f;
+			SetVertex(iVertex, position, normal, color);
+		}
+	}
+
+	int iTriangle = 0;
+
+	for (int j = 0; j < nCirclePts; ++j)
+	{
+		const int j0 = (j + 0) % nCirclePts;
+		const int j1 = (j + 1) % nCirclePts;
+
+		for (int i = 0; i < nHeightPts - 1; ++i, iTriangle +=2)
+		{
+			const int i00 = (i + 0) + nHeightPts*j0;
+			const int i10 = (i + 1) + nHeightPts*j0;
+			const int i11 = (i + 1) + nHeightPts*j1;
+			const int i01 = (i + 0) + nHeightPts*j1;
+			SetTriangleIndices(iTriangle + 0, i00, i01, i11);
+			SetTriangleIndices(iTriangle + 1, i00, i11, i10);
+		}
+		SetTriangleIndices(
+			iTriangle++,
+			nWallVertices,
+			nWallVertices + 1 + 0 + (nRadiusPts - 1)*j0,
+			nWallVertices + 1 + 0 + (nRadiusPts - 1)*j1
+		);
+		for (int i = 0; i < nRadiusPts - 2; ++i, iTriangle +=2)
+		{
+			const int i00 = nWallVertices + 1 + (i + 0) + (nRadiusPts - 1)*j0;
+			const int i10 = nWallVertices + 1 + (i + 1) + (nRadiusPts - 1)*j0;
+			const int i11 = nWallVertices + 1 + (i + 1) + (nRadiusPts - 1)*j1;
+			const int i01 = nWallVertices + 1 + (i + 0) + (nRadiusPts - 1)*j1;
+			SetTriangleIndices(iTriangle + 0, i00, i01, i11);
+			SetTriangleIndices(iTriangle + 1, i00, i11, i10);
+		}
+		SetTriangleIndices(
+			iTriangle++,
+			nWallVertices + nCapVertices,
+			nWallVertices + nCapVertices + 1 + 0 + (nRadiusPts - 1)*j0,
+			nWallVertices + nCapVertices + 1 + 0 + (nRadiusPts - 1)*j1
+		);
+		for (int i = 0; i < nRadiusPts - 2; ++i, iTriangle +=2)
+		{
+			const int i00 = nWallVertices + nCapVertices + 1 + (i + 0) + (nRadiusPts - 1)*j0;
+			const int i10 = nWallVertices + nCapVertices + 1 + (i + 1) + (nRadiusPts - 1)*j0;
+			const int i11 = nWallVertices + nCapVertices + 1 + (i + 1) + (nRadiusPts - 1)*j1;
+			const int i01 = nWallVertices + nCapVertices + 1 + (i + 0) + (nRadiusPts - 1)*j1;
+			SetTriangleIndices(iTriangle + 0, i00, i01, i11);
+			SetTriangleIndices(iTriangle + 1, i00, i11, i10);
+		}
+	}
+	GenerateGLBufferObjects();
 }
 void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& color)
 {
-	const int nRadiusPts = 32; // also the number of segments
+	const int nCirclePts = 32; // also the number of segments
 	const int nTheta = 16;
 
-	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nRadiusPts) + 1;
+	const int nHeightPts = int((halfHeight / (fPI*radius))*(float)nCirclePts) + 1;
 	const int nStripPts = 2 * (nTheta - 2) + nHeightPts;
 
-	const int nVertices = nStripPts*nRadiusPts + 2;
-	const int nTriangles = 2 * nStripPts *nRadiusPts;
+	const int nVertices = nStripPts*nCirclePts + 2;
+	const int nTriangles = 2 * nStripPts *nCirclePts;
 
 	AllocateMesh(nVertices, nTriangles);
 
@@ -290,9 +421,9 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 	SetVertex(iTipBot, fVec3(0.0f, 0.0f, -halfHeight - radius), fVec3(0.0f, 0.0f, -1.0f), color);
 	iVertex++;
 
-	for (int j = 0; j < nRadiusPts; ++j)
+	for (int j = 0; j < nCirclePts; ++j)
 	{
-		const float phi = (float)j * 2.0f *fPI / nRadiusPts;
+		const float phi = (float)j * 2.0f *fPI / nCirclePts;
 		const float cosPhi = cos(phi);
 		const float sinPhi = sin(phi);
 		
@@ -345,10 +476,10 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 
 	int iTriangle = 0;
 
-	for (int j = 0; j < nRadiusPts; ++j)
+	for (int j = 0; j < nCirclePts; ++j)
 	{
-		const int j0 = (j + 0) % nRadiusPts;
-		const int j1 = (j + 1) % nRadiusPts;
+		const int j0 = (j + 0) % nCirclePts;
+		const int j1 = (j + 1) % nCirclePts;
 
 		int a(1 + nStripPts * j0);
 		int b(1 + nStripPts * j1);
