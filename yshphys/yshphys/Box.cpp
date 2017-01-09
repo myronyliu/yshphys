@@ -43,13 +43,13 @@ bool Box::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3
 	r.SetOrigin((-rot).Transform((ray.GetOrigin() - pos)));
 	r.SetDirection((-rot).Transform(ray.GetDirection()));
 	AABB aabb;
-	aabb.min = m_halfDim;
+	aabb.min = -m_halfDim;
 	aabb.max = m_halfDim;
 
 	double tMin, tMax;
 	if (r.IntersectAABB(aabb, tMin, tMax))
 	{
-		hit = pos + ray.GetOrigin() + ray.GetDirection().Scale(tMin);
+		hit = ray.GetOrigin() + ray.GetDirection().Scale(tMin);
 		return true;
 	}
 	else
