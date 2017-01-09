@@ -254,7 +254,7 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 		renderer->DrawBox(k, k, k, pt0, rot0, c, false, false);
 		renderer->DrawBox(k, k, k, pt1, rot1, c, false, false);
 
-		renderer->DrawLine(pt0, pt1, c);
+		renderer->DrawLine(pt0, pt1, fVec3(0.0f, 0.0f, 1.0f));
 	}
 
 	std::stack<const BVNode*> nodeStack;
