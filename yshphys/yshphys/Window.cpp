@@ -40,7 +40,7 @@ void Window::InitGL()
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.7f, 0.0f, 0.3f, 1.0f);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void Window::UpdateGLRender()

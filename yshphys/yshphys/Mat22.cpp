@@ -155,5 +155,16 @@ Mat22_t<T> Mat22_t<T>::operator * (const Mat22_t& B) const
 	return product;
 }
 
+template <class T>
+bool Mat22_t<T>::operator == (const Mat22_t& M) const
+{
+	return
+		M_ij[0][0] == M.M_ij[0][0] &&
+		M_ij[0][1] == M.M_ij[0][1] &&
+
+		M_ij[1][0] == M.M_ij[1][0] &&
+		M_ij[1][1] == M.M_ij[1][1];
+}
+
 template class Mat22_t<float>;
 template class Mat22_t<double>;

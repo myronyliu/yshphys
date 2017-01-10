@@ -217,5 +217,22 @@ Mat33_t<T> Mat33_t<T>::operator * (const Mat33_t& B) const
 	return product;
 }
 
+template <class T>
+bool Mat33_t<T>::operator == (const Mat33_t& M) const
+{
+	return
+		M_ij[0][0] == M.M_ij[0][0] &&
+		M_ij[0][1] == M.M_ij[0][1] &&
+		M_ij[0][2] == M.M_ij[0][2] &&
+
+		M_ij[1][0] == M.M_ij[1][0] &&
+		M_ij[1][1] == M.M_ij[1][1] &&
+		M_ij[1][2] == M.M_ij[1][2] &&
+
+		M_ij[2][0] == M.M_ij[2][0] &&
+		M_ij[2][1] == M.M_ij[2][1] &&
+		M_ij[2][2] == M.M_ij[2][2];
+}
+
 template class Mat33_t<float>;
 template class Mat33_t<double>;

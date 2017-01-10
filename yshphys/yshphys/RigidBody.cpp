@@ -111,26 +111,62 @@ void RigidBody::SetGeometry(Geometry* geometry, const dVec3& pos, const dQuat& r
 }
 void RigidBody::SetMass(double m)
 {
-	if (m < 64.0*(double)FLT_EPSILON)
-	{
-		m_inertia.m = 0.0;
-		m_inertia.minv = 0.0;
-	}
-	else
-	{
-		m_inertia.m = m;
-		m_inertia.minv = 1.0 / m_inertia.m;
-	}
+	m_inertia.m = m;
+	m_inertia.minv = (m == 0.0) ? 0.0 : 1.0 / m_inertia.m;
 }
 void RigidBody::SetInertia(const dMat33& Ibody)
 {
 	m_inertia.Ibody = Ibody;
 
+	int dim[3];
+	int n = 0;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		if (Ibody(i, i) == 0.0)
+		{
+			m_inertia.Ibody.SetRow(i, dVec3(0.0, 0.0, 0.0));
+			m_inertia.Ibody.SetColumn(i, dVec3(0.0, 0.0, 0.0));
+			m_inertia.Ibodyinv.SetRow(i, dVec3(0.0, 0.0, 0.0));
+			m_inertia.Ibodyinv.SetColumn(i, dVec3(0.0, 0.0, 0.0));
+		}
+		else
+		{
+			dim[n++] = 0;
+		}
+	}
+
 	m_inertia.Ibody(1, 0) = m_inertia.Ibody(0, 1);
 	m_inertia.Ibody(2, 0) = m_inertia.Ibody(0, 2);
 	m_inertia.Ibody(2, 1) = m_inertia.Ibody(1, 2);
 
-	m_inertia.Ibodyinv = m_inertia.Ibody.Inverse();
+	switch (n)
+	{
+	case 1:
+	{
+		m_inertia.Ibodyinv(dim[0], dim[0]) = 1.0 / m_inertia.Ibody(dim[0], dim[0]);
+		break;
+	}
+	case 2:
+	{
+		dMat22 I2;
+		I2(dim[0], dim[0]) = m_inertia.Ibody(dim[0], dim[0]);
+		I2(dim[0], dim[1]) = m_inertia.Ibody(dim[0], dim[1]);
+		I2(dim[1], dim[0]) = m_inertia.Ibody(dim[1], dim[0]);
+		I2(dim[1], dim[1]) = m_inertia.Ibody(dim[1], dim[1]);
+		dMat22 I2inv = I2.Inverse();
+		m_inertia.Ibodyinv(dim[0], dim[0]) = I2inv(dim[0], dim[0]);
+		m_inertia.Ibodyinv(dim[0], dim[1]) = I2inv(dim[0], dim[1]);
+		m_inertia.Ibodyinv(dim[1], dim[0]) = I2inv(dim[1], dim[0]);
+		m_inertia.Ibodyinv(dim[1], dim[1]) = I2inv(dim[1], dim[1]);
+		break;
+	}
+	case 3:
+	{
+		m_inertia.Ibodyinv = m_inertia.Ibody.Inverse();
+		break;
+	}
+	}
 
 	UpdateDependentStateVariables();
 }

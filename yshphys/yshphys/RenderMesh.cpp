@@ -206,21 +206,18 @@ void RenderMesh::CreateBox
 		const unsigned int& nEdgesY = nEdges[iDimY];
 		const unsigned int& nEdgesZ = nEdges[iDimZ];
 
-		const float& halfDimY = halfDims[iDimY];
-		const float& halfDimZ = halfDims[iDimZ];
-
 		// FACE VERTICES
 		for (unsigned int j = 0; j < nPointsZ; ++j)
 		{
 			for (unsigned int i = 0; i < nPointsY; ++i)
 			{
-				const float y((2.0f * (float)i / float(nPointsY - 1) - 1.0f) * halfDimY);
-				const float z((2.0f * (float)j / float(nPointsZ - 1) - 1.0f) * halfDimZ);
+				const float y((2.0f * (float)i / float(nPointsY - 1) - 1.0f) * halfDims[iDimY]);
+				const float z((2.0f * (float)j / float(nPointsZ - 1) - 1.0f) * halfDims[iDimZ]);
 
 				fVec3 position;
 				fVec3 normal;
 
-				position[iDimX] = -halfDimX;
+				position[iDimX] = -halfDims[iDimX];
 				position[iDimY] = y;
 				position[iDimZ] = z;
 
@@ -230,7 +227,7 @@ void RenderMesh::CreateBox
 
 				SetVertex(iVertex, position, normal, color);
 				
-				position[iDimX] = halfDimX;
+				position[iDimX] = halfDims[iDimX];
 				position[iDimY] = y;
 				position[iDimZ] = z;
 

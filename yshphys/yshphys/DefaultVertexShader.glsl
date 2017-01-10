@@ -14,7 +14,14 @@ void main(void)
 {
 	mat4 viewModelMatrix = viewMatrix * modelMatrix;
 	mat4 projectionViewModelMatrix = projectionMatrix * viewModelMatrix;
-	float colorScale = (mat3(viewModelMatrix) * in_normal).z;
+
 	gl_Position = projectionViewModelMatrix * vec4(in_position, 1.0f);
+
+//	float colorScale = (mat3(viewModelMatrix) * in_normal).z;
+	float cosTheta = (mat3(modelMatrix) * in_normal).z;
+	float theta = acos(cosTheta);
+	float colorScale = max(0.0f, cos(theta * 0.75f)) + 0.1f;
+	colorScale = min(1.0f, colorScale);
+
 	ex_color = vec3(in_color) * colorScale;
 }

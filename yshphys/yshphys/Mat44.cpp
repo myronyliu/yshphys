@@ -148,5 +148,30 @@ Mat44_t<T> Mat44_t<T>::operator * (const Mat44_t& B) const
 	return product;
 }
 
+template <class T>
+bool Mat44_t<T>::operator == (const Mat44_t<T>& M) const
+{
+	return
+		M_ij[0][0] == M.M_ij[0][0] &&
+		M_ij[0][1] == M.M_ij[0][1] &&
+		M_ij[0][2] == M.M_ij[0][2] &&
+		M_ij[0][3] == M.M_ij[0][3] &&
+
+		M_ij[1][0] == M.M_ij[1][0] &&
+		M_ij[1][1] == M.M_ij[1][1] &&
+		M_ij[1][2] == M.M_ij[1][2] &&
+		M_ij[1][3] == M.M_ij[1][3] &&
+
+		M_ij[2][0] == M.M_ij[2][0] &&
+		M_ij[2][1] == M.M_ij[2][1] &&
+		M_ij[2][2] == M.M_ij[2][2] &&
+		M_ij[2][3] == M.M_ij[2][3] &&
+
+		M_ij[3][0] == M.M_ij[3][0] &&
+		M_ij[3][1] == M.M_ij[3][1] &&
+		M_ij[3][2] == M.M_ij[3][2] &&
+		M_ij[3][3] == M.M_ij[3][3];
+}
+
 template class Mat44_t<float>;
 template class Mat44_t<double>;

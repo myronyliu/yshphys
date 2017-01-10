@@ -31,6 +31,7 @@ public:
 	T& operator () (unsigned int i, unsigned int j);
 
 	Mat22_t<T> operator * (const Mat22_t& M) const;
+	bool operator == (const Mat22_t& M) const;
 
 private:
 	T M_ij[2][2];
