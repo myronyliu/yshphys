@@ -285,14 +285,18 @@ void PhysicsScene::ComputeContacts()
 
 void PhysicsScene::ClearIslands()
 {
-	Island* island = m_firstIsland;
-	do
+	if (m_firstIsland != nullptr)
 	{
-		Island* nextIsland = island->m_next;
-		delete island;
-		island = nextIsland;
+		Island* island = m_firstIsland;
+		do
+		{
+			Island* nextIsland = island->m_next;
+			delete island;
+			island = nextIsland;
 
-	} while (island != m_firstIsland);
+		} while (island != m_firstIsland);
+		m_firstIsland = nullptr;
+	}
 
 	PhysicsNode* node = m_firstNode;
 	while (node != nullptr)
@@ -300,8 +304,6 @@ void PhysicsScene::ClearIslands()
 		((RigidBody*)node->GetPhysicsObject())->SetIsland(nullptr);
 		node = node->GetNext();
 	}
-
-	m_firstIsland = nullptr;
 }
 
 void PhysicsScene::Step(double dt)
