@@ -229,7 +229,12 @@ void PhysicsScene::ComputeContacts() const
 
 		dVec3 pt0, pt1;
 
-		const double d = Geometry::ComputeSeparation(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1);
+//		const double d = Geometry::ComputeSeparation(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1);
+
+//		if (d <= 0.0)
+//		{
+
+//		}
 	}
 }
 
@@ -267,12 +272,12 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 		rb0->GetGeometryGlobalTransform(pos0, rot0);
 		rb1->GetGeometryGlobalTransform(pos1, rot1);
 
-		dVec3 pt0, pt1;
+		dVec3 pt0, pt1, n0, n1;
 
-		Geometry::ComputeSeparation(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1);
+		bool intersecting = Geometry::Intersect(geom0, pos0, rot0, pt0, n0, geom1, pos1, rot1, pt1, n1);
 
 		const float k = 0.1f;
-		const fVec3 c = fVec3(1.0f, 0.0f, 0.0f);
+		const fVec3 c = intersecting ? fVec3(0.0f, 1.0f, 0.0f) : fVec3(1.0f, 0.0f, 0.0f);
 
 		renderer->DrawBox(k, k, k, pt0, rot0, c, false, false);
 		renderer->DrawBox(k, k, k, pt1, rot1, c, false, false);

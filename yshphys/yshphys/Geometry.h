@@ -23,13 +23,14 @@ public:
 	// ptSelf and ptGeoms are the points on the respective Geometries
 	// that consititue the smallest separation between the Geometries.
 	// separation is the distance between ptSelf and ptGeom (negative if penetrating)
-	static double ComputeSeparation(
-		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
-		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1);
+	// contactNormal is the normal to geom0 pointing outward.
+	static bool Intersect(
+		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0, dVec3& n0,
+		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1, dVec3& n1);
 
-	static double ComputeSeparation(
-		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0,
-		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1,
+	static bool Intersect(
+		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0, dVec3& n0,
+		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1, dVec3& n1,
 		GJKSimplex& simplex, bool bypassPenetration = false);
 protected:
 

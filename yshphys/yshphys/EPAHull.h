@@ -31,7 +31,7 @@ public:
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1,
 		const GJKSimplex& tetrahedron);
 
-	double ComputePenetration(dVec3& pt0, dVec3& pt1);
+	bool ComputeIntersection(dVec3& pt0, dVec3& n0, dVec3& pt1, dVec3& n1);
 
 	void SanityCheck() const;
 	

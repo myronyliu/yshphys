@@ -440,38 +440,37 @@ dMinkowskiPoint EPAHull::Face::ComputeClosestPointToOrigin() const
 
 static int maxIters = 0;
 
-double EPAHull::ComputePenetration(dVec3& pt0, dVec3& pt1)
+bool EPAHull::ComputeIntersection(dVec3& pt0, dVec3& n0, dVec3& pt1, dVec3& n1)
 {
+	auto UpdateIntersection = [&]()
+	{
+		Face* closestFace = PopFaceHeap();
+		PushFaceHeap(closestFace);
+
+		dMinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
+		pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
+		pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
+
+		n0 = closestFace->normal;
+		n1 = -n0;
+
+		return (float)closestFace->distance >= 0.0f;
+	};
+
 	for (int i = 0; i < EPAHULL_MAXITERS; ++i)
 	{
 		if (!Expand())
 		{
-			Face* closestFace = PopFaceHeap();
-			PushFaceHeap(closestFace);
-
-			dMinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
-			pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
-			pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
-
 			if (i > maxIters)
 			{
 				maxIters = i;
 				std::printf("EPA worst case iterations till convergence: %d\n", maxIters);
 			}
-
-			return sqrt((pt0 - pt1).Dot(pt0 - pt1));
+			return UpdateIntersection();
 		}
 	}
-	Face* closestFace = PopFaceHeap();
-	PushFaceHeap(closestFace);
-
-	dMinkowskiPoint pt = closestFace->ComputeClosestPointToOrigin();
-	pt0 = (pt.m_MinkSum + pt.m_MinkDif).Scale(0.5);
-	pt1 = (pt.m_MinkSum - pt.m_MinkDif).Scale(0.5);
-
 	assert(false);
-
-	return sqrt((pt0 - pt1).Dot(pt0 - pt1));
+	return UpdateIntersection();
 }
 
 void EPAHull::SanityCheck() const
