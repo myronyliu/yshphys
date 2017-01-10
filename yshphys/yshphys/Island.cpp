@@ -27,13 +27,9 @@ void Island::Merge(Island* island)
 	{
 		AddContact(contact);
 	}
-	if (island->m_prev != nullptr)
-	{
-		island->m_prev->m_next = island->m_next;
-	}
-	if (island->m_next != nullptr)
-	{
-		island->m_next->m_prev = island->m_prev;
-	}
+	assert(island->m_prev != nullptr);
+	island->m_prev->m_next = island->m_next;
+	assert(island->m_next != nullptr);
+	island->m_next->m_prev = island->m_prev;
 	delete island;
 }

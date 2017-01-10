@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "PhysicsScene.h"
+#include "Force_Constant.h"
 
-PhysicsScene::PhysicsScene() : m_firstNode(nullptr)
+PhysicsScene::PhysicsScene() : m_firstNode(nullptr), m_firstIsland(nullptr)
 {
 	for (int i = 0; i < MAX_PHYSICS_NODES - 1; ++i)
 	{
@@ -212,6 +213,7 @@ void PhysicsScene::RemovePhysicsObject(RigidBody* physicsObject)
 
 void PhysicsScene::ComputeContacts()
 {
+	assert(m_firstIsland == nullptr);
 	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair : intersectingLeaves)
 	{
@@ -228,6 +230,8 @@ void PhysicsScene::ComputeContacts()
 
 		contact.body[0]->GetGeometryGlobalTransform(pos0, rot0);
 		contact.body[1]->GetGeometryGlobalTransform(pos1, rot1);
+
+		int xxx = 0;
 
 		if (Geometry::Intersect(geom0, pos0, rot0, contact.x[0], contact.n[0], geom1, pos1, rot1, contact.x[1], contact.n[1]))
 		{
@@ -251,19 +255,19 @@ void PhysicsScene::ComputeContacts()
 				// Add the new island to the end of the "ring"
 
 				newIsland->m_next = m_firstIsland;
-				newIsland->m_prev = m_firstIsland->m_prev->m_prev;
+				newIsland->m_prev = m_firstIsland->m_prev;
+
+				m_firstIsland->m_prev->m_next = newIsland;
 
 				m_firstIsland->m_prev = newIsland;
-				m_firstIsland->m_next = newIsland->m_prev->m_next;
+				m_firstIsland->m_next = newIsland->m_next->m_next;
 			}
 			else if (island[0] == nullptr)
 			{
-				contact.body[0]->SetIsland(island[1]);
 				island[1]->AddContact(contact);
 			}
 			else if (island[1] == nullptr)
 			{
-				contact.body[1]->SetIsland(island[0]);
 				island[0]->AddContact(contact);
 			}
 			else if (island[0] == island[1])
@@ -274,9 +278,32 @@ void PhysicsScene::ComputeContacts()
 			{
 				if (m_firstIsland == island[1])
 				{
+					assert(island[1]->m_next != island[1]);
 					m_firstIsland = island[1]->m_next;
 				}
 				island[0]->Merge(island[1]);
+			}
+
+			if (m_firstIsland != nullptr)
+			{
+				int n0 = 0;
+				int n1 = 0;
+
+				Island* is = m_firstIsland;
+				do
+				{
+					is = is->m_next;
+					n0++;
+				} while (is != m_firstIsland);
+
+				is = m_firstIsland;
+				do
+				{
+					is = is->m_prev;
+					n1++;
+				} while (is != m_firstIsland);
+
+				assert(n0 == n1);
 			}
 		}
 	}
@@ -291,6 +318,11 @@ void PhysicsScene::ClearIslands()
 		do
 		{
 			Island* nextIsland = island->m_next;
+			if (nextIsland == island)
+			{
+				assert(island == m_firstIsland);
+				int asdf = 0;
+			}
 			delete island;
 			island = nextIsland;
 
@@ -311,6 +343,10 @@ void PhysicsScene::Step(double dt)
 	PhysicsNode* node = m_firstNode;
 	while (node != nullptr)
 	{
+		Force_Constant* g = new Force_Constant();
+		g->F = dVec3(0.0, 0.0, -10.0);
+		g->offset = dVec3(0.0, 0.0, 0.0);
+		((RigidBody*)node->GetPhysicsObject())->ApplyForce(g);
 		node->GetPhysicsObject()->Step(dt);
 		node = node->GetNext();
 	}
