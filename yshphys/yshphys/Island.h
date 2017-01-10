@@ -12,8 +12,7 @@ private:
 
 	void AddContact(const Contact& contact);
 
-	Contact m_contacts[256];
-	int m_nContacts;
+	std::vector<Contact> m_contacts;
 
 	Island* m_prev;
 	Island* m_next;

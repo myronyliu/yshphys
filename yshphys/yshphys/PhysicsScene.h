@@ -34,6 +34,8 @@ public:
 	void DebugDraw(DebugRenderer* renderer) const;
 
 protected:
+	void ClearIslands();
+
 	std::stack<FreedPhysicsNode> m_freedNodeStack;
 	PhysicsNode m_physicsNodes[MAX_PHYSICS_NODES];
 	PhysicsNode* m_firstNode;

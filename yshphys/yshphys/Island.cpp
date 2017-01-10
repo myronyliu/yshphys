@@ -3,7 +3,8 @@
 
 
 Island::Island() :
-	m_nContacts(0)
+	m_prev(this),
+	m_next(this)
 {
 }
 
@@ -14,16 +15,17 @@ Island::~Island()
 
 void Island::AddContact(const Contact& contact)
 {
-	m_contacts[m_nContacts++] = contact;
+	m_contacts.push_back(contact);
 	contact.body[0]->SetIsland(this);
 	contact.body[1]->SetIsland(this);
 }
 
 void Island::Merge(Island* island)
 {
-	for (int i = 0; i < island->m_nContacts; ++i)
+	m_contacts.reserve(m_contacts.size() + island->m_contacts.size());
+	for (Contact contact : island->m_contacts)
 	{
-		AddContact(island->m_contacts[i]);
+		AddContact(contact);
 	}
 	if (island->m_prev != nullptr)
 	{

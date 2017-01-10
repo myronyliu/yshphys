@@ -237,13 +237,24 @@ void PhysicsScene::ComputeContacts()
 			Island* island[2];
 			island[0] = contact.body[0]->GetIsland();
 			island[1] = contact.body[1]->GetIsland();
+
 			if (island[0] == nullptr && island[1] == nullptr)
 			{
 				Island* newIsland = new Island();
 				newIsland->AddContact(contact);
-				m_firstIsland->m_prev = newIsland;
+
+				if (m_firstIsland == nullptr)
+				{
+					m_firstIsland = newIsland;
+				}
+
+				// Add the new island to the end of the "ring"
+
 				newIsland->m_next = m_firstIsland;
-				m_firstIsland = newIsland;
+				newIsland->m_prev = m_firstIsland->m_prev->m_prev;
+
+				m_firstIsland->m_prev = newIsland;
+				m_firstIsland->m_next = newIsland->m_prev->m_next;
 			}
 			else if (island[0] == nullptr)
 			{
@@ -272,6 +283,27 @@ void PhysicsScene::ComputeContacts()
 
 }
 
+void PhysicsScene::ClearIslands()
+{
+	Island* island = m_firstIsland;
+	do
+	{
+		Island* nextIsland = island->m_next;
+		delete island;
+		island = nextIsland;
+
+	} while (island != m_firstIsland);
+
+	PhysicsNode* node = m_firstNode;
+	while (node != nullptr)
+	{
+		((RigidBody*)node->GetPhysicsObject())->SetIsland(nullptr);
+		node = node->GetNext();
+	}
+
+	m_firstIsland = nullptr;
+}
+
 void PhysicsScene::Step(double dt)
 {
 	PhysicsNode* node = m_firstNode;
@@ -280,6 +312,8 @@ void PhysicsScene::Step(double dt)
 		node->GetPhysicsObject()->Step(dt);
 		node = node->GetNext();
 	}
+	ComputeContacts();
+	ClearIslands();
 }
 
 void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
