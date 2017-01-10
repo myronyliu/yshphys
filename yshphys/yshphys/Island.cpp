@@ -20,6 +20,15 @@ void Island::AddContact(const Contact& contact)
 	contact.body[1]->SetIsland(this);
 }
 
+void Island::PrependTo(Island* island)
+{
+	m_next = island;
+	m_prev = island->m_prev;
+
+	m_prev->m_next = this;
+	m_next->m_prev = this;
+}
+
 void Island::Merge(Island* island)
 {
 	m_contacts.reserve(m_contacts.size() + island->m_contacts.size());

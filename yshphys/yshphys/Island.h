@@ -17,6 +17,7 @@ private:
 	Island* m_prev;
 	Island* m_next;
 
+	void PrependTo(Island* island);
 	void Merge(Island* island);
 };
 

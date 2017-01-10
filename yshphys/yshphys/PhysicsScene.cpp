@@ -254,13 +254,7 @@ void PhysicsScene::ComputeContacts()
 
 				// Add the new island to the end of the "ring"
 
-				newIsland->m_next = m_firstIsland;
-				newIsland->m_prev = m_firstIsland->m_prev;
-
-				m_firstIsland->m_prev->m_next = newIsland;
-
-				m_firstIsland->m_prev = newIsland;
-				m_firstIsland->m_next = newIsland->m_next->m_next;
+				newIsland->PrependTo(m_firstIsland);
 			}
 			else if (island[0] == nullptr)
 			{
