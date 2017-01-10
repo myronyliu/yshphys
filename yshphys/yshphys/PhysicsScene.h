@@ -5,6 +5,7 @@
 #include "PhysicsNode.h"
 #include "DebugRenderer.h"
 #include "Ray.h"
+#include "Island.h"
 
 #define MAX_PHYSICS_NODES 1024
 
@@ -27,7 +28,7 @@ public:
 
 	const BVTree& GetBVTree() const;
 
-	void ComputeContacts() const;
+	void ComputeContacts();
 	void Step(double dt);
 
 	void DebugDraw(DebugRenderer* renderer) const;
@@ -38,5 +39,7 @@ protected:
 	PhysicsNode* m_firstNode;
 
 	BVTree m_bvTree;
+
+	Island* m_firstIsland;
 };
 

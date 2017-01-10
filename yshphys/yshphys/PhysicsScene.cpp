@@ -210,32 +210,66 @@ void PhysicsScene::RemovePhysicsObject(RigidBody* physicsObject)
 	}
 }
 
-void PhysicsScene::ComputeContacts() const
+void PhysicsScene::ComputeContacts()
 {
 	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair : intersectingLeaves)
 	{
-		RigidBody* rb0 = (RigidBody*)pair.nodes[0]->GetContent();
-		RigidBody* rb1 = (RigidBody*)pair.nodes[1]->GetContent();
+		Contact contact;
 
-		Geometry* geom0 = rb0->GetGeometry();
-		Geometry* geom1 = rb1->GetGeometry();
+		contact.body[0] = (RigidBody*)pair.nodes[0]->GetContent();
+		contact.body[1] = (RigidBody*)pair.nodes[1]->GetContent();
+
+		Geometry* geom0 = contact.body[0]->GetGeometry();
+		Geometry* geom1 = contact.body[1]->GetGeometry();
 
 		dVec3 pos0, pos1;
 		dQuat rot0, rot1;
 
-		rb0->GetGeometryGlobalTransform(pos0, rot0);
-		rb1->GetGeometryGlobalTransform(pos1, rot1);
+		contact.body[0]->GetGeometryGlobalTransform(pos0, rot0);
+		contact.body[1]->GetGeometryGlobalTransform(pos1, rot1);
 
-		dVec3 pt0, pt1;
+		if (Geometry::Intersect(geom0, pos0, rot0, contact.x[0], contact.n[0], geom1, pos1, rot1, contact.x[1], contact.n[1]))
+		{
+			contact.n[0] = -contact.n[0];
+			contact.n[1] = -contact.n[1];
 
-//		const double d = Geometry::ComputeSeparation(geom0, pos0, rot0, pt0, geom1, pos1, rot1, pt1);
-
-//		if (d <= 0.0)
-//		{
-
-//		}
+			Island* island[2];
+			island[0] = contact.body[0]->GetIsland();
+			island[1] = contact.body[1]->GetIsland();
+			if (island[0] == nullptr && island[1] == nullptr)
+			{
+				Island* newIsland = new Island();
+				newIsland->AddContact(contact);
+				m_firstIsland->m_prev = newIsland;
+				newIsland->m_next = m_firstIsland;
+				m_firstIsland = newIsland;
+			}
+			else if (island[0] == nullptr)
+			{
+				contact.body[0]->SetIsland(island[1]);
+				island[1]->AddContact(contact);
+			}
+			else if (island[1] == nullptr)
+			{
+				contact.body[1]->SetIsland(island[0]);
+				island[0]->AddContact(contact);
+			}
+			else if (island[0] == island[1])
+			{
+				island[0]->AddContact(contact);
+			}
+			else // both bodies are already associated with islands. Then we must merge the islands
+			{
+				if (m_firstIsland == island[1])
+				{
+					m_firstIsland = island[1]->m_next;
+				}
+				island[0]->Merge(island[1]);
+			}
+		}
 	}
+
 }
 
 void PhysicsScene::Step(double dt)
@@ -274,15 +308,35 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 
 		dVec3 pt0, pt1, n0, n1;
 
-		bool intersecting = Geometry::Intersect(geom0, pos0, rot0, pt0, n0, geom1, pos1, rot1, pt1, n1);
+		const bool intersecting = Geometry::Intersect(geom0, pos0, rot0, pt0, n0, geom1, pos1, rot1, pt1, n1);
 
 		const float k = 0.1f;
 		const fVec3 c = intersecting ? fVec3(0.0f, 1.0f, 0.0f) : fVec3(1.0f, 0.0f, 0.0f);
 
 		renderer->DrawBox(k, k, k, pt0, rot0, c, false, false);
 		renderer->DrawBox(k, k, k, pt1, rot1, c, false, false);
-
 		renderer->DrawLine(pt0, pt1, fVec3(0.0f, 0.0f, 1.0f));
+
+		if (intersecting)
+		{
+			dQuat qAlign0 = dQuat::Identity();
+			dQuat qAlign1 = dQuat::Identity();
+
+			const dVec3 cross = dVec3(0.0, 0.0, 1.0).Cross(n0);
+			const double sinSqr = cross.Dot(cross);
+			if (sinSqr > (double)FLT_EPSILON)
+			{
+				const double sin = sqrt(sinSqr);
+				const double cos = n0.z;
+				const dVec3 axis = cross.Scale(1.0 / sin);
+				const double angle0 = atan2(sin, cos);
+				const double angle1 = angle0 + dPI;
+				qAlign0 = dQuat(axis, angle0);
+				qAlign1 = dQuat(axis, angle1);
+			}
+			renderer->DrawBox(0.01f, 0.01f, 0.5f, fVec3(pt0 + n0.Scale(0.5)), fQuat(qAlign0), c, false, false);
+			renderer->DrawBox(0.01f, 0.01f, 0.5f, fVec3(pt1 + n1.Scale(0.5)), fQuat(qAlign1), c, false, false);
+		}
 	}
 
 	std::stack<const BVNode*> nodeStack;

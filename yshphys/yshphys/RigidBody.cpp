@@ -18,7 +18,8 @@ void QuantizeAABB(AABB& aabb)
 }
 
 RigidBody::RigidBody() :
-	m_nForces(0)
+	m_nForces(0),
+	m_island(nullptr)
 {
 	m_geometry.geom = nullptr;
 	m_geometry.pos = dVec3(0.0, 0.0, 0.0);

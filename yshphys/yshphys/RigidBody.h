@@ -5,6 +5,7 @@
 #include "Contact.h"
 
 class Force;
+class Island;
 
 // See http://www.cs.cmu.edu/~baraff/sigcourse/notesd1.pdf
 // and http://www.cs.cmu.edu/~baraff/sigcourse/notesd2.pdf
@@ -47,6 +48,15 @@ public:
 	void SetInertia(const dQuat& principleAxes, const dVec3& inertia);
 
 	void ApplyForce(Force* force);
+
+	void SetIsland(Island* island)
+	{
+		m_island = island;
+	}
+	Island* GetIsland() const
+	{
+		return m_island;
+	}
 
 	virtual void UpdateAABB();
 
@@ -93,12 +103,7 @@ protected:
 	Force* m_forces[64];
 	int m_nForces;
 
-	RigidBody* m_contactBodies[64];
-	int m_nContactBodies;
-
-	mutable bool visited = false; // for internal use when constructing islands for the solver
-
-	Contact* m_contacts; // contacts where Contact::body[0] == this
+	Island* m_island;
 
 	void Compute_xDot(const dVec3& P, dVec3& xDot) const;
 	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const;

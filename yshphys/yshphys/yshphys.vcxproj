@@ -183,6 +183,7 @@
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="Picker.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="Island.h" />
     <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
@@ -246,6 +247,7 @@
     <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="Island.cpp" />
     <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="Ray.cpp" />

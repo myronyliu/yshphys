@@ -10,8 +10,8 @@
 void Tests::CreateBVTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
-//	Capsule* geometry = new Capsule();
-	Cylinder* geometry = new Cylinder();
+	Capsule* geometry = new Capsule();
+//	Cylinder* geometry = new Cylinder();
 	geometry->SetRadius(1.0);
 	geometry->SetHalfHeight(1.0);
 //	Box* geometry = new Box();
@@ -26,8 +26,8 @@ void Tests::CreateBVTest(Game* game)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
-//		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
-		mesh->CreateCylinder(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateCylinder(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
 		renderObj->SetShader(shader);

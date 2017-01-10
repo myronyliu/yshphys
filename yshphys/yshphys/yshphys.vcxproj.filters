@@ -228,6 +228,9 @@
     <ClInclude Include="Contact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Island.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -391,6 +394,9 @@
     </ClCompile>
     <ClCompile Include="Contact.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Island.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
