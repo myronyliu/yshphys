@@ -191,7 +191,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shader_Default.h" />
     <ClInclude Include="Shader_FlatUniformColor.h" />
-    <ClInclude Include="SupportPolygon.h" />
+    <ClInclude Include="Polygon.h" />
     <ClInclude Include="Tests.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vec2.h" />
@@ -268,7 +268,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SupportPolygon.cpp" />
+    <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vec2.cpp" />

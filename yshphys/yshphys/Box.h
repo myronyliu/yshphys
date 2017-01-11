@@ -14,6 +14,8 @@ public:
 
 	virtual bool RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hitPt) const;
 
+	virtual Polygon IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const;
+
 protected:
 	dVec3 m_halfDim;
 };

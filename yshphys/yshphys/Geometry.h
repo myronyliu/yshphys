@@ -3,7 +3,7 @@
 #include "Quat.h"
 #include "Simplex3D.h"
 #include "BoundingBox.h"
-#include "SupportPolygon.h"
+#include "Polygon.h"
 #include "Material.h"
 
 // Well, this is kinda ugly. We are going to store the material with the geometry (as opposed to with the rigidbody)
@@ -40,6 +40,9 @@ public:
 		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0, dVec3& n0,
 		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1, dVec3& n1,
 		GJKSimplex& simplex, bool bypassPenetration = false);
+
+	virtual Polygon IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dQuat& planeOrientation) const;
+	virtual Polygon IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const;
 
 protected:
 

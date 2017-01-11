@@ -57,3 +57,17 @@ bool Sphere::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dV
 		return true;
 	}
 }
+
+Polygon Sphere::IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dQuat& planeOrientation) const
+{
+	Polygon poly;
+	poly.AddVertex(dVec2(0.0, 0.0));
+	return poly;
+}
+
+Polygon Sphere::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+{
+	Polygon poly;
+	poly.AddVertex(dVec2(0.0, 0.0));
+	return poly;
+}

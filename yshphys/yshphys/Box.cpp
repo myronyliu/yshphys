@@ -57,3 +57,95 @@ bool Box::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3
 		return false;
 	}
 }
+
+Polygon Box::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+{
+	Polygon poly;
+
+	const dMat33 R(planeOrientation);
+	const dVec3 x(R.GetColumn(0));
+	const dVec3 y(R.GetColumn(1));
+	const dVec3 z(R.GetColumn(2));
+
+	const double cx = planeOrigin.Dot(R.GetColumn(0));
+	const double cy = planeOrigin.Dot(R.GetColumn(1));
+
+	for (int i = 0; i < 3; ++i)
+	{
+		if (abs(z[i]) > 0.9999)
+		{
+			const int j = (i + 1) % 3;
+			const int k = (i + 2) % 3;
+
+			const double sgn = MathUtils::sgn(z[i]);
+
+			dVec3 v3[4];
+			dVec2 v2[4];
+
+			v3[0][i] = sgn*m_halfDim[i];
+			v3[1][i] = sgn*m_halfDim[i];
+			v3[2][i] = sgn*m_halfDim[i];
+			v3[3][i] = sgn*m_halfDim[i];
+
+			v3[0][j] = -m_halfDim[j];
+			v3[1][j] = m_halfDim[j];
+			v3[2][j] = m_halfDim[j];
+			v3[3][j] = -m_halfDim[j];
+
+			v3[0][k] = -m_halfDim[k];
+			v3[1][k] = -m_halfDim[k];
+			v3[2][k] = m_halfDim[k];
+			v3[3][k] = m_halfDim[k];
+
+			for (int n = 0; n < 4; ++n)
+			{
+				v2[n].x = v3[n].Dot(x) - cx;
+				v2[n].y = v3[n].Dot(y) - cy;
+			}
+
+			if (sgn > 0.0)
+			{
+				poly.AddVertex(v2[0]);
+				poly.AddVertex(v2[1]);
+				poly.AddVertex(v2[2]);
+				poly.AddVertex(v2[3]);
+			}
+			else
+			{
+				poly.AddVertex(v2[3]);
+				poly.AddVertex(v2[2]);
+				poly.AddVertex(v2[1]);
+				poly.AddVertex(v2[0]);
+			}
+			return poly;
+		}
+	}
+
+	for (int i = 0; i < 3; ++i)
+	{
+		if (abs(z[i]) < 0.001)
+		{
+			const int j = (i + 1) % 3;
+			const int k = (i + 2) % 3;
+
+			const double sgnj = MathUtils::sgn(z[j]);
+			const double sgnk = MathUtils::sgn(z[k]);
+
+			dVec3 v;
+
+			v[j] = sgnj*m_halfDim[j];
+			v[k] = sgnk*m_halfDim[k];
+
+			v[i] = -m_halfDim[i];
+			poly.AddVertex(dVec2(v.Dot(x) - cx, v.Dot(y) - cy));
+			v[i] = m_halfDim[i];
+			poly.AddVertex(dVec2(v.Dot(x) - cx, v.Dot(y) - cy));
+
+			return poly;
+		}
+	}
+
+	// If we reach this point, the plane intersects at a corner of the box
+	poly.AddVertex(dVec2(0.0, 0.0));
+	return poly;
+}

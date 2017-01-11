@@ -198,9 +198,6 @@
     <ClInclude Include="DebugRenderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="SupportPolygon.h">
-      <Filter>Physics\Geometry</Filter>
-    </ClInclude>
     <ClInclude Include="Mat22.h">
       <Filter>Math\Mat</Filter>
     </ClInclude>
@@ -236,6 +233,9 @@
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Physics\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Polygon.h">
+      <Filter>Physics\Geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -368,9 +368,6 @@
     <ClCompile Include="DebugRenderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="SupportPolygon.cpp">
-      <Filter>Physics\Geometry</Filter>
-    </ClCompile>
     <ClCompile Include="Mat22.cpp">
       <Filter>Math\Mat</Filter>
     </ClCompile>
@@ -406,6 +403,9 @@
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Physics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Polygon.cpp">
+      <Filter>Physics\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

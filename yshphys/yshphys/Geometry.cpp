@@ -36,6 +36,16 @@ Material::Type Geometry::GetMaterialLocal(const dVec3& x) const
 	return m_material;
 }
 
+Polygon Geometry::IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dQuat& planeOrientation) const
+{
+	return IntersectPlaneLocal((-rot).Transform(planeOrigin - pos), -rot*planeOrientation);
+}
+
+Polygon Geometry::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+{
+	return Polygon();
+}
+
 void Geometry::SetUniformMaterial(Material::Type material)
 {
 	m_material = material;
