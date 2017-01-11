@@ -118,7 +118,7 @@ void Island::ResolveContacts() const
 		contact.body[0]->ApplyImpulse(contact.n[0].Scale(impulse[i]), contact.x[0]);
 		contact.body[1]->ApplyImpulse(contact.n[1].Scale(impulse[i]), contact.x[1]);
 
-		const double k = 4.0;
+		const double k = 16.0;
 
 		const dVec3 d = contact.n[0].Scale((contact.x[1] - contact.x[0]).Dot(contact.n[0]));
 
@@ -133,15 +133,6 @@ void Island::ResolveContacts() const
 	for (int i = 0; i < nContacts; ++i)
 	{
 		const Contact& contact = m_contacts[i];
-		J[i].n0 = contact.n[0];
-		J[i].n1 = contact.n[1];
-		J[i].r0xn0 = (contact.x[0] - contact.body[0]->GetPosition()).Cross(contact.n[0]);
-		J[i].r1xn1 = (contact.x[1] - contact.body[1]->GetPosition()).Cross(contact.n[1]);
-
-		JMinv[i].n0 = J[i].n0.Scale(contact.body[0]->GetInverseMass());
-		JMinv[i].n1 = J[i].n1.Scale(contact.body[1]->GetInverseMass());
-		JMinv[i].r0xn0 = contact.body[0]->GetInverseInertia().Transform(J[i].r0xn0);
-		JMinv[i].r1xn1 = contact.body[1]->GetInverseInertia().Transform(J[i].r1xn1);
 
 		const dVec3 g(0.0, 0.0, -10.0);
 		const dVec3 mg0 = g.Scale(contact.body[0]->GetMass());
