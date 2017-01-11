@@ -54,10 +54,14 @@ RigidBody::~RigidBody()
 {
 }
 
-double RigidBody::GetMass(double& inverseMass) const
+double RigidBody::GetInverseMass() const
 {
-	inverseMass = m_inertia.minv;
-	return m_inertia.m;
+	return m_inertia.minv;
+}
+
+dMat33 RigidBody::GetInverseInertia() const
+{
+	return m_Iinv;
 }
 
 dVec3 RigidBody::GetPosition() const
@@ -180,9 +184,19 @@ void RigidBody::SetInertia(const dQuat& principleAxes, const dVec3& inertia)
 	SetInertia(R.Transpose()*I*R);
 }
 
-void RigidBody::ApplyForce(Force* force)
+void RigidBody::ApplyBruteForce(Force* force)
 {
 	m_forces[m_nForces++] = force;
+}
+void RigidBody::ApplyForce(const dVec3& force, const dVec3& worldPos)
+{
+	m_F = m_F + force;
+	m_T = m_T + (worldPos - m_state.x).Cross(force);
+}
+void RigidBody::ApplyImpulse(const dVec3& impulse, const dVec3& worldPos)
+{
+	m_dP = m_dP + impulse;
+	m_dL = m_dL + (worldPos - m_state.x).Cross(impulse);
 }
 
 void RigidBody::UpdateAABB()
@@ -233,13 +247,17 @@ void RigidBody::Compute_xDot(const dVec3& P, dVec3& xDot) const
 	xDot = P.Scale(m_inertia.minv);
 }
 
-void RigidBody::Step(double dt)
+void RigidBody::ResolveImpulses()
 {
-	if (!m_awake)
-	{
-		return;
-	}
+	m_state.P = m_state.P + m_dP;
+	m_state.L = m_state.L + m_dL;
 
+	m_dP = dVec3(0.0, 0.0, 0.0);
+	m_dL = dVec3(0.0, 0.0, 0.0);
+}
+
+void RigidBody::ResolveForces(double dt)
+{
 	auto NormalizeQuat = [](dQuat& q)
 	{
 		if (abs(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z - 1.0) > FLT_EPSILON)
@@ -304,6 +322,9 @@ void RigidBody::Step(double dt)
 		RigidBody::State& stateDerivative = stateDerivatives[i];
 		ZeroState(stateDerivative);
 
+		stateDerivative.P = m_dP;
+		stateDerivative.L = m_dL;
+
 		Compute_xDot(state.P, stateDerivative.x);
 		Compute_qDot(state.q, state.L, stateDerivative.q);
 
@@ -346,4 +367,19 @@ void RigidBody::Step(double dt)
 		delete m_forces[i];
 	}
 	m_nForces = 0;
+
+	m_F = dVec3(0.0, 0.0, 0.0);
+	m_T = dVec3(0.0, 0.0, 0.0);
 }
+
+void RigidBody::Step(double dt)
+{
+	if (!m_awake)
+	{
+		return;
+	}
+	ResolveImpulses();
+	ResolveForces(dt);
+}
+
+

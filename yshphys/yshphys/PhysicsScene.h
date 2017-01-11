@@ -28,12 +28,13 @@ public:
 
 	const BVTree& GetBVTree() const;
 
-	void ComputeContacts();
 	void Step(double dt);
 
 	void DebugDraw(DebugRenderer* renderer) const;
 
 protected:
+	void ComputeContacts();
+	void ResolveContacts() const;
 	void ClearIslands();
 
 	std::stack<FreedPhysicsNode> m_freedNodeStack;

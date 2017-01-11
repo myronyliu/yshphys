@@ -304,6 +304,20 @@ void PhysicsScene::ComputeContacts()
 
 }
 
+void PhysicsScene::ResolveContacts() const
+{
+	if (m_firstIsland != nullptr)
+	{
+		Island* island = m_firstIsland;
+		do
+		{
+			island->ResolveContacts();
+			island = island->m_next;
+
+		} while (island != m_firstIsland);
+	}
+}
+
 void PhysicsScene::ClearIslands()
 {
 	if (m_firstIsland != nullptr)
@@ -334,18 +348,20 @@ void PhysicsScene::ClearIslands()
 
 void PhysicsScene::Step(double dt)
 {
+	ComputeContacts();
+	ResolveContacts();
+	ClearIslands();
+
 	PhysicsNode* node = m_firstNode;
 	while (node != nullptr)
 	{
 		Force_Constant* g = new Force_Constant();
 		g->F = dVec3(0.0, 0.0, -10.0);
 		g->offset = dVec3(0.0, 0.0, 0.0);
-		((RigidBody*)node->GetPhysicsObject())->ApplyForce(g);
+		((RigidBody*)node->GetPhysicsObject())->ApplyBruteForce(g);
 		node->GetPhysicsObject()->Step(dt);
 		node = node->GetNext();
 	}
-	ComputeContacts();
-	ClearIslands();
 }
 
 void PhysicsScene::DebugDraw(DebugRenderer* renderer) const

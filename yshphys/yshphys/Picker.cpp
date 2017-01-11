@@ -66,8 +66,8 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 		}
 		else if (m_pickedObject != nullptr)
 		{
-			double mInv;
-			double m = m_pickedObject->GetMass(mInv);
+			double minv = m_pickedObject->GetInverseMass();
+			double m = (minv == 0.0) ? 0.0 : 1.0 / minv;
 
 			m_pos = ray.GetOrigin() + rayDir.Scale(m_depth / rayDir.Dot(viewDir));
 
@@ -77,7 +77,7 @@ void Picker::ProcessInput(const MouseState& mouseState, KeyState* keyStates, int
 			force->anchor = m_pos;
 			force->k = m_springCoeff.k*m;
 			force->b = m_springCoeff.b*m;
-			m_pickedObject->ApplyForce(force);
+			m_pickedObject->ApplyBruteForce(force);
 		}
 	}
 }

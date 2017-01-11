@@ -27,43 +27,6 @@ struct CollisionGeometry
 class RigidBody : public PhysicsObject
 {
 public:
-	RigidBody();
-	virtual ~RigidBody();
-
-	double GetMass(double& inverseMass) const;
-
-	dVec3 GetPosition() const;
-	dQuat GetRotation() const;
-	dVec3 GetLinearVelocity() const;
-	dVec3 GetAngularVelocity() const;
-	Geometry* GetGeometry() const;
-	void GetGeometryLocalTransform(dVec3& pos, dQuat& rot) const;
-	void GetGeometryGlobalTransform(dVec3& pos, dQuat& rot) const;
-
-	void SetPosition(const dVec3& x);
-	void SetRotation(const dQuat& q);
-	void SetGeometry(Geometry* geometry, const dVec3& relativePos, const dQuat& relativeRot);
-	void SetMass(double m);
-	void SetInertia(const dMat33& Ibody);
-	void SetInertia(const dQuat& principleAxes, const dVec3& inertia);
-
-	void ApplyForce(Force* force);
-
-	void SetIsland(Island* island)
-	{
-		m_island = island;
-	}
-	Island* GetIsland() const
-	{
-		return m_island;
-	}
-
-	virtual void UpdateAABB();
-
-	virtual void Step(double dt);
-
-	dVec3 m_dP; // linear impulse
-	dVec3 m_dL; // angular impulse
 
 	struct State
 	{
@@ -80,12 +43,56 @@ public:
 		dMat33 Ibody; // in the local frame of itself
 		dMat33 Ibodyinv;
 	};
+
+	RigidBody();
+	virtual ~RigidBody();
+
+	dMat33 GetInverseInertia() const;
+	double GetInverseMass() const;
+
+	dVec3 GetPosition() const;
+	dQuat GetRotation() const;
+	dVec3 GetLinearVelocity() const;
+	dVec3 GetAngularVelocity() const;
+	Geometry* GetGeometry() const;
+	void GetGeometryLocalTransform(dVec3& pos, dQuat& rot) const;
+	void GetGeometryGlobalTransform(dVec3& pos, dQuat& rot) const;
+
+	void SetPosition(const dVec3& x);
+	void SetRotation(const dQuat& q);
+	void SetGeometry(Geometry* geometry, const dVec3& relativePos, const dQuat& relativeRot);
+	void SetMass(double m);
+	void SetInertia(const dMat33& Ibody);
+	void SetInertia(const dQuat& principleAxes, const dVec3& inertia);
+
+	void ApplyBruteForce(Force* force);
+	void ApplyForce(const dVec3& force, const dVec3& worldPos);
+	void ApplyImpulse(const dVec3& impulse, const dVec3& worldPos);
+
+	void SetIsland(Island* island)
+	{
+		m_island = island;
+	}
+	Island* GetIsland() const
+	{
+		return m_island;
+	}
+
+	virtual void UpdateAABB();
+
+	virtual void Step(double dt);
 protected:
 
 	CollisionGeometry m_geometry;
 
 	RigidBody::State m_state;
 	RigidBody::Inertia m_inertia;
+	
+	dVec3 m_dP; // linear impulse
+	dVec3 m_dL; // angular impulse
+
+	dVec3 m_F;
+	dVec3 m_T;
 
 	// DERIVED STATE VARIABLES
 	dMat33 m_Iinv;
@@ -99,7 +106,7 @@ protected:
 		m_w = m_Iinv.Transform(m_state.L);
 		m_v = m_state.P.Scale(m_inertia.minv);
 	}
-	
+
 	Force* m_forces[64];
 	int m_nForces;
 
@@ -107,5 +114,8 @@ protected:
 
 	void Compute_xDot(const dVec3& P, dVec3& xDot) const;
 	void Compute_qDot(const dQuat& q, const dVec3& L, dQuat& qDot) const;
+
+	void ResolveImpulses();
+	void ResolveForces(double dt);
 };
 

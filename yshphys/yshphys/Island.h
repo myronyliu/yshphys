@@ -19,5 +19,6 @@ private:
 
 	void PrependTo(Island* island);
 	void Merge(Island* island);
+	void ResolveContacts() const;
 };
 

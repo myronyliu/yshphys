@@ -22,7 +22,7 @@ void Tests::CreateBVTest(Game* game)
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
@@ -46,6 +46,7 @@ void Tests::CreateBVTest(Game* game)
 		dVec3 pos = alpha.Times(sceneMin) + (dVec3(1.0, 1.0, 1.0) - alpha).Times(sceneMax);
 
 		rigidBody->SetPosition(pos);
+		rigidBody->SetRotation(dQuat(dVec3(0.0, 1.0, 0.0), dPI*0.25));
 
 		GameObject* gameObject = new GameObject;
 		gameObject->SetPhysicsObject(rigidBody);
