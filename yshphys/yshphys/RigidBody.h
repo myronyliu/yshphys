@@ -59,6 +59,8 @@ public:
 	void GetGeometryLocalTransform(dVec3& pos, dQuat& rot) const;
 	void GetGeometryGlobalTransform(dVec3& pos, dQuat& rot) const;
 
+	Material::Type GetMaterial(const dVec3& worldPos) const;
+
 	void SetPosition(const dVec3& x);
 	void SetRotation(const dQuat& q);
 	void SetGeometry(Geometry* geometry, const dVec3& relativePos, const dQuat& relativeRot);
@@ -82,6 +84,7 @@ public:
 	virtual void UpdateAABB();
 
 	virtual void Step(double dt);
+
 protected:
 
 	CollisionGeometry m_geometry;

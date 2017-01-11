@@ -1,9 +1,12 @@
 #include "stdafx.h"
 #include "PhysicsScene.h"
 #include "Force_Constant.h"
+#include "Material.h"
 
 PhysicsScene::PhysicsScene() : m_firstNode(nullptr), m_firstIsland(nullptr)
 {
+	Material::InitializeTables();
+
 	m_physicsNodes = new PhysicsNode[MAX_PHYSICS_NODES];
 
 	for (int i = 0; i < MAX_PHYSICS_NODES - 1; ++i)

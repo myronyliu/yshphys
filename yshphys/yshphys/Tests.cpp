@@ -20,7 +20,7 @@ void Tests::CreateBVTest(Game* game)
 //	geometry->SetDimensions(1.0, 1.0, 1.0);
 
 	dVec3 sceneCenter = dVec3(0.0, 0.0, 0.0);
-	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(8.0);
+	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(4.0);
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 

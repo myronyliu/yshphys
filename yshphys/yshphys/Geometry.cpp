@@ -8,7 +8,7 @@
 #define MIN_SUPPORT_SQR 0.0001
 #define GJK_TERMINATION_RATIO 0.01
 
-Geometry::Geometry()
+Geometry::Geometry() : m_material(Material::Type::WOOD)
 {
 }
 
@@ -29,6 +29,16 @@ dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
 dVec3 Geometry::SupportLocal(const dVec3& v) const
 {
 	return dVec3(0.0, 0.0, 0.0);
+}
+
+Material::Type Geometry::GetMaterialLocal(const dVec3& x) const
+{
+	return m_material;
+}
+
+void Geometry::SetUniformMaterial(Material::Type material)
+{
+	m_material = material;
 }
 
 bool Geometry::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hit) const

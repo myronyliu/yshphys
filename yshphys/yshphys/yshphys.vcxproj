@@ -179,6 +179,7 @@
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyButtonRenamings.h" />
     <ClInclude Include="Mat22.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="PhysicsNode.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="Picker.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="Mat22.cpp" />
     <ClCompile Include="Mat33.cpp" />
     <ClCompile Include="Mat44.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="PhysicsNode.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />

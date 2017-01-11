@@ -86,12 +86,17 @@ void Island::ResolveContacts() const
 		JMinv[i].r0xn0 = contact.body[0]->GetInverseInertia().Transform(J[i].r0xn0);
 		JMinv[i].r1xn1 = contact.body[1]->GetInverseInertia().Transform(J[i].r1xn1);
 
+
+		const double restitution = Material::Restitution(
+			contact.body[0]->GetMaterial(contact.x[0]),
+			contact.body[1]->GetMaterial(contact.x[1]));
+
 		b[i] = -(
 			J[i].n0.Dot(contact.body[0]->GetLinearVelocity()) +
 			J[i].n1.Dot(contact.body[1]->GetLinearVelocity()) +
 			J[i].r0xn0.Dot(contact.body[0]->GetAngularVelocity()) +
 			J[i].r1xn1.Dot(contact.body[1]->GetAngularVelocity())
-			);
+			)*(1.0 + restitution);
 		maxImpulse[i] = 88888888.0;
 	}
 

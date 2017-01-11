@@ -98,8 +98,15 @@ void RigidBody::GetGeometryGlobalTransform(dVec3& pos, dQuat& rot) const
 {
 	rot = m_state.q*m_geometry.rot;
 	pos = m_state.x + rot.Transform(m_geometry.pos);
-
 }
+
+Material::Type RigidBody::GetMaterial(const dVec3& xWorldFrame) const
+{
+	const dVec3 xBodyFrame = (-m_state.q).Transform(xWorldFrame - m_state.x);
+	const dVec3 xGeomFrame = (-m_geometry.rot).Transform(xBodyFrame - m_geometry.pos);
+	return m_geometry.geom->GetMaterialLocal(xGeomFrame);
+}
+
 void RigidBody::SetPosition(const dVec3& x)
 {
 	m_state.x = x;

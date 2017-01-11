@@ -55,6 +55,9 @@
     <Filter Include="Physics\Forces">
       <UniqueIdentifier>{37be4c97-961f-421b-aa84-596a1f1bad72}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Materials">
+      <UniqueIdentifier>{29c84271-2119-4796-9ea4-b8168a562d54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -231,6 +234,9 @@
     <ClInclude Include="Island.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Physics\Materials</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -397,6 +403,9 @@
     </ClCompile>
     <ClCompile Include="Island.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Physics\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
