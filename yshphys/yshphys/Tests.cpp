@@ -39,9 +39,9 @@ void Tests::CreateBVTest(Game* game)
 		const double m = 1.0;
 		rigidBody->SetMass(m);
 		dMat33 I = dMat33::Identity();
-		I(0, 0) = m*r*r / 4.0;
-		I(1, 1) = m*r*r / 4.0;
-		I(2, 2) = m*h*h / 3.0;
+		I(0, 0) = m*(3.0*r*r + 4.0*h*h) / 12.0;
+		I(1, 1) = m*(3.0*r*r + 4.0*h*h) / 12.0;
+		I(2, 2) = m*r*r / 2.0;
 		rigidBody->SetInertia(I);
 
 		dVec3 alpha(
