@@ -69,6 +69,7 @@ void Island::ResolveContacts() const
 	double minImpulse[MAX_CONTACTS];
 	double maxImpulse[MAX_CONTACTS];
 	double impulse[MAX_CONTACTS];
+	dVec3 vSlip[MAX_CONTACTS];
 	std::memset(minImpulse, 0, sizeof(minImpulse));
 
 	const int nContacts = (int)m_contacts.size();
@@ -76,28 +77,52 @@ void Island::ResolveContacts() const
 	for (int i = 0; i < nContacts; ++i)
 	{
 		const Contact& contact = m_contacts[i];
+
+		const dVec3 pos[2] = { contact.body[0]->GetPosition(), contact.body[1]->GetPosition() };
+
 		J[i].n0 = contact.n[0];
 		J[i].n1 = contact.n[1];
-		J[i].r0xn0 = (contact.x[0] - contact.body[0]->GetPosition()).Cross(contact.n[0]);
-		J[i].r1xn1 = (contact.x[1] - contact.body[1]->GetPosition()).Cross(contact.n[1]);
+		J[i].r0xn0 = (contact.x[0] - pos[0]).Cross(contact.n[0]);
+		J[i].r1xn1 = (contact.x[1] - pos[1]).Cross(contact.n[1]);
 
 		JMinv[i].n0 = J[i].n0.Scale(contact.body[0]->GetInverseMass());
 		JMinv[i].n1 = J[i].n1.Scale(contact.body[1]->GetInverseMass());
 		JMinv[i].r0xn0 = contact.body[0]->GetInverseInertia().Transform(J[i].r0xn0);
 		JMinv[i].r1xn1 = contact.body[1]->GetInverseInertia().Transform(J[i].r1xn1);
 
-
 		const double restitution = Material::Restitution(
 			contact.body[0]->GetMaterial(contact.x[0]),
 			contact.body[1]->GetMaterial(contact.x[1]));
 
-		b[i] = -(
-			J[i].n0.Dot(contact.body[0]->GetLinearVelocity()) +
-			J[i].n1.Dot(contact.body[1]->GetLinearVelocity()) +
-			J[i].r0xn0.Dot(contact.body[0]->GetAngularVelocity()) +
-			J[i].r1xn1.Dot(contact.body[1]->GetAngularVelocity())
-			)*(1.0 + restitution);
+		const dVec3 vLin[2] =
+		{
+			contact.body[0]->GetLinearVelocity(),
+			contact.body[1]->GetLinearVelocity()
+		};
+		const dVec3 vAng[2] =
+		{
+			contact.body[0]->GetAngularVelocity(),
+			contact.body[1]->GetAngularVelocity()
+		};
+
+		const double vImpact =
+			J[i].n0.Dot(vLin[0]) +
+			J[i].n1.Dot(vLin[1]) +
+			J[i].r0xn0.Dot(vAng[0]) +
+			J[i].r1xn1.Dot(vAng[1]);
+
+		b[i] = -vImpact*(1.0 + restitution);
 		maxImpulse[i] = 88888888.0;
+
+		// Check for slipping so that we can apply friction
+
+		const dVec3 v[2] =
+		{
+			vLin[0] + vAng[0].Cross(contact.x[0] - pos[0]),
+			vLin[1] + vAng[1].Cross(contact.x[1] - pos[1])
+		};
+		const dVec3 v1_v0 = v[1] - v[0];
+		vSlip[i] = v1_v0 - contact.n[0].Scale(v1_v0.Dot(contact.n[0]));
 	}
 
 	for (int i = 0; i < nContacts; ++i)
@@ -123,7 +148,7 @@ void Island::ResolveContacts() const
 		contact.body[0]->ApplyImpulse(contact.n[0].Scale(impulse[i]), contact.x[0]);
 		contact.body[1]->ApplyImpulse(contact.n[1].Scale(impulse[i]), contact.x[1]);
 
-		const double k = 16.0;
+		const double k = 8.0;
 
 		const dVec3 d = contact.n[0].Scale((contact.x[1] - contact.x[0]).Dot(contact.n[0]));
 
@@ -154,7 +179,25 @@ void Island::ResolveContacts() const
 	for (int i = 0; i < nContacts; ++i)
 	{
 		const Contact& contact = m_contacts[i];
-		contact.body[0]->ApplyForce(contact.n[0].Scale(force[i]), contact.x[0]);
-		contact.body[1]->ApplyForce(contact.n[1].Scale(force[i]), contact.x[1]);
+
+		dVec3 F[2] =
+		{
+			contact.n[0].Scale(force[i]),
+			contact.n[1].Scale(force[i])
+		};
+
+		if ((float)vSlip[i].Dot(vSlip[i]) > 0.0f)
+		{
+			const FrictionCoefficients mu = Material::Friction(
+				contact.body[0]->GetMaterial(contact.x[0]),
+				contact.body[1]->GetMaterial(contact.x[1]));
+
+			const dVec3 friction0 = vSlip[i].Scale(mu.uKinetic * force[i] / sqrt(vSlip[i].Dot(vSlip[i])));
+			F[0] = F[0] + friction0;
+			F[1] = F[1] - friction0;
+		}
+
+		contact.body[0]->ApplyForce(F[0], contact.x[0]);
+		contact.body[1]->ApplyForce(F[1], contact.x[1]);
 	}
 }
