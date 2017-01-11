@@ -63,7 +63,7 @@ void Island::ResolveContacts() const
 	JRow J[MAX_CONTACTS];
 	JRow JMinv[MAX_CONTACTS];
 
-	double A[MAX_CONTACTS*MAX_CONTACTS];
+	double JMJ[MAX_CONTACTS*MAX_CONTACTS];
 	double b[MAX_CONTACTS];
 
 	double minImpulse[MAX_CONTACTS];
@@ -99,18 +99,18 @@ void Island::ResolveContacts() const
 	{
 		for (int j = i; j < nContacts; ++j)
 		{
-			double Aij =
+			double jmj =
 				JMinv[i].n0.Dot(J[i].n0) +
 				JMinv[i].n1.Dot(J[i].n1) +
 				JMinv[i].r0xn0.Dot(J[j].r0xn0) +
 				JMinv[i].r1xn1.Dot(J[j].r1xn1);
 
-			A[nContacts*i + j] = Aij;
-			A[nContacts*j + i] = Aij;
+			JMJ[nContacts*i + j] = jmj;
+			JMJ[nContacts*j + i] = jmj;
 		}
 	}
 
-	MathUtils::GaussSeidel(A, b, minImpulse, maxImpulse, nContacts, impulse);
+	MathUtils::GaussSeidel(JMJ, b, minImpulse, maxImpulse, nContacts, impulse);
 
 	for (int i = 0; i < nContacts; ++i)
 	{
@@ -118,11 +118,47 @@ void Island::ResolveContacts() const
 		contact.body[0]->ApplyImpulse(contact.n[0].Scale(impulse[i]), contact.x[0]);
 		contact.body[1]->ApplyImpulse(contact.n[1].Scale(impulse[i]), contact.x[1]);
 
-		const double k = 16.0;
+		const double k = 4.0;
 
 		const dVec3 d = contact.n[0].Scale((contact.x[1] - contact.x[0]).Dot(contact.n[0]));
 
 		contact.body[0]->ApplyForce(d.Scale(contact.body[0]->GetMass()*k), contact.x[0]);
 		contact.body[1]->ApplyForce(-d.Scale(contact.body[1]->GetMass()*k), contact.x[1]);
+	}
+
+	double* const minForce = minImpulse;
+	double* const maxForce = maxImpulse;
+	double* const force = impulse;
+
+	for (int i = 0; i < nContacts; ++i)
+	{
+		const Contact& contact = m_contacts[i];
+		J[i].n0 = contact.n[0];
+		J[i].n1 = contact.n[1];
+		J[i].r0xn0 = (contact.x[0] - contact.body[0]->GetPosition()).Cross(contact.n[0]);
+		J[i].r1xn1 = (contact.x[1] - contact.body[1]->GetPosition()).Cross(contact.n[1]);
+
+		JMinv[i].n0 = J[i].n0.Scale(contact.body[0]->GetInverseMass());
+		JMinv[i].n1 = J[i].n1.Scale(contact.body[1]->GetInverseMass());
+		JMinv[i].r0xn0 = contact.body[0]->GetInverseInertia().Transform(J[i].r0xn0);
+		JMinv[i].r1xn1 = contact.body[1]->GetInverseInertia().Transform(J[i].r1xn1);
+
+		const dVec3 g(0.0, 0.0, -10.0);
+		const dVec3 mg0 = g.Scale(contact.body[0]->GetMass());
+		const dVec3 mg1 = g.Scale(contact.body[1]->GetMass());
+
+		b[i] = -(
+			JMinv[i].n0.Dot(mg0) +
+			JMinv[i].n1.Dot(mg1)
+			);
+	}
+
+	MathUtils::GaussSeidel(JMJ, b, minForce, maxForce, nContacts, force);
+
+	for (int i = 0; i < nContacts; ++i)
+	{
+		const Contact& contact = m_contacts[i];
+		contact.body[0]->ApplyForce(contact.n[0].Scale(force[i]), contact.x[0]);
+		contact.body[1]->ApplyForce(contact.n[1].Scale(force[i]), contact.x[1]);
 	}
 }
