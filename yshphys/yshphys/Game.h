@@ -39,7 +39,7 @@ protected:
 	unsigned int m_tInput;
 
 	std::stack<FreedGameNode> m_freedNodeStack;
-	GameNode m_gameNodes[MAX_PHYSICS_NODES];
+	GameNode* m_gameNodes;
 	GameNode* m_firstNode;
 };
 

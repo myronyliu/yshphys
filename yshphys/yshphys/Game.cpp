@@ -8,6 +8,8 @@ Game::Game() :
 	m_dtInput(15), m_tInput(0),
 	m_firstNode(nullptr)
 {
+	m_gameNodes = new GameNode[MAX_GAME_NODES];
+
 	for (int i = 0; i < MAX_GAME_NODES - 1; ++i)
 	{
 		m_gameNodes[i].PrependTo(&m_gameNodes[i + 1]);
@@ -29,6 +31,7 @@ Game::Game() :
 
 Game::~Game()
 {
+	delete m_gameNodes;
 }
 
 void Game::AddGameObject(GameObject* gameObject)

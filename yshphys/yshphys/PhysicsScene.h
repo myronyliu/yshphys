@@ -38,7 +38,7 @@ protected:
 	void ClearIslands();
 
 	std::stack<FreedPhysicsNode> m_freedNodeStack;
-	PhysicsNode m_physicsNodes[MAX_PHYSICS_NODES];
+	PhysicsNode* m_physicsNodes;
 	PhysicsNode* m_firstNode;
 
 	BVTree m_bvTree;

@@ -92,6 +92,8 @@ FreedRenderNode::~FreedRenderNode()
 RenderScene::RenderScene()
 	: m_firstNode(nullptr)
 {
+	m_renderNodes = new RenderNode[MAX_RENDER_NODES];
+
 	for (int i = 0; i < MAX_RENDER_NODES- 1; ++i)
 	{
 		m_renderNodes[i].PrependTo(&m_renderNodes[i + 1]);
@@ -113,6 +115,7 @@ RenderScene::RenderScene()
 
 RenderScene::~RenderScene()
 {
+	delete[] m_renderNodes;
 }
 
 DebugRenderer& RenderScene::DebugDrawSystem()

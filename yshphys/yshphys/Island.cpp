@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Island.h"
 
-#define MAX_CONTACTS 4 
+#define MAX_CONTACTS 64 
 
 Island::Island() :
 	m_prev(this),

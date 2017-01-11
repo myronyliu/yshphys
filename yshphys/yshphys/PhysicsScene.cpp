@@ -4,6 +4,8 @@
 
 PhysicsScene::PhysicsScene() : m_firstNode(nullptr), m_firstIsland(nullptr)
 {
+	m_physicsNodes = new PhysicsNode[MAX_PHYSICS_NODES];
+
 	for (int i = 0; i < MAX_PHYSICS_NODES - 1; ++i)
 	{
 		m_physicsNodes[i].PrependTo(&m_physicsNodes[i + 1]);
@@ -25,6 +27,7 @@ PhysicsScene::PhysicsScene() : m_firstNode(nullptr), m_firstIsland(nullptr)
 
 PhysicsScene::~PhysicsScene()
 {
+	delete[] m_physicsNodes;
 }
 
 PhysicsRayCastHit PhysicsScene::RayCast(const Ray& ray) const
