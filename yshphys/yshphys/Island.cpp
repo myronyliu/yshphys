@@ -117,5 +117,12 @@ void Island::ResolveContacts() const
 		const Contact& contact = m_contacts[i];
 		contact.body[0]->ApplyImpulse(contact.n[0].Scale(impulse[i]), contact.x[0]);
 		contact.body[1]->ApplyImpulse(contact.n[1].Scale(impulse[i]), contact.x[1]);
+
+		const double k = 16.0;
+
+		const dVec3 d = contact.n[0].Scale((contact.x[1] - contact.x[0]).Dot(contact.n[0]));
+
+		contact.body[0]->ApplyForce(d.Scale(contact.body[0]->GetMass()*k), contact.x[0]);
+		contact.body[1]->ApplyForce(-d.Scale(contact.body[1]->GetMass()*k), contact.x[1]);
 	}
 }

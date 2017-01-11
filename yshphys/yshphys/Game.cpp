@@ -4,8 +4,8 @@
 #include <SDL.h>
 
 Game::Game() :
-	m_dtPhys(33), m_tPhysics(0),
-	m_dtInput(33), m_tInput(0),
+	m_dtPhys(15), m_tPhysics(0),
+	m_dtInput(15), m_tInput(0),
 	m_firstNode(nullptr)
 {
 	for (int i = 0; i < MAX_GAME_NODES - 1; ++i)

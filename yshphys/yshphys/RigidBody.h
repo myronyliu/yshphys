@@ -47,8 +47,9 @@ public:
 	RigidBody();
 	virtual ~RigidBody();
 
-	dMat33 GetInverseInertia() const;
+	double GetMass() const;
 	double GetInverseMass() const;
+	dMat33 GetInverseInertia() const;
 
 	dVec3 GetPosition() const;
 	dQuat GetRotation() const;

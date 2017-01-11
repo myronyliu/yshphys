@@ -10,10 +10,10 @@
 void Tests::CreateBVTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
-	Capsule* geometry = new Capsule();
-//	Cylinder* geometry = new Cylinder();
+//	Capsule* geometry = new Capsule();
+	Cylinder* geometry = new Cylinder();
 	geometry->SetRadius(1.0);
-	geometry->SetHalfHeight(1.0);
+	geometry->SetHalfHeight(4.0);
 //	Box* geometry = new Box();
 //	geometry->SetDimensions(1.0, 1.0, 1.0);
 
@@ -26,8 +26,8 @@ void Tests::CreateBVTest(Game* game)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
-		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
-//		mesh->CreateCylinder(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateCylinder(1.0f, 4.0f, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
 		renderObj->SetShader(shader);
@@ -35,7 +35,9 @@ void Tests::CreateBVTest(Game* game)
 		RigidBody* rigidBody = new RigidBody;
 		rigidBody->SetGeometry(geometry, dVec3(0.0, 0.0, 0.0), dQuat::Identity());
 		rigidBody->SetMass(1.0);
-		rigidBody->SetInertia(dMat33::Identity().Scale(100.0));
+		dMat33 I = dMat33::Identity();
+		I(2, 2) *= 4.0;
+		rigidBody->SetInertia(I);
 
 		dVec3 alpha(
 			(double)std::rand() / (double)RAND_MAX,

@@ -54,6 +54,11 @@ RigidBody::~RigidBody()
 {
 }
 
+double RigidBody::GetMass() const
+{
+	return m_inertia.m;
+}
+
 double RigidBody::GetInverseMass() const
 {
 	return m_inertia.minv;
@@ -322,8 +327,8 @@ void RigidBody::ResolveForces(double dt)
 		RigidBody::State& stateDerivative = stateDerivatives[i];
 		ZeroState(stateDerivative);
 
-		stateDerivative.P = m_dP;
-		stateDerivative.L = m_dL;
+		stateDerivative.P = m_F;
+		stateDerivative.L = m_T;
 
 		Compute_xDot(state.P, stateDerivative.x);
 		Compute_qDot(state.q, state.L, stateDerivative.q);

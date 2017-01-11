@@ -550,7 +550,7 @@ void EPAHull::SanityCheck() const
 
 			const dVec3 v = AB.Scale(1.0 / sqrt(AB_AB));
 
-			assert((float)n0.Cross(n1).Dot(v) >= 0.0f);
+//			assert((float)n0.Cross(n1).Dot(v) >= 0.0f);
 		}
 	}
 
