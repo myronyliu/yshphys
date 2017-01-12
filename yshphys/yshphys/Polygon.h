@@ -10,6 +10,9 @@ public:
 
 	void AddVertex(const dVec2& vertex);
 
+	// The following function assumes both polygons are convex
+	Polygon Intersect(const Polygon& poly) const;
+
 private:
 	int m_nVertices;
 	dVec2 m_vertices[MAX_POLYGON_VERTICES];
