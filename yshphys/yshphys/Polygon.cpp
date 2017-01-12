@@ -39,6 +39,15 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 				iPeak= i;
 			}
 		}
+
+		for (int i = iTrough; i != iPeak; i = (i + 1) % n)
+		{
+			assert(p[i].y <= p[(i + 1) % n].y);
+		}
+		for (int i = iTrough; i != iPeak; i = (i - 1 + n) % n)
+		{
+			assert(p[i].y <= p[(i - 1 + n) % n].y);
+		}
 	};
 
 	int iTrough0, iPeak0;
@@ -68,6 +77,5 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 
 	while (true)
 	{
-//		if 
 	}
 }
