@@ -10,6 +10,8 @@ public:
 
 	void AddVertex(const dVec2& vertex);
 
+	Polygon PruneColinearVertices() const;
+
 	// The following function assumes both polygons are convex
 	Polygon Intersect(const Polygon& poly) const;
 
