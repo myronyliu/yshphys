@@ -8,7 +8,7 @@ struct Polygon
 public:
 	Polygon();
 
-	void AddVertex(const dVec2& vertex);
+	void AddVertex(const fVec2& vertex);
 
 	Polygon PruneColinearVertices() const;
 
@@ -17,5 +17,19 @@ public:
 
 private:
 	int m_nVertices;
-	dVec2 m_vertices[MAX_POLYGON_VERTICES];
+	fVec2 m_vertices[MAX_POLYGON_VERTICES];
+
+	struct BoundingSquare
+	{
+		fVec2 min, max;
+	}
+	m_boundingSquare;
+
+	struct Edge
+	{
+		fVec2 vert;
+		Edge* prev;
+		Edge* next;
+	};
+	void BuildEdges(Edge* edges) const;
 };
