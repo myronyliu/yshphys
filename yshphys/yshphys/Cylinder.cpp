@@ -29,20 +29,12 @@ void Cylinder::SetRadius(double radius)
 
 dVec3 Cylinder::SupportLocal(const dVec3& v) const
 {
-	double xySqr = v.x*v.x + v.y*v.y;
+	const double phi = atan2(v.y, v.x);
 
-	if (xySqr < FLT_EPSILON)
-	{
-		return dVec3(0.0, 0.0, m_halfHeight*MathUtils::sgn(v.z));
-	}
-	else
-	{
-		double xy = sqrt(xySqr);
-		return dVec3(
-			m_radius*v.x / xy,
-			m_radius*v.y / xy,
-			m_halfHeight*MathUtils::sgn(v.z));
-	}
+	return dVec3(
+		m_radius*cos(phi),
+		m_radius*sin(phi),
+		m_halfHeight*MathUtils::sgn(v.z));
 }
 
 Polygon Cylinder::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const

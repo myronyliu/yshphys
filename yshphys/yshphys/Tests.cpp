@@ -29,7 +29,7 @@ void Tests::CreateBVTest(Game* game)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
-//		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateCapsule((float)r, (float)h, fVec3(1.0f, 1.0f, 1.0f));
 		mesh->CreateCylinder((float)r, (float)h, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
