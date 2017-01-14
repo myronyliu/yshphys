@@ -69,8 +69,15 @@ public:
 	void SetInertia(const dQuat& principleAxes, const dVec3& inertia);
 
 	void ApplyBruteForce(Force* force);
+
 	void ApplyForce(const dVec3& force, const dVec3& worldPos);
 	void ApplyImpulse(const dVec3& impulse, const dVec3& worldPos);
+
+	void ApplyForceAtCOM(const dVec3& force) { m_F = m_F + force; }
+	void ApplyImpulseAtCOM(const dVec3& impulse) { m_dP = m_dP + impulse; }
+
+	dVec3 GetForce() const { return m_F; }
+	dVec3 GetTorque() const { return m_T; }
 
 	void SetIsland(Island* island)
 	{

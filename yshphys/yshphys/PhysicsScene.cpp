@@ -267,9 +267,14 @@ void PhysicsScene::ComputeContacts()
 
 		dVec3 x0, x1, n0, n1;
 
-//		if (Geometry::Intersect(geom0, pos0, rot0, contact.x[0], contact.n[0], geom1, pos1, rot1, contact.x[1], contact.n[1]))
 		if (Geometry::Intersect(geom0, pos0, rot0, x0, n0, geom1, pos1, rot1, x1, n1))
 		{
+			const double k = 64.0;
+			const dVec3 d = n0.Scale((x1 - x0).Dot(n0));
+
+			contact.body[0]->ApplyForceAtCOM(d.Scale(contact.body[0]->GetMass()*k));
+			contact.body[1]->ApplyForceAtCOM(-d.Scale(contact.body[1]->GetMass()*k));
+
 			contact.n[0] = -n0;
 			contact.n[1] = -n1;
 
@@ -410,17 +415,22 @@ void PhysicsScene::ClearIslands()
 
 void PhysicsScene::Step(double dt)
 {
+	PhysicsNode* node = m_firstNode;
+	while (node != nullptr)
+	{
+		RigidBody* body = ((RigidBody*)node->GetPhysicsObject());
+		body->ApplyForceAtCOM(dVec3(0.0, 0.0, -9.8).Scale(body->GetMass()));
+		node = node->GetNext();
+	}
+
 	ComputeContacts();
 	ResolveContacts();
 	ClearIslands();
 
-	PhysicsNode* node = m_firstNode;
+	node = m_firstNode;
 	while (node != nullptr)
 	{
-		Force_Constant* g = new Force_Constant();
-		g->F = dVec3(0.0, 0.0, -10.0);
-		g->offset = dVec3(0.0, 0.0, 0.0);
-		((RigidBody*)node->GetPhysicsObject())->ApplyBruteForce(g);
+		RigidBody* body = ((RigidBody*)node->GetPhysicsObject());
 		node->GetPhysicsObject()->Step(dt);
 		node = node->GetNext();
 	}

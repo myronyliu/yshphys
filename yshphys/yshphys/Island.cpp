@@ -164,13 +164,11 @@ void Island::ResolveContacts() const
 	{
 		const Contact& contact = m_contacts[i];
 
-		const dVec3 g(0.0, 0.0, -10.0);
-		const dVec3 mg0 = g.Scale(contact.body[0]->GetMass());
-		const dVec3 mg1 = g.Scale(contact.body[1]->GetMass());
-
 		b[i] = -(
-			JMinv[i].n0.Dot(mg0) +
-			JMinv[i].n1.Dot(mg1)
+			JMinv[i].n0.Dot(contact.body[0]->GetForce()) +
+			JMinv[i].n1.Dot(contact.body[1]->GetForce()) +
+			JMinv[i].r0xn0.Dot(contact.body[0]->GetTorque()) +
+			JMinv[i].r1xn1.Dot(contact.body[1]->GetTorque())
 			);
 	}
 

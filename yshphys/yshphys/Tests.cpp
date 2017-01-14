@@ -21,11 +21,11 @@ void Tests::CreateBVTest(Game* game)
 
 //	dVec3 sceneCenter = dVec3(8.0, 0.0, 0.0);
 	dVec3 sceneCenter = dVec3(0.0, 0.0, 0.0);
-	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(8.0);
+	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(0.0);
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
