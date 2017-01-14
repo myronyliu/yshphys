@@ -217,6 +217,34 @@ void PhysicsScene::RemovePhysicsObject(RigidBody* physicsObject)
 	}
 }
 
+dQuat CreateCoordinateSystem(dVec3& xAxis, dVec3& yAxis, const dVec3& zAxis)
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		const int j = (i + 1) % 3;
+		const int k = (i + 2) % 3;
+
+		if (abs(zAxis[i]) <= abs(zAxis[j]) && abs(zAxis[i]) <= abs(zAxis[k]))
+		{
+			yAxis;
+			yAxis[i] = 0.0;
+			yAxis[j] = zAxis[k];
+			yAxis[k] = -zAxis[j];
+			yAxis.Scale(1.0 / sqrt(zAxis[j] * zAxis[j] + zAxis[k] * zAxis[k]));
+
+			xAxis = yAxis.Cross(zAxis);
+
+			dMat33 R;
+			R.SetColumn(0, xAxis);
+			R.SetColumn(1, yAxis);
+			R.SetColumn(2, zAxis);
+			return dQuat(R);
+		}
+	}
+	assert(false);
+	return dQuat();
+}
+
 void PhysicsScene::ComputeContacts()
 {
 	assert(m_firstIsland == nullptr);
@@ -237,73 +265,101 @@ void PhysicsScene::ComputeContacts()
 		contact.body[0]->GetGeometryGlobalTransform(pos0, rot0);
 		contact.body[1]->GetGeometryGlobalTransform(pos1, rot1);
 
-		int xxx = 0;
+		dVec3 x0, x1, n0, n1;
 
-		if (Geometry::Intersect(geom0, pos0, rot0, contact.x[0], contact.n[0], geom1, pos1, rot1, contact.x[1], contact.n[1]))
+//		if (Geometry::Intersect(geom0, pos0, rot0, contact.x[0], contact.n[0], geom1, pos1, rot1, contact.x[1], contact.n[1]))
+		if (Geometry::Intersect(geom0, pos0, rot0, x0, n0, geom1, pos1, rot1, x1, n1))
 		{
-			contact.n[0] = -contact.n[0];
-			contact.n[1] = -contact.n[1];
+			contact.n[0] = -n0;
+			contact.n[1] = -n1;
 
-			Island* island[2];
-			island[0] = contact.body[0]->GetIsland();
-			island[1] = contact.body[1]->GetIsland();
+			dVec3 xHat, yHat;
 
-			if (island[0] == nullptr && island[1] == nullptr)
+			dQuat qPlane0 = CreateCoordinateSystem(xHat,yHat,n0);
+			dVec3 xPlane = (x0 + x1).Scale(0.5);
+
+			dMat33 RPlane1;
+			RPlane1.SetColumn(0, -xHat);
+			RPlane1.SetColumn(1, yHat);
+			RPlane1.SetColumn(2, -n0);
+			dQuat qPlane1(RPlane1);
+
+			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, qPlane0);
+			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, qPlane1);
+
+			Polygon intersectionPoly = poly0.Intersect(poly1.ReflectX());
+			int nVerts;
+			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
+
+			for (int i = 0; i < nVerts; ++i)
 			{
-				Island* newIsland = new Island();
-				newIsland->AddContact(contact);
+				dVec3 x = xPlane + qPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+				contact.x[0] = x;
+				contact.x[1] = x;
 
-				if (m_firstIsland == nullptr)
+				// TODO: The following logic does redundant work, but I don't feel like pulling it out of the loop at the moment for convenience
+
+				Island* island[2];
+				island[0] = contact.body[0]->GetIsland();
+				island[1] = contact.body[1]->GetIsland();
+
+				if (island[0] == nullptr && island[1] == nullptr)
 				{
-					m_firstIsland = newIsland;
+					Island* newIsland = new Island();
+					newIsland->AddContact(contact);
+
+					if (m_firstIsland == nullptr)
+					{
+						m_firstIsland = newIsland;
+					}
+
+					// Add the new island to the end of the "ring"
+
+					newIsland->PrependTo(m_firstIsland);
+				}
+				else if (island[0] == nullptr)
+				{
+					island[1]->AddContact(contact);
+				}
+				else if (island[1] == nullptr)
+				{
+					island[0]->AddContact(contact);
+				}
+				else if (island[0] == island[1])
+				{
+					island[0]->AddContact(contact);
+				}
+				else // both bodies are already associated with islands. Then we must merge the islands
+				{
+					if (m_firstIsland == island[1])
+					{
+						assert(island[1]->m_next != island[1]);
+						m_firstIsland = island[1]->m_next;
+					}
+					island[0]->Merge(island[1]);
 				}
 
-				// Add the new island to the end of the "ring"
-
-				newIsland->PrependTo(m_firstIsland);
-			}
-			else if (island[0] == nullptr)
-			{
-				island[1]->AddContact(contact);
-			}
-			else if (island[1] == nullptr)
-			{
-				island[0]->AddContact(contact);
-			}
-			else if (island[0] == island[1])
-			{
-				island[0]->AddContact(contact);
-			}
-			else // both bodies are already associated with islands. Then we must merge the islands
-			{
-				if (m_firstIsland == island[1])
+				if (m_firstIsland != nullptr)
 				{
-					assert(island[1]->m_next != island[1]);
-					m_firstIsland = island[1]->m_next;
+					int n0 = 0;
+					int n1 = 0;
+
+					Island* is = m_firstIsland;
+					do
+					{
+						is = is->m_next;
+						n0++;
+					} while (is != m_firstIsland);
+
+					is = m_firstIsland;
+					do
+					{
+						is = is->m_prev;
+						n1++;
+					} while (is != m_firstIsland);
+
+					assert(n0 == n1);
 				}
-				island[0]->Merge(island[1]);
-			}
-
-			if (m_firstIsland != nullptr)
-			{
-				int n0 = 0;
-				int n1 = 0;
-
-				Island* is = m_firstIsland;
-				do
-				{
-					is = is->m_next;
-					n0++;
-				} while (is != m_firstIsland);
-
-				is = m_firstIsland;
-				do
-				{
-					is = is->m_prev;
-					n1++;
-				} while (is != m_firstIsland);
-
-				assert(n0 == n1);
 			}
 		}
 	}
@@ -372,14 +428,77 @@ void PhysicsScene::Step(double dt)
 
 void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 {
-	const BVNode* root = m_bvTree.Root();
-	assert(root->GetParent() == nullptr);
-	if (!root)
+#if 1 
+	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
+	for (BVNodePair pair : intersectingLeaves)
 	{
-		return;
+		RigidBody* body0 = (RigidBody*)pair.nodes[0]->GetContent();
+		RigidBody* body1 = (RigidBody*)pair.nodes[1]->GetContent();
+
+		Geometry* geom0 = body0->GetGeometry();
+		Geometry* geom1 = body1->GetGeometry();
+
+		dVec3 pos0, pos1;
+		dQuat rot0, rot1;
+
+		body0->GetGeometryGlobalTransform(pos0, rot0);
+		body1->GetGeometryGlobalTransform(pos1, rot1);
+
+		dVec3 x0, x1, n0, n1;
+
+		if (Geometry::Intersect(geom0, pos0, rot0, x0, n0, geom1, pos1, rot1, x1, n1))
+		{
+			dVec3 xHat, yHat;
+
+			dQuat qPlane0 = CreateCoordinateSystem(xHat, yHat, n0);
+			dVec3 xPlane = (x0 + x1).Scale(0.5);
+
+			dMat33 RPlane1;
+			RPlane1.SetColumn(0, -xHat);
+			RPlane1.SetColumn(1, yHat);
+			RPlane1.SetColumn(2, -n0);
+			dQuat qPlane1(RPlane1);
+
+			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, qPlane0);
+			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, qPlane1);
+
+			dMat33 R0(qPlane0);
+			dMat33 R1(qPlane1);
+
+			Polygon intersectionPoly = poly0.Intersect(poly1.ReflectX());
+
+			int nVerts;
+			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
+
+			for (Polygon poly : { intersectionPoly })
+			{
+				verts = poly.GetVertices(nVerts);
+				for (int i = 0; i < nVerts; ++i)
+				{
+					const double k = 0.05f;
+					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
+				}
+			}
+//			verts = poly0.GetVertices(nVerts);
+//			for (int i = 0; i < nVerts; ++i)
+//			{
+//				const double k = 0.05f;
+//				const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+//				renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+//			}
+//			verts = poly1.ReflectX().GetVertices(nVerts);
+//			for (int i = 0; i < nVerts; ++i)
+//			{
+//				const double k = 0.05f;
+//				const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+//				renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+//			}
+		}
 	}
 
-	std::vector<BVNodePair> intersectingLeaves = root->FindIntersectingLeaves();
+#else
+	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair: intersectingLeaves)
 	{
 		RigidBody* rb0 = (RigidBody*)pair.nodes[0]->GetContent();
@@ -426,32 +545,7 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 			renderer->DrawBox(0.01f, 0.01f, 0.5f, fVec3(pt1 + n1.Scale(0.5)), fQuat(qAlign1), c, false, false);
 		}
 	}
+#endif
 
-	std::stack<const BVNode*> nodeStack;
-	nodeStack.push(root);
-	while (!nodeStack.empty())
-	{
-		const BVNode* node = nodeStack.top();
-		nodeStack.pop();
-
-		const AABB aabb = node->GetAABB();
-
-		const fVec3 aabbCenter(
-			float(aabb.max.x + aabb.min.x)*0.5f,
-			float(aabb.max.y + aabb.min.y)*0.5f,
-			float(aabb.max.z + aabb.min.z)*0.5f);
-
-		renderer->DrawBox(
-			float(aabb.max.x - aabb.min.x)*0.5f,
-			float(aabb.max.y - aabb.min.y)*0.5f,
-			float(aabb.max.z - aabb.min.z)*0.5f,
-			aabbCenter, fQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), true
-		);
-
-		if (!node->IsLeaf())
-		{
-			nodeStack.push(node->GetLeftChild());
-			nodeStack.push(node->GetRightChild());
-		}
-	}
+	m_bvTree.DebugDraw(renderer);
 }

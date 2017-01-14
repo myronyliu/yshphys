@@ -30,12 +30,17 @@ Quat_t<T>::Quat_t(const Mat33_t<T>& R)
 {
 	// https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
 	const T t(R(0, 0) + R(1, 1) + R(2, 2));
-	const T r(sqrt((T)1.0 + t));
-	const T s((T)0.5 / r);
+	const T r(sqrt(std::max((T)0.0, (T)1.0 + t)));
 	w = (T)0.5*r;
-	x = (R(2, 1) - R(1, 2))*s;
-	y = (R(0, 2) - R(2, 0))*s;
-	z = (R(1, 0) - R(0, 1))*s;
+	x = std::copysign(
+		(T)0.5*(T)sqrt(std::max((T)0.0, (T)1.0 + R(0, 0) - R(1, 1) - R(2, 2))),
+		R(2, 1) - R(1, 2));
+	y = std::copysign(
+		(T)0.5*(T)sqrt(std::max((T)0.0, (T)1.0 - R(0, 0) + R(1, 1) - R(2, 2))),
+		R(0, 2) - R(2, 0));
+	z = std::copysign(
+		(T)0.5*(T)sqrt(std::max((T)0.0, (T)1.0 - R(0, 0) - R(1, 1) + R(2, 2))),
+		R(1, 0) - R(0, 1));
 }
 
 template <class T> template <class S>

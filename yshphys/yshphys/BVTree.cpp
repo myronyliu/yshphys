@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "BVTree.h"
+#include "DebugRenderer.h"
 
 BVTree::BVTree() : m_iRoot(INVALID_BVNODEINDEX), m_iFirst(INVALID_BVNODEINDEX)
 {
@@ -211,4 +212,41 @@ bool BVTree::DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content)
 	newLeaf->SetContent(content);
 
 	return true;
+}
+
+void BVTree::DebugDraw(DebugRenderer* renderer) const
+{
+	const BVNode* root = Root();
+	if (!root)
+	{
+		return;
+	}
+
+	std::stack<const BVNode*> nodeStack;
+	nodeStack.push(Root());
+	while (!nodeStack.empty())
+	{
+		const BVNode* node = nodeStack.top();
+		nodeStack.pop();
+
+		const AABB aabb = node->GetAABB();
+
+		const fVec3 aabbCenter(
+			float(aabb.max.x + aabb.min.x)*0.5f,
+			float(aabb.max.y + aabb.min.y)*0.5f,
+			float(aabb.max.z + aabb.min.z)*0.5f);
+
+		renderer->DrawBox(
+			float(aabb.max.x - aabb.min.x)*0.5f,
+			float(aabb.max.y - aabb.min.y)*0.5f,
+			float(aabb.max.z - aabb.min.z)*0.5f,
+			aabbCenter, fQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), true
+		);
+
+		if (!node->IsLeaf())
+		{
+			nodeStack.push(node->GetLeftChild());
+			nodeStack.push(node->GetRightChild());
+		}
+	}
 }

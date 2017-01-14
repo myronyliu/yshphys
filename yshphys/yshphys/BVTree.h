@@ -3,6 +3,8 @@
 
 #define MAX_BV_NODES (1<<12)
 
+class DebugRenderer;
+
 struct FreedBVNode
 {
 	unsigned int m_iNode;
@@ -22,6 +24,8 @@ public:
 	// Return value is false if we are out of freeNodes
 	bool LeftInsertNewLeaf(const AABB& aabb, BVNodeContent* content);
 	bool DeepInsertNewLeaf(const AABB& aabb, BVNodeContent* content);
+
+	void DebugDraw(DebugRenderer* renderer) const;
 
 protected:
 

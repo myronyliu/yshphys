@@ -475,6 +475,13 @@ bool EPAHull::ComputeIntersection(dVec3& pt0, dVec3& n0, dVec3& pt1, dVec3& n1)
 
 void EPAHull::SanityCheck() const
 {
+	// Verify that the horizon forms a cycle and that the horizon has no "coinciding" edges
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
+		assert(std::find(m_horizonEdges, m_horizonEdges + m_nHorizonEdges, m_horizonEdges[i]->twin) == m_horizonEdges + m_nHorizonEdges);
+	}
+
 	int nF = 0;
 	int nHE = 0;
 
@@ -526,13 +533,6 @@ void EPAHull::SanityCheck() const
 
 	// Verify EULER'S CHARACTERISTIC
 	assert(nV - nE + nF == 2);
-
-	// Verify that the horizon forms a cycle and that the horizon has no "coinciding" edges
-	for (int i = 0; i < m_nHorizonEdges; ++i)
-	{
-		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
-		assert(std::find(m_horizonEdges, m_horizonEdges + m_nHorizonEdges, m_horizonEdges[i]->twin) == m_horizonEdges + m_nHorizonEdges);
-	}
 
 	// Verify that all the new edges and the horizon are convex
 	for (int i = 0; i < m_nHorizonEdges; ++i)

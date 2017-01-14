@@ -7,6 +7,7 @@ struct Polygon
 {
 public:
 	Polygon();
+	Polygon(const fVec2* const x, int n);
 
 	void AddVertex(const fVec2& vertex);
 
@@ -14,6 +15,13 @@ public:
 
 	// The following function assumes both polygons are convex
 	Polygon Intersect(const Polygon& poly) const;
+	Polygon IntersectLineSegment(const fVec2& A, const fVec2& B) const;
+
+	bool PointEnclosed(const dVec2& x) const;
+
+	Polygon ReflectX() const;
+
+	const fVec2* GetVertices(int& n) const;
 
 private:
 	int m_nVertices;
