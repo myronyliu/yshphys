@@ -272,8 +272,14 @@ void PhysicsScene::ComputeContacts()
 			const double k = 64.0;
 			const dVec3 d = n0.Scale((x1 - x0).Dot(n0));
 
-			contact.body[0]->ApplyForceAtCOM(d.Scale(contact.body[0]->GetMass()*k));
-			contact.body[1]->ApplyForceAtCOM(-d.Scale(contact.body[1]->GetMass()*k));
+			Force_Constant* penalty0 = new Force_Constant();
+			Force_Constant* penalty1 = new Force_Constant();
+			penalty0->offset = dVec3(0.0, 0.0, 0.0);
+			penalty1->offset = dVec3(0.0, 0.0, 0.0);
+			penalty0->F = d.Scale(contact.body[0]->GetMass()*k);
+			penalty0->F = -d.Scale(contact.body[1]->GetMass()*k);
+			contact.body[0]->ApplyBruteForce(penalty0);
+			contact.body[1]->ApplyBruteForce(penalty1);
 
 			contact.n[0] = -n0;
 			contact.n[1] = -n1;
