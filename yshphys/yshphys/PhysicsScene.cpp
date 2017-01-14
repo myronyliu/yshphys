@@ -469,31 +469,29 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
+			assert(nVerts > 0);
 
+			const float k = 0.05f;
 			for (Polygon poly : { intersectionPoly })
 			{
 				verts = poly.GetVertices(nVerts);
 				for (int i = 0; i < nVerts; ++i)
 				{
-					const double k = 0.05f;
 					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
 					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
 				}
 			}
-//			verts = poly0.GetVertices(nVerts);
-//			for (int i = 0; i < nVerts; ++i)
-//			{
-//				const double k = 0.05f;
-//				const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-//				renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
-//			}
-//			verts = poly1.ReflectX().GetVertices(nVerts);
-//			for (int i = 0; i < nVerts; ++i)
-//			{
-//				const double k = 0.05f;
-//				const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-//				renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
-//			}
+			for (Polygon poly : {poly0, poly1.ReflectX()})
+			{
+				verts = poly.GetVertices(nVerts);
+				for (int i = 0; i < nVerts; ++i)
+				{
+					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+					const fVec3 y(xPlane + xHat.Scale((double)verts[(i + 1) % nVerts].x) + yHat.Scale((double)verts[(i + 1) % nVerts].y));
+					renderer->DrawLine(x, y, fVec3(0.0f, 1.0f, 0.0f));
+					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+				}
+			}
 		}
 	}
 

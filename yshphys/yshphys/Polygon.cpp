@@ -201,7 +201,7 @@ bool PointOnLineSegment(const dVec2& x, const dVec2& A, const dVec2& B)
 		return false;
 	}
 	const dVec2 uPerp = u - v.Scale(t);
-	return ((float)uPerp.Dot(uPerp) < (float)v.Dot(v)*FLT_EPSILON);
+	return ((float)uPerp.Dot(uPerp) < (float)v.Dot(v)*0.001f);
 }
 
 bool IntersectLineSegments(const dVec2& A, const dVec2& u, double& t0, const dVec2& B, const dVec2& v, double& t1)
@@ -212,7 +212,7 @@ bool IntersectLineSegments(const dVec2& A, const dVec2& u, double& t0, const dVe
 
 	double L00 = sqrt(uu);
 	double L11 = sqrt(vv - uv*uv / uu);
-	double L01 = uv / L00;
+	double L01 = -uv / L00;
 
 	double b0 = (B - A).Dot(u);
 	double b1 = (A - B).Dot(v);
@@ -221,7 +221,7 @@ bool IntersectLineSegments(const dVec2& A, const dVec2& u, double& t0, const dVe
 	double y1 = (b1 - L01*y0) / L11;
 
 	t1 = y1 / L11;
-	t0 = (y0 - L01*y1) / L00;
+	t0 = (y0 - L01*t1) / L00;
 	return 0.0f < (float)t0 && (float)t0 < 1.0f;
 }
 
@@ -291,7 +291,7 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 		for (int i = 0; i < m_nVertices; ++i)
 		{
 			double s, t;
-			if (IntersectLineSegments(A, B - A, s, m_vertices[0], m_vertices[1] - m_vertices[0], t))
+			if (IntersectLineSegments(A, B - A, s, m_vertices[i], m_vertices[(i + 1) % m_nVertices] - m_vertices[i], t))
 			{
 				poly.AddVertex(A + (B - A).Scale(s));
 			}
@@ -312,11 +312,7 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 // http://www.iitg.ernet.in/rinkulu/compgeom/slides/cvxpolyintersect.pdf
 Polygon Polygon::Intersect(const Polygon& poly) const
 {
-	if (m_nVertices == 0 || poly.m_nVertices == 0 ||
-		m_boundingSquare.max.x < poly.m_boundingSquare.min.x ||
-		m_boundingSquare.min.x > poly.m_boundingSquare.max.x ||
-		m_boundingSquare.max.y < poly.m_boundingSquare.min.y ||
-		m_boundingSquare.min.y > poly.m_boundingSquare.max.y)
+	if (m_nVertices == 0 || poly.m_nVertices == 0)
 	{
 		return Polygon();
 	}
@@ -349,6 +345,14 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 	else if (poly.m_nVertices == 2)
 	{
 		return IntersectLineSegment(poly.m_vertices[0], poly.m_vertices[1]);
+	}
+	else if (
+		m_boundingSquare.max.x < poly.m_boundingSquare.min.x ||
+		m_boundingSquare.min.x > poly.m_boundingSquare.max.x ||
+		m_boundingSquare.max.y < poly.m_boundingSquare.min.y ||
+		m_boundingSquare.min.y > poly.m_boundingSquare.max.y)
+	{
+		return Polygon();
 	}
 	else
 	{
@@ -396,7 +400,7 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 				}
 			}
 
-			const float uxv(u.x*v.y - u.y*v.x);
+			const float uxv = (float)(u.x*v.y - u.y*v.x);
 
 			if (uxv > 0.0f)
 			{
@@ -431,7 +435,7 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			else if (
 				m_boundingSquare.min.x <= poly.m_boundingSquare.min.x &&
 				m_boundingSquare.max.x >= poly.m_boundingSquare.max.x &&
-				m_boundingSquare.min.y >= poly.m_boundingSquare.min.y &&
+				m_boundingSquare.min.y <= poly.m_boundingSquare.min.y &&
 				m_boundingSquare.max.y >= poly.m_boundingSquare.max.y)
 			{
 				return poly;
@@ -439,6 +443,7 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			else
 			{
 				assert(false);
+				return Polygon();
 			}
 		}
 	}

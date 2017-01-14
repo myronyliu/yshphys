@@ -19,12 +19,13 @@ void Tests::CreateBVTest(Game* game)
 //	Box* geometry = new Box();
 //	geometry->SetDimensions(1.0, 1.0, 1.0);
 
-	dVec3 sceneCenter = dVec3(0.0, 0.0, 0);
-	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(0.0);
+//	dVec3 sceneCenter = dVec3(8.0, 0.0, 0.0);
+	dVec3 sceneCenter = dVec3(0.0, 0.0, 0.0);
+	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(8.0);
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
@@ -64,13 +65,14 @@ void Tests::CreateBVTest(Game* game)
 
 	RigidBody* rigidBody = new RigidBody;
 	Box* ground = new Box();
-	ground->SetDimensions(8.0, 8.0, 1.0);
+	const double k = 64.0;
+	ground->SetDimensions(k, k, 1.0);
 	rigidBody->SetGeometry(ground, dVec3(0.0, 0.0, 0.0), dQuat::Identity());
 	rigidBody->SetPosition(dVec3(0.0, 0.0, -16.0));
 	rigidBody->SetMass(0.0);
 	rigidBody->SetInertia(dMat33::Identity().Scale(0.0));
 	RenderMesh* mesh = new RenderMesh;
-	mesh->CreateBox(8.0f, 8.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
+	mesh->CreateBox(float(k), (float)k, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
 	RenderObject* renderObj = new RenderObject;
 	renderObj->SetRenderMesh(mesh);
 	renderObj->SetShader(shader);
