@@ -204,11 +204,29 @@ bool PointOnLineSegment(const dVec2& x, const dVec2& A, const dVec2& B)
 	return ((float)uPerp.Dot(uPerp) < (float)v.Dot(v)*0.001f);
 }
 
-bool IntersectLineSegments(const dVec2& A, const dVec2& u, double& t0, const dVec2& B, const dVec2& v, double& t1)
+bool IntersectLineSegments(const dVec2& A_, const dVec2& u_, double& t0, const dVec2& B_, const dVec2& v_, double& t1)
 {
+	dVec2 A(A_);
+	dVec2 B(B_);
+	dVec2 u(u_);
+	dVec2 v(v_);
+
 	double uu = u.Dot(u);
 	double vv = v.Dot(v);
 	double uv = u.Dot(v);
+
+	if ((float)abs(uu*vv - uv*uv) < FLT_EPSILON)
+	{
+		A = A + dVec2(u.y, -u.x).Scale((double)FLT_EPSILON);
+		u = u + dVec2(-u.y, u.x).Scale((double)FLT_EPSILON);
+
+		B = B + dVec2(-v.y, v.x).Scale((double)FLT_EPSILON);
+		v = v + dVec2(v.y, -v.x).Scale((double)FLT_EPSILON);
+
+		uu = u.Dot(u);
+		vv = v.Dot(v);
+		uv = u.Dot(v);
+	}
 
 	double L00 = sqrt(uu);
 	double L11 = sqrt(vv - uv*uv / uu);
