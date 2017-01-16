@@ -173,22 +173,38 @@ Polygon Polygon::PruneColinearVertices() const
 	return Polygon();
 }
 
-void Polygon::BuildEdges(Edge* edges) const
+void Polygon::BuildEdges(HalfEdge* edges) const
 {
-	edges[0].vert = m_vertices[0];
-	edges[0].next = &edges[1];
-	edges[0].prev = &edges[m_nVertices - 1];
+	const int nEdges = 2 * m_nVertices;
 
-	for (int i = 1; i < m_nVertices - 1; ++i)
+	for (int i = 0; i < nEdges; i += 2)
 	{
-		edges[i].vert = m_vertices[i];
-		edges[i].next = &edges[i + 1];
-		edges[i].prev= &edges[i - 1];
-	}
+		const fVec2& B = m_vertices[(i / 2 + 0) % m_nVertices];
+		const fVec2& C = m_vertices[(i / 2 + 1) % m_nVertices];
 
-	edges[m_nVertices - 1].vert = m_vertices[m_nVertices - 1];
-	edges[m_nVertices - 1].next = &edges[0];
-	edges[m_nVertices - 1].prev = &edges[m_nVertices - 2];
+		HalfEdge* BC = &edges[i];
+		HalfEdge* CB = BC + 1;
+
+		HalfEdge* AB = &edges[(i - 2 + nEdges) % nEdges];
+		HalfEdge* BA = AB + 1;
+
+		HalfEdge* CD = &edges[(i + 2) % nEdges];
+		HalfEdge* DC = CD + 1;
+
+		BC->vert = C;
+		CB->vert = B;
+
+		BC->prev = AB;
+		BC->next = CD;
+
+		CB->prev = DC;
+		CB->next = BA;
+
+		BC->twin = CB;
+		CB->twin = BC;
+
+		BC->visited = false;
+	}
 }
 
 bool PointOnLineSegment(const dVec2& x, const dVec2& A, const dVec2& B)
@@ -240,7 +256,10 @@ bool IntersectLineSegments(const dVec2& A_, const dVec2& u_, double& t0, const d
 
 	t1 = y1 / L11;
 	t0 = (y0 - L01*t1) / L00;
-	return 0.0f < (float)t0 && (float)t0 < 1.0f;
+
+	return
+		0.0f < (float)t0 && (float)t0 < 1.0f &&
+		0.0f < (float)t1 && (float)t1 < 1.0f;
 }
 
 bool Polygon::PointEnclosed(const dVec2& x) const
@@ -377,67 +396,197 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 		const int n0 = m_nVertices;
 		const int n1 = poly.m_nVertices;
 
-		Edge edges0[3 * MAX_POLYGON_VERTICES];
-		Edge* const edges1 = edges0 + n0;
-		Edge* const freeEdges = edges0 + n0 + n1;
-		Edge* nextFreeEdge = freeEdges;
+		HalfEdge edges0[6 * MAX_POLYGON_VERTICES];
+		HalfEdge* const edges1 = edges0 + 2 * n0;
+		HalfEdge* const freeEdges = edges0 + 2 * (n0 + n1);
+		HalfEdge* nextFreeEdge = freeEdges;
 		nextFreeEdge->prev = nullptr;
 		nextFreeEdge->next = nullptr;
 
 		BuildEdges(edges0);
 		poly.BuildEdges(edges1);
 
-		Edge* e0 = edges0;
-		Edge* e1 = edges1;
+		HalfEdge* e0 = edges0;
+		HalfEdge* e1 = edges1;
+
 		do
 		{
-			const dVec2 A(e0->vert);
-			const dVec2 B(e0->next->vert);
+			const dVec2 A(e0->prev->vert);
+			const dVec2 B(e0->vert);
 
-			const dVec2 C(e1->vert);
-			const dVec2 D(e1->next->vert);
+			const dVec2 C(e1->prev->vert);
+			const dVec2 D(e1->vert);
 
 			double s, t;
-			const dVec2 u = B - A;
-			const dVec2 v = D - C;
-			if (IntersectLineSegments(A, u, s, C, v, t))
+			const dVec2 AB = B - A;
+			const dVec2 CD = D - C;
+
+			const float ABxCD = (float)(AB.x*CD.y - AB.y*CD.x);
+
+			if (IntersectLineSegments(A, AB, s, C, CD, t))
 			{
-				fVec2 vert = A + (B - A).Scale(s);
+				fVec2 X = A + AB.Scale(s);
 
-				for (Edge** e : { &e0, &e1 })
+				HalfEdge* XB = e0;
+				HalfEdge* XD = e1;
+				HalfEdge* BX = e0->twin;
+				HalfEdge* DX = e1->twin;
+
+				HalfEdge* EA = e0->prev;
+				HalfEdge* BF = e0->next;
+
+				HalfEdge* GC = e1->prev;
+				HalfEdge* DH = e1->next;
+
+				HalfEdge* AE = EA->twin;
+				HalfEdge* FB = BF->twin;
+				HalfEdge* CG = GC->twin;
+				HalfEdge* HD = DH->twin;
+
+				//         G
+				//         | 
+				//         C
+				//         |
+				// E___A___X___B___F
+				//	       |
+				//         D
+				//         |
+				//         H
+
+				HalfEdge* AX = nextFreeEdge++;
+				HalfEdge* XA = nextFreeEdge++;
+				HalfEdge* CX = nextFreeEdge++;
+				HalfEdge* XC = nextFreeEdge++;
+
+				AX->twin = XA;
+				XA->twin = AX;
+				CX->twin = XC;
+				XC->twin = CX;
+
+				AX->vert = X;
+				CX->vert = X;
+				BX->vert = X;
+				DX->vert = X;
+
+				// E --> A --> X
+
+				EA->next = AX;
+				AX->prev = EA;
+
+				XA->next = AE;
+				AE->prev = XA;
+
+				// X --> B --> F
+
+				XB->next = BF;
+				BF->prev = XB;
+
+				FB->next = BX;
+				BX->prev = FB;
+
+				// G --> C --> X
+
+				GC->next = CX;
+				CX->prev = GC;
+
+				XC->next = CG;
+				CG->prev = XC;
+
+				// X --> D --> H
+
+				XD->next = DH;
+				DH->prev = XD;
+
+				HD->next = DX;
+				DX->prev = HD;
+
+				if (ABxCD > 0.0f)
 				{
-					Edge* freeEdge = nextFreeEdge++;
-					freeEdge->vert = (*e)->vert;
-					freeEdge->prev = (*e);
-					freeEdge->next = (*e)->next;
-					freeEdge->prev->next = freeEdge;
-					freeEdge->next->prev = freeEdge;
+					// A --> X --> D
 
-					(*e)->vert = vert;
-					*e = freeEdge;
+					AX->next = XD;
+					XD->prev = AX;
+
+					// B --> X --> C
+
+					BX->next = XC;
+					XC->prev = BX;
+
+					// C --> X --> A
+
+					CX->next = XA;
+					XA->prev = CX;
+
+					// D --> X --> B
+
+					DX->next = XB;
+					XB->prev = DX;
+				}
+				else
+				{
+					// A --> X --> C
+
+					AX->next = XC;
+					XC->prev = AX;
+
+					// B --> X --> D
+
+					BX->next = XD;
+					XD->prev = BX;
+
+					// C --> X --> B
+
+					CX->next = XB;
+					XB->prev = CX;
+
+					// D --> X --> A
+
+					DX->next = XA;
+					XA->prev = DX;
 				}
 			}
 
-			const float uxv = (float)(u.x*v.y - u.y*v.x);
+			const float eps = FLT_EPSILON;
 
-			if (uxv > 0.0f)
+			if (ABxCD > FLT_EPSILON)
 			{
+				e0->visited = true;
 				e0 = e0->next;
+			}
+			else if (ABxCD < -FLT_EPSILON)
+			{
+				e1->visited = true;
+				e1 = e1->next;
 			}
 			else
 			{
-				e1 = e1->next;
+				const dVec2 AC(C - A);
+				const dVec2 ABperp(AB.y, -AB.x);
+				const float dot(AC.Dot(ABperp));
+
+				if (dot < 0.0f)
+				{
+					e0->visited = true;
+					e0 = e0->next;
+				}
+				else
+				{
+					e1->visited = true;
+					e1 = e1->next;
+				}
 			}
-		} while (e0 != edges0 && e1 != edges1);
+		} while (!e0->visited && !e1->visited);
 
 		if (freeEdges->prev != nullptr && freeEdges->next != nullptr)
 		{
 			Polygon poly;
-			Edge* e = freeEdges;
+			HalfEdge* e = freeEdges;
 			do
 			{
 				poly.AddVertex(e->vert);
+				e = e->next;
 			} while (e != freeEdges);
+
 			return poly;
 		}
 		else
@@ -460,7 +609,7 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			}
 			else
 			{
-				assert(false);
+//				assert(false);
 				return Polygon();
 			}
 		}

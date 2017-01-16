@@ -33,11 +33,15 @@ private:
 	}
 	m_boundingSquare;
 
-	struct Edge
+	struct HalfEdge
 	{
 		fVec2 vert;
-		Edge* prev;
-		Edge* next;
+		HalfEdge* prev;
+		HalfEdge* next;
+		HalfEdge* twin;
+
+		bool visited;
 	};
-	void BuildEdges(Edge* edges) const;
+	// even indices are CCW edges, odd are twin CW edges
+	void BuildEdges(HalfEdge* edges) const;
 };
