@@ -258,8 +258,8 @@ bool IntersectLineSegments(const dVec2& A_, const dVec2& u_, double& t0, const d
 	t0 = (y0 - L01*t1) / L00;
 
 	return
-		0.0f < (float)t0 && (float)t0 < 1.0f &&
-		0.0f < (float)t1 && (float)t1 < 1.0f;
+		0.0f <= (float)t0 && (float)t0 <= 1.0f &&
+		0.0f <= (float)t1 && (float)t1 <= 1.0f;
 }
 
 bool Polygon::PointEnclosed(const dVec2& x) const
