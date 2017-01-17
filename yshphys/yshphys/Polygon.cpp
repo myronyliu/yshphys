@@ -400,14 +400,14 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 		HalfEdge* const edges1 = edges0 + 2 * n0;
 		HalfEdge* const freeEdges = edges0 + 2 * (n0 + n1);
 		HalfEdge* nextFreeEdge = freeEdges;
-		nextFreeEdge->prev = nullptr;
-		nextFreeEdge->next = nullptr;
 
 		BuildEdges(edges0);
 		poly.BuildEdges(edges1);
 
 		HalfEdge* e0 = edges0;
 		HalfEdge* e1 = edges1;
+
+		HalfEdge* eIntersection = nullptr;
 
 		do
 		{
@@ -505,6 +505,8 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 
 				if (ABxCD > 0.0f)
 				{
+					eIntersection = AX;
+
 					// A --> X --> D
 
 					AX->next = XD;
@@ -527,6 +529,8 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 				}
 				else
 				{
+					eIntersection = CX;
+
 					// A --> X --> C
 
 					AX->next = XC;
@@ -578,17 +582,17 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 					e1 = e1->next;
 				}
 			}
-		} while (!e0->visited && !e1->visited);
+		} while (!e0->visited || !e1->visited);
 
-		if (freeEdges->prev != nullptr && freeEdges->next != nullptr)
+		if (eIntersection != nullptr)
 		{
 			Polygon poly;
-			HalfEdge* e = freeEdges;
+			HalfEdge* e = eIntersection;
 			do
 			{
 				poly.AddVertex(e->vert);
 				e = e->next;
-			} while (e != freeEdges);
+			} while (e != eIntersection);
 
 			return poly;
 		}
@@ -612,7 +616,7 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			}
 			else
 			{
-//				assert(false);
+				assert(false);
 				return Polygon();
 			}
 		}
