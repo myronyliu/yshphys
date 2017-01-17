@@ -1,7 +1,7 @@
 #pragma once
 #include "YshMath.h"
 
-#define MAX_POLYGON_VERTICES 16
+#define MAX_POLYGON_VERTICES 256
 
 struct Polygon
 {

@@ -277,7 +277,7 @@ void PhysicsScene::ComputeContacts()
 			penalty0->offset = dVec3(0.0, 0.0, 0.0);
 			penalty1->offset = dVec3(0.0, 0.0, 0.0);
 			penalty0->F = d.Scale(contact.body[0]->GetMass()*k);
-			penalty0->F = -d.Scale(contact.body[1]->GetMass()*k);
+			penalty1->F = -d.Scale(contact.body[1]->GetMass()*k);
 			contact.body[0]->ApplyBruteForce(penalty0);
 			contact.body[1]->ApplyBruteForce(penalty1);
 

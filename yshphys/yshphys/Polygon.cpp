@@ -32,6 +32,8 @@ Polygon::Polygon(const fVec2* const x, int n) : m_nVertices(n)
 
 void Polygon::AddVertex(const fVec2& vertex)
 {
+	assert(m_nVertices < MAX_POLYGON_VERTICES);
+
 	assert(fabs(vertex.x) < 10000.0f);
 	assert(fabs(vertex.y) < 10000.0f);
 
@@ -397,6 +399,18 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 		const int n1 = poly.m_nVertices;
 
 		HalfEdge edges0[6 * MAX_POLYGON_VERTICES];
+
+		for (HalfEdge& e : edges0)
+		{
+			e.next = nullptr;
+			e.prev = nullptr;
+			e.twin = nullptr;
+			e.visited = false;
+			e.vert.x = FLT_MAX;
+			e.vert.y = FLT_MAX;
+		}
+
+
 		HalfEdge* const edges1 = edges0 + 2 * n0;
 		HalfEdge* const freeEdges = edges0 + 2 * (n0 + n1);
 		HalfEdge* nextFreeEdge = freeEdges;
