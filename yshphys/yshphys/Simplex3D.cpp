@@ -192,4 +192,5 @@ dMinkowskiPoint GJKSimplex::ClosestPointToOrigin(GJKSimplex& closestFeature) con
 		return ClosestPointToOrigin4(0, 1, 2, 3, closestFeature);
 	}
 	assert(false);
+	return dMinkowskiPoint();
 }
