@@ -11,7 +11,7 @@ public:
 
 	void AddVertex(const fVec2& vertex);
 
-	Polygon PruneColinearVertices() const;
+	Polygon PruneColinearVertices(double cosThesh) const;
 
 	// The following function assumes both polygons are convex
 	Polygon Intersect(const Polygon& poly) const;

@@ -71,107 +71,8 @@ Polygon Polygon::ReflectX() const
 	return poly;
 }
 
-Polygon Polygon::PruneColinearVertices() const
+Polygon Polygon::PruneColinearVertices(double cosThresh) const
 {
-	struct VertexAngle
-	{
-		int iVertex;
-		double cosAngle;
-	};
-	bool(*heapCmp)(const VertexAngle&, const VertexAngle&) = [](const VertexAngle& va0, const VertexAngle& va1)
-	{
-		if (va0.cosAngle < va1.cosAngle)
-		{
-			return true;
-		}
-		else if (va0.cosAngle > va1.cosAngle)
-		{
-			return false;
-		}
-		else
-		{
-			return va0.iVertex > va1.iVertex;
-		}
-	};
-
-	VertexAngle heap[2 * MAX_POLYGON_VERTICES];
-	int nHeap = m_nVertices;
-	int nVert = m_nVertices;
-
-	dVec2 AB(m_vertices[0] - m_vertices[m_nVertices - 1]);
-	AB = AB.Scale(1.0 / sqrt(AB.Dot(AB)));
-
-	for (int i = 0; i < m_nVertices; ++i)
-	{
-		heap[i].iVertex = i;
-
-		dVec2 BC(m_vertices[(i + 1) % m_nVertices] - m_vertices[i]);
-		BC = BC.Scale(1.0 / sqrt(BC.Dot(BC)));
-
-		heap[i].cosAngle = AB.Dot(BC);
-
-		AB = BC;
-	}
-
-	std::make_heap(heap, heap + m_nVertices, heapCmp);
-
-	while (true)
-	{
-		std::pop_heap(heap, heap + nHeap, heapCmp);
-		VertexAngle top = heap[--nHeap];
-		if (top.cosAngle > 0.999)
-		{
-			const int ia = (top.iVertex - 2 + m_nVertices) % m_nVertices;
-			const int ib = (top.iVertex - 1 + m_nVertices) % m_nVertices;
-			const int ic = (top.iVertex + 1) % m_nVertices;
-			const int id = (top.iVertex + 2) % m_nVertices;
-
-			const dVec2 a(m_vertices[ia]);
-			const dVec2 b(m_vertices[ib]);
-			const dVec2 c(m_vertices[ic]);
-			const dVec2 d(m_vertices[id]);
-
-			dVec2 ab(b - a);
-			dVec2 bc(c - b);
-			dVec2 cd(d - c);
-
-			ab = ab.Scale(1.0 / sqrt(ab.Dot(ab)));
-			bc = bc.Scale(1.0 / sqrt(bc.Dot(bc)));
-			cd = cd.Scale(1.0 / sqrt(cd.Dot(cd)));
-
-			heap[nHeap].iVertex = ib;
-			heap[nHeap].cosAngle = ab.Dot(bc);
-
-			heap[nHeap + 1].iVertex = ic;
-			heap[nHeap + 1].cosAngle = bc.Dot(cd);
-
-			std::push_heap(heap, heap + nHeap + 1, heapCmp);
-			std::push_heap(heap, heap + nHeap + 2, heapCmp);
-
-			nHeap += 2;
-			nVert--;
-		}
-		else
-		{
-			bool(*sortCmp)(const VertexAngle&, const VertexAngle&) = [](const VertexAngle& va0, const VertexAngle& va1)
-			{
-				return va0.iVertex < va1.iVertex;
-			};
-
-			std::sort(heap, heap + nVert, sortCmp);
-
-			Polygon poly;
-
-			for (int i = 0; i < nVert; ++i)
-			{
-				poly.m_vertices[i] = m_vertices[heap[i].iVertex];
-			}
-			poly.m_nVertices = nVert;
-			
-			return poly;
-		}
-	}
-	assert(false);
 	return Polygon();
 }
 
@@ -583,7 +484,7 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			{
 				const dVec2 AC(C - A);
 				const dVec2 ABperp(AB.y, -AB.x);
-				const float dot(AC.Dot(ABperp));
+				const float dot = (float)AC.Dot(ABperp);
 
 				if (dot < 0.0f)
 				{
