@@ -73,17 +73,19 @@ namespace MathUtils
 	void GaussSeidel(const T* const A, const T* const b, const T* const xMin, const T* const xMax, int n, T* const x)
 	{
 		T* dx = new T[2 * n];
-		T* b_r = &dx[n]; // b-r
-		std::memcpy(b_r, b, n*sizeof(T));
+		T* r = &dx[n]; // residual
+		std::memcpy(r, b, n*sizeof(T));
 		std::memset(x, 0, n*sizeof(T));
 
 		T nInv = (T)1.0 / (T)n;
 
-		for (int iter = 0; iter < 64; ++iter)
+		const int maxIter = 256;
+
+		for (int iter = 0; iter < maxIter; ++iter)
 		{
 			for (int i = 0; i < n; ++i)
 			{
-				dx[i] = b_r[i];
+				dx[i] = r[i];
 				for (int j = 0; j < i; ++j)
 				{
 					dx[i] -= A[n*i + j] * dx[j];
@@ -101,12 +103,31 @@ namespace MathUtils
 				{
 					dri += A[n*i + j] * dx[j];
 				}
-				b_r[i] -= dri;
+				r[i] -= dri;
 				dr += dri*dri*nInv;
 			}
-			if (dr < (T)0.0000001)
+
+			if (dr < (T)0.000001)
 			{
 				break;
+			}
+			bool terminate = true;
+			for (int i = 0; i < n; ++i)
+			{
+				if ((T)abs(r[i] / b[i]) > (T)0.01)
+				{
+					terminate = false;
+					break;
+				}
+			}
+			if (terminate)
+			{
+				break;
+			}
+
+			if (iter == maxIter - 1)
+			{
+				assert(false);
 			}
 		}
 		delete[] dx;
