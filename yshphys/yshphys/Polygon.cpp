@@ -464,9 +464,12 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 				XC->twin = CX;
 
 				AX->vert = X;
-				CX->vert = X;
 				BX->vert = X;
+				CX->vert = X;
 				DX->vert = X;
+
+				XA->vert = A;
+				XC->vert = C;
 
 				// E --> A --> X
 
