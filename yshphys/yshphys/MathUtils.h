@@ -42,6 +42,46 @@ namespace MathUtils
 		return det;
 	}
 
+	template <typename T>
+	void Transpose(const T* const A, int nRowA, int nColA, T* const AT)
+	{
+		for (int i = 0; i < nRowA; ++i)
+		{
+			for (int j = 0; j < nColA; ++i)
+			{
+				AT[nRowA*j + i] = A[nColA*i + j];
+			}
+		}
+	}
+
+	template <typename T>
+	void MatrixMultiply(
+		const T* const A, int nRowA, int nColA,
+		const T* const B, int nRowB, int nColB,
+		T* const AB 
+		)
+	{
+		assert(nColA == nRowB);
+		const int& n = nColA;
+
+		T* const BT = new T[nRowB*nColB];
+		Transpose(B, nRowB, nColB, BT);
+
+		for (int i = 0; i < nRowA; ++i)
+		{
+			for (int j = 0; j < nColB; ++j)
+			{
+				T& ab = AB[nColB * i + j];
+				ab = (T)0.0;
+				for (int k = 0; k < n; ++k)
+				{
+					ab += A[nColA* i + k] * BT[nRowB*j + k];
+				}
+			}
+		}
+		delete[] BT;
+	}
+
 	// A = L * LT
 	template <typename T>
 	void CholeskyFactorization(const T* const A, int n, T* const LT)
