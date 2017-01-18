@@ -127,23 +127,57 @@ void Island::ResolveContacts() const
 
 	for (int i = 0; i < nContacts; ++i)
 	{
-		for (int j = i; j < nContacts; ++j)
+		JMJ[nContacts*i + i] =
+			JMinv[i].n0.Dot(J[i].n0) +
+			JMinv[i].n1.Dot(J[i].n1) +
+			JMinv[i].r0xn0.Dot(J[i].r0xn0) +
+			JMinv[i].r1xn1.Dot(J[i].r1xn1);
+
+		for (int j = i + 1; j < nContacts; ++j)
 		{
-			double jmj =
-				JMinv[i].n0.Dot(J[j].n0) +
-				JMinv[i].n1.Dot(J[j].n1) +
-				JMinv[i].r0xn0.Dot(J[j].r0xn0) +
-				JMinv[i].r1xn1.Dot(J[j].r1xn1);
+			double jmj = 0.0;
+
+			if (m_contacts[i].body[0] == m_contacts[j].body[0])
+			{
+				jmj += JMinv[i].n0.Dot(J[j].n0);
+				jmj += JMinv[i].r0xn0.Dot(J[j].r0xn0);
+			}
+			else if (m_contacts[i].body[0] == m_contacts[j].body[1])
+			{
+				jmj += JMinv[i].n0.Dot(J[j].n1);
+				jmj += JMinv[i].r0xn0.Dot(J[j].r1xn1);
+			}
+
+			if (m_contacts[i].body[1] == m_contacts[j].body[1])
+			{
+				jmj += JMinv[i].n1.Dot(J[j].n1);
+				jmj += JMinv[i].r1xn1.Dot(J[j].r1xn1);
+			}
+			else if (m_contacts[i].body[1] == m_contacts[j].body[0])
+			{
+				jmj += JMinv[i].n1.Dot(J[j].n0);
+				jmj += JMinv[i].r1xn1.Dot(J[j].r0xn0);
+			}
 
 			JMJ[nContacts*i + j] = jmj;
 			JMJ[nContacts*j + i] = jmj;
 		}
 	}
 
+	double JMJ_diag[MAX_CONTACTS];
+	for (int i = 0; i < nContacts; ++i)
+	{
+		JMJ_diag[i] = JMJ[nContacts*i + i];
+		assert(JMJ_diag[i] >= 0.0);
+	}
+
+	std::memset(impulse, 0, sizeof(impulse));
 	MathUtils::GaussSeidel(JMJ, b, minImpulse, maxImpulse, nContacts, impulse);
 
 	for (int i = 0; i < nContacts; ++i)
 	{
+		assert(abs(impulse[i]) < 100000.0);
+
 		const Contact& contact = m_contacts[i];
 		contact.body[0]->ApplyImpulse(contact.n[0].Scale(impulse[i]), contact.x[0]);
 		contact.body[1]->ApplyImpulse(contact.n[1].Scale(impulse[i]), contact.x[1]);
@@ -172,6 +206,7 @@ void Island::ResolveContacts() const
 			);
 	}
 
+	std::memset(force, 0, sizeof(impulse));
 	MathUtils::GaussSeidel(JMJ, b, minForce, maxForce, nContacts, force);
 
 	for (int i = 0; i < nContacts; ++i)
