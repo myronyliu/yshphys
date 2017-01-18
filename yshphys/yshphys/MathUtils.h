@@ -69,68 +69,58 @@ namespace MathUtils
 		}
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// Credits to Julio Jerez (Newton Dynamics) for showing me his implementation of GaussSeidel
+	// This is basically a carbon copy of his, differing only in stylistic minutiae.
+	////////////////////////////////////////////////////////////////////////////////////////////
 	template <typename T>
 	void GaussSeidel(const T* const A, const T* const b, const T* const xMin, const T* const xMax, int n, T* const x)
 	{
-		T* dx = new T[2 * n];
-		T* r = &dx[n]; // residual
-		std::memcpy(r, b, n*sizeof(T));
-		std::memset(x, 0, n*sizeof(T));
-
-		T nInv = (T)1.0 / (T)n;
-
-		const int maxIter = 256;
-
-		for (int iter = 0; iter < maxIter; ++iter)
+		T* const invDiag = new T[n];
+		for (int i = 0; i < n; ++i)
 		{
-			for (int i = 0; i < n; ++i)
-			{
-				dx[i] = r[i];
-				for (int j = 0; j < i; ++j)
-				{
-					dx[i] -= A[n*i + j] * dx[j];
-				}
-				dx[i] /= A[n*i + i];
-				dx[i] = std::max(xMin[i] - x[i], std::min(dx[i], xMax[i] - x[i]));
-				x[i] += dx[i];
-			}
+			x[i] = std::max(xMin[i], std::min(x[i], xMax[i]));
+			invDiag[i] = T(1.0) / A[n*i + i];
+		}
 
-			T dr(0.0);
+		const int maxIter = n*n*n*n + 256;
+		const T rrThresh(0.000001*0.000001);
+		T rr(88888888.0);
+
+		for (int iter = 0; (iter < maxIter) && (rr > rrThresh); ++iter)
+		{
+			rr = (T)0.0;
 			for (int i = 0; i < n; ++i)
 			{
-				T dri(0.0);
+				// Compute r_i : the change in A_ii*x_i (NOTE: not quite the same as the residual)
+				// If r_i becomes small for all i, then we have convergence
+
+				T r_i(0.0);
 				for (int j = 0; j < n; ++j)
 				{
-					dri += A[n*i + j] * dx[j];
+					r_i -= A[n*i + j] * x[j];
 				}
-				r[i] -= dri;
-				dr += dri*dri*nInv;
-			}
+				r_i += b[i];
 
-			if (dr < (T)0.000001)
-			{
-				break;
-			}
-			bool terminate = true;
-			for (int i = 0; i < n; ++i)
-			{
-				if ((T)abs(r[i] / b[i]) > (T)0.01)
+				// Update and clamp x_i to the limits. If the x_i hit the limits, we don't consider the ith
+				// component as part of the termination criteria, since we aren't free to vary it.
+
+				x[i] = (r_i + A[n*i + i] * x[i]) * invDiag[i];
+
+				if (x[i] < xMin[i])
 				{
-					terminate = false;
-					break;
+					x[i] = xMin[i];
 				}
-			}
-			if (terminate)
-			{
-				break;
-			}
-
-			if (iter == maxIter - 1)
-			{
-				assert(false);
+				else if (x[i] > xMax[i])
+				{
+					x[i] = xMax[i];
+				}
+				else
+				{
+					rr += r_i*r_i;
+				}
 			}
 		}
-		delete[] dx;
 	}
 
 //	typedef void(*dydt_func)(double t, const double y[], double yDot[]);
