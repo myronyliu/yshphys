@@ -114,8 +114,19 @@ protected:
 	{
 		dMat33 R(m_state.q);
 		m_Iinv = R*m_inertia.Ibodyinv*R.Transpose();
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < i; ++j)
+			{
+				const double x = (m_Iinv(i, j) + m_Iinv(j, i))*0.5;
+				m_Iinv(i, j) = x;
+				m_Iinv(j, i) = x;
+			}
+		}
 		m_w = m_Iinv.Transform(m_state.L);
 		m_v = m_state.P.Scale(m_inertia.minv);
+
+		assert(m_Iinv.Transpose() == m_Iinv);
 	}
 
 	Force* m_forces[64];

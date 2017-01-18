@@ -204,11 +204,25 @@ void RigidBody::ApplyForce(const dVec3& force, const dVec3& worldPos)
 {
 	m_F = m_F + force;
 	m_T = m_T + (worldPos - m_state.x).Cross(force);
+
+	assert(abs(m_F.x) < 100000.0);
+	assert(abs(m_F.y) < 100000.0);
+	assert(abs(m_F.z) < 100000.0);
+	assert(abs(m_T.x) < 100000.0);
+	assert(abs(m_T.y) < 100000.0);
+	assert(abs(m_T.z) < 100000.0);
 }
 void RigidBody::ApplyImpulse(const dVec3& impulse, const dVec3& worldPos)
 {
 	m_dP = m_dP + impulse;
 	m_dL = m_dL + (worldPos - m_state.x).Cross(impulse);
+
+	assert(abs(m_dP.x) < 100000.0);
+	assert(abs(m_dP.y) < 100000.0);
+	assert(abs(m_dP.z) < 100000.0);
+	assert(abs(m_dL.x) < 100000.0);
+	assert(abs(m_dL.y) < 100000.0);
+	assert(abs(m_dL.z) < 100000.0);
 }
 
 void RigidBody::UpdateAABB()
