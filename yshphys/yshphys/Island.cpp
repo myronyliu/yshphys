@@ -130,8 +130,8 @@ void Island::ResolveContacts() const
 		for (int j = i; j < nContacts; ++j)
 		{
 			double jmj =
-				JMinv[i].n0.Dot(J[i].n0) +
-				JMinv[i].n1.Dot(J[i].n1) +
+				JMinv[i].n0.Dot(J[j].n0) +
+				JMinv[i].n1.Dot(J[j].n1) +
 				JMinv[i].r0xn0.Dot(J[j].r0xn0) +
 				JMinv[i].r1xn1.Dot(J[j].r1xn1);
 
