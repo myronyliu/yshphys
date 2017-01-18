@@ -121,6 +121,7 @@ namespace MathUtils
 				}
 			}
 		}
+		delete[] invDiag;
 	}
 
 //	typedef void(*dydt_func)(double t, const double y[], double yDot[]);
