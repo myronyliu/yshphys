@@ -102,8 +102,13 @@ void CompleteSimplex3(
 	const dVec3& C = simplex.m_pts[2].m_MinkDif;
 	const dVec3 n = (B - A).Cross(C - A);
 	dMinkowskiPoint newSimplexPt;
-	const dVec3 p0 = geom0->Support(pos0, rot0, -n);
-	const dVec3 p1 = geom1->Support(pos1, rot1, n);
+	dVec3 p0 = geom0->Support(pos0, rot0, -n);
+	dVec3 p1 = geom1->Support(pos1, rot1, n);
+	if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
+	{
+		p0 = geom0->Support(pos0, rot0, n);
+		p1 = geom1->Support(pos1, rot1, -n);
+	}
 	newSimplexPt.m_MinkDif = p0 - p1;
 	newSimplexPt.m_MinkSum = p0 + p1;
 	simplex.AddPoint(newSimplexPt);
