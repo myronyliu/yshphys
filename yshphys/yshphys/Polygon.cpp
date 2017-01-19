@@ -123,6 +123,26 @@ bool PointOnLineSegment(const dVec2& x, const dVec2& A, const dVec2& B)
 	return ((float)uPerp.Dot(uPerp) < (float)v.Dot(v)*0.001f);
 }
 
+bool Solve2x2(double A00, double A01, double A11, double b0, double b1, double& x0, double& x1)
+{
+	double L00 = sqrt(A00);
+	double L11 = sqrt(A11 - A01*A01 / A00);
+
+	if (L11 < (double)FLT_EPSILON)
+	{
+		return false;
+	}
+
+	double L01 = A01 / L00;
+
+	double y0 = b0 / L00;
+	double y1 = (b1 - L01*y0) / L11;
+
+	x1 = y1 / L11;
+	x0 = (y0 - L01*x1) / L00;
+
+	return true;
+}
 bool IntersectLineSegments(const dVec2& A_, const dVec2& u_, double& t0, const dVec2& B_, const dVec2& v_, double& t1)
 {
 	dVec2 A(A_);
@@ -134,6 +154,37 @@ bool IntersectLineSegments(const dVec2& A_, const dVec2& u_, double& t0, const d
 	double vv = v.Dot(v);
 	double uv = u.Dot(v);
 
+//	if ((float)abs(uu*vv - uv*uv) == 0.0f)
+//	{
+//		if (uv < 0.0)
+//		{
+//			// The lines are ANTIparallel. Since our polygons are CONVEX, even if the lines coincide,
+//			// the adjacent segments can only "curve away," so we trivially return no intersection.
+//			return false;
+//		}
+//		else
+//		{
+//			// The lines are parallel. If they are separated, return false, else return the enpoint
+//			// of the overlapping segment "farther" along the line direction.
+//			dVec2 perp(u.y, -u.x);
+//			perp = perp.Scale(1.0 / sqrt(perp.Dot(perp)));
+//			const float d = (float)abs((B - A).Dot(perp));
+
+//			if (d > 0.0f)
+//			{
+//				return false;
+//			}
+//			else
+//			{
+//				if ((B - A).Dot(u) > uu)
+//				{
+//					return false;
+//				}
+//				else 
+//				return true;
+//			}
+//		}
+//	}
 	if ((float)abs(uu*vv - uv*uv) < FLT_EPSILON)
 	{
 		A = A + dVec2(u.y, -u.x).Scale((double)FLT_EPSILON);
@@ -213,17 +264,45 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 		}
 	case 2:
 	{
-		double s, t;
-		if (IntersectLineSegments(A, B - A, s, m_vertices[0], m_vertices[1] - m_vertices[0], t))
+		Polygon poly;
+
+		const dVec2& C = m_vertices[0];
+		const dVec2& D = m_vertices[1];
+
+		const dVec2 AB = B - A;
+		const dVec2 CD = D - C;
+
+		const double AB_AB = AB.Dot(AB);
+		const double AB_CD = AB.Dot(CD);
+		const double CD_CD = CD.Dot(CD);
+
+		const double b0 = (C - A).Dot(AB);
+		const double b1 = (A - C).Dot(CD);
+
+		double x0, x1;
+
+		if (Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, x0, x1))
 		{
-			Polygon poly;
-			poly.AddVertex(A + (B - A).Scale(s));
-			return poly;
+			if (0.0f <= (float)x0 && (float)x0 <= 1.0f &&
+				0.0f <= (float)x1 && (float)x1 <= 1.0f)
+			{
+				poly.AddVertex(fVec2(A + AB.Scale(x0)));
+			}
 		}
-		else
+		else // the matrix was singular, meaning ABCD are all colinear
 		{
-			return Polygon();
+			const dVec2 perp = dVec2(AB.y, -AB.x).Scale(1.0 / sqrt(AB_AB));
+			const double d = abs((C - A).Dot(perp));
+			if (d < (double)FLT_EPSILON)
+			{
+				//               A     B           C                D
+				double t[4] = { 0.0, AB_AB, (C - A).Dot(AB), (D - A).Dot(AB) };
+				std::sort(t, t + 4);
+				poly.AddVertex(A + AB.Scale(t[1] / AB_AB));
+				poly.AddVertex(A + AB.Scale(t[2] / AB_AB));
+			}
 		}
+		return poly;
 	}
 	default:
 	{
@@ -497,19 +576,19 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 					e1 = e1->next;
 				}
 			}
-		} while (!e0->visited || !e1->visited);
+		} while (!e0->visited && !e1->visited);
 
 		if (eIntersection != nullptr)
 		{
-			Polygon poly;
+			Polygon intersection;
 			HalfEdge* e = eIntersection;
 			do
 			{
-				poly.AddVertex(e->vert);
+				intersection.AddVertex(e->vert);
 				e = e->next;
 			} while (e != eIntersection);
 
-			return poly;
+			return intersection;
 		}
 		else
 		{
