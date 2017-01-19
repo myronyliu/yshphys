@@ -289,17 +289,28 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 				poly.AddVertex(fVec2(A + AB.Scale(x0)));
 			}
 		}
-		else // the matrix was singular, meaning ABCD are all colinear
+		else // the matrix was singular, meaning AB and CD are parallel
 		{
 			const dVec2 perp = dVec2(AB.y, -AB.x).Scale(1.0 / sqrt(AB_AB));
 			const double d = abs((C - A).Dot(perp));
 			if (d < (double)FLT_EPSILON)
 			{
-				//               A     B           C                D
-				double t[4] = { 0.0, AB_AB, (C - A).Dot(AB), (D - A).Dot(AB) };
-				std::sort(t, t + 4);
-				poly.AddVertex(A + AB.Scale(t[1] / AB_AB));
-				poly.AddVertex(A + AB.Scale(t[2] / AB_AB));
+				const double tA = 0.0;
+				const double tB = AB_AB;
+				const double tC = (C - A).Dot(AB);
+				const double tD = (D - A).Dot(AB);
+
+				bool disjoint =
+					std::max(tA, tB) < std::min(tC, tD) ||
+					std::min(tA, tB) > std::max(tC, tD);
+
+				if (!disjoint)
+				{
+					double t[4] = { tA, tB, tC, tD };
+					std::sort(t, t + 4);
+					poly.AddVertex(A + AB.Scale(t[1] / AB_AB));
+					poly.AddVertex(A + AB.Scale(t[2] / AB_AB));
+				}
 			}
 		}
 		return poly;
@@ -390,7 +401,6 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			e.vert.y = FLT_MAX;
 		}
 
-
 		HalfEdge* const edges1 = edges0 + 2 * n0;
 		HalfEdge* const freeEdges = edges0 + 2 * (n0 + n1);
 		HalfEdge* nextFreeEdge = freeEdges;
@@ -403,6 +413,8 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 
 		HalfEdge* eIntersection = nullptr;
 
+		std::vector<fVec2> pts;
+
 		do
 		{
 			const dVec2 A(e0->prev->vert);
@@ -411,139 +423,176 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 			const dVec2 C(e1->prev->vert);
 			const dVec2 D(e1->vert);
 
-			double s, t;
 			const dVec2 AB = B - A;
 			const dVec2 CD = D - C;
 
-			const float ABxCD = (float)(AB.x*CD.y - AB.y*CD.x);
+			const double ABxCD = AB.x*CD.y - AB.y*CD.x;
 
-			if (IntersectLineSegments(A, AB, s, C, CD, t))
+			const double AB_AB = AB.Dot(AB);
+			const double AB_CD = AB.Dot(CD);
+			const double CD_CD = CD.Dot(CD);
+			const double b0 = (C - A).Dot(AB);
+			const double b1 = (A - C).Dot(CD);
+
+			double t0, t1;
+
+			if (Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, t0, t1))
 			{
-				fVec2 X = A + AB.Scale(s);
-
-				HalfEdge* XB = e0;
-				HalfEdge* XD = e1;
-				HalfEdge* BX = e0->twin;
-				HalfEdge* DX = e1->twin;
-
-				HalfEdge* EA = e0->prev;
-				HalfEdge* BF = e0->next;
-
-				HalfEdge* GC = e1->prev;
-				HalfEdge* DH = e1->next;
-
-				HalfEdge* AE = EA->twin;
-				HalfEdge* FB = BF->twin;
-				HalfEdge* CG = GC->twin;
-				HalfEdge* HD = DH->twin;
-
-				//         G
-				//         | 
-				//         C
-				//         |
-				// E___A___X___B___F
-				//	       |
-				//         D
-				//         |
-				//         H
-
-				HalfEdge* AX = nextFreeEdge++;
-				HalfEdge* XA = nextFreeEdge++;
-				HalfEdge* CX = nextFreeEdge++;
-				HalfEdge* XC = nextFreeEdge++;
-
-				AX->twin = XA;
-				XA->twin = AX;
-				CX->twin = XC;
-				XC->twin = CX;
-
-				AX->vert = X;
-				BX->vert = X;
-				CX->vert = X;
-				DX->vert = X;
-
-				XA->vert = A;
-				XC->vert = C;
-
-				// E --> A --> X
-
-				EA->next = AX;
-				AX->prev = EA;
-
-				XA->next = AE;
-				AE->prev = XA;
-
-				// X --> B --> F
-
-				XB->next = BF;
-				BF->prev = XB;
-
-				FB->next = BX;
-				BX->prev = FB;
-
-				// G --> C --> X
-
-				GC->next = CX;
-				CX->prev = GC;
-
-				XC->next = CG;
-				CG->prev = XC;
-
-				// X --> D --> H
-
-				XD->next = DH;
-				DH->prev = XD;
-
-				HD->next = DX;
-				DX->prev = HD;
-
-				if (ABxCD > 0.0f)
+				if (0.0 <= t0 && t0 <= 1.0 &&
+					0.0 <= t1 && t1 <= 1.0)
 				{
-					eIntersection = AX;
+					fVec2 X = A + AB.Scale(t0);
+					pts.push_back(X);
 
-					// A --> X --> D
+					HalfEdge* XB = e0;
+					HalfEdge* XD = e1;
+					HalfEdge* BX = e0->twin;
+					HalfEdge* DX = e1->twin;
 
-					AX->next = XD;
-					XD->prev = AX;
+					HalfEdge* EA = e0->prev;
+					HalfEdge* BF = e0->next;
 
-					// B --> X --> C
+					HalfEdge* GC = e1->prev;
+					HalfEdge* DH = e1->next;
 
-					BX->next = XC;
-					XC->prev = BX;
+					HalfEdge* AE = EA->twin;
+					HalfEdge* FB = BF->twin;
+					HalfEdge* CG = GC->twin;
+					HalfEdge* HD = DH->twin;
 
-					// C --> X --> A
+					//         G
+					//         | 
+					//         C
+					//         |
+					// E___A___X___B___F
+					//	       |
+					//         D
+					//         |
+					//         H
 
-					CX->next = XA;
-					XA->prev = CX;
+					HalfEdge* AX = nextFreeEdge++;
+					HalfEdge* XA = nextFreeEdge++;
+					HalfEdge* CX = nextFreeEdge++;
+					HalfEdge* XC = nextFreeEdge++;
 
-					// D --> X --> B
+					AX->twin = XA;
+					XA->twin = AX;
+					CX->twin = XC;
+					XC->twin = CX;
 
-					DX->next = XB;
-					XB->prev = DX;
+					AX->vert = X;
+					BX->vert = X;
+					CX->vert = X;
+					DX->vert = X;
+
+					XA->vert = A;
+					XC->vert = C;
+
+					// E --> A --> X
+
+					EA->next = AX;
+					AX->prev = EA;
+
+					XA->next = AE;
+					AE->prev = XA;
+
+					// X --> B --> F
+
+					XB->next = BF;
+					BF->prev = XB;
+
+					FB->next = BX;
+					BX->prev = FB;
+
+					// G --> C --> X
+
+					GC->next = CX;
+					CX->prev = GC;
+
+					XC->next = CG;
+					CG->prev = XC;
+
+					// X --> D --> H
+
+					XD->next = DH;
+					DH->prev = XD;
+
+					HD->next = DX;
+					DX->prev = HD;
+
+					if (ABxCD > 0.0f)
+					{
+						eIntersection = AX;
+
+						// A --> X --> D
+
+						AX->next = XD;
+						XD->prev = AX;
+
+						// B --> X --> C
+
+						BX->next = XC;
+						XC->prev = BX;
+
+						// C --> X --> A
+
+						CX->next = XA;
+						XA->prev = CX;
+
+						// D --> X --> B
+
+						DX->next = XB;
+						XB->prev = DX;
+					}
+					else
+					{
+						eIntersection = CX;
+
+						// A --> X --> C
+
+						AX->next = XC;
+						XC->prev = AX;
+
+						// B --> X --> D
+
+						BX->next = XD;
+						XD->prev = BX;
+
+						// C --> X --> B
+
+						CX->next = XB;
+						XB->prev = CX;
+
+						// D --> X --> A
+
+						DX->next = XA;
+						XA->prev = DX;
+					}
 				}
-				else
+			}
+			else
+			{
+				const dVec2 perp = dVec2(AB.y, -AB.x).Scale(1.0 / sqrt(AB_AB));
+				const double d = abs((C - A).Dot(perp));
+				if (d < (double)FLT_EPSILON)
 				{
-					eIntersection = CX;
+					const double tA = 0.0;
+					const double tB = AB_AB;
+					const double tC = (C - A).Dot(AB);
+					const double tD = (D - A).Dot(AB);
 
-					// A --> X --> C
+					bool disjoint =
+						std::max(tA, tB) < std::min(tC, tD) ||
+						std::min(tA, tB) > std::max(tC, tD);
 
-					AX->next = XC;
-					XC->prev = AX;
-
-					// B --> X --> D
-
-					BX->next = XD;
-					XD->prev = BX;
-
-					// C --> X --> B
-
-					CX->next = XB;
-					XB->prev = CX;
-
-					// D --> X --> A
-
-					DX->next = XA;
-					XA->prev = DX;
+					if (!disjoint)
+					{
+						double t[4] = { tA, tB, tC, tD };
+						std::sort(t, t + 4);
+						// TODO: So we found two points on the colinear AB and CD. Now what?
+						A + AB.Scale(t[1] / AB_AB);
+						A + AB.Scale(t[2] / AB_AB);
+					}
 				}
 			}
 
