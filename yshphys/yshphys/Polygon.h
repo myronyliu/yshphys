@@ -27,12 +27,6 @@ private:
 	int m_nVertices;
 	fVec2 m_vertices[MAX_POLYGON_VERTICES];
 
-	struct BoundingSquare
-	{
-		fVec2 min, max;
-	}
-	m_boundingSquare;
-
 	struct Vertex
 	{
 		fVec2 x;
@@ -51,6 +45,7 @@ private:
 	};
 	// even indices are CCW edges, odd are twin CW edges
 	void BuildEdges(HalfEdge* edges) const;
+	Polygon WalkingIntersect(const Polygon& poly) const;
 
 	Polygon DoIntersect(const Polygon& poly) const;
 };

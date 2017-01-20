@@ -3,29 +3,12 @@
 
 Polygon::Polygon() : m_nVertices(0)
 {
-	m_boundingSquare.min.x = FLT_MAX;
-	m_boundingSquare.min.y = FLT_MAX;
-
-	m_boundingSquare.max.x = -FLT_MAX;
-	m_boundingSquare.max.x = -FLT_MAX;
 }
 
 Polygon::Polygon(const fVec2* const x, int n) : m_nVertices(n)
 {
-	m_boundingSquare.min.x = FLT_MAX;
-	m_boundingSquare.min.y = FLT_MAX;
-
-	m_boundingSquare.max.x = -FLT_MAX;
-	m_boundingSquare.max.x = -FLT_MAX;
-
 	for (int i = 0; i < n; ++i)
 	{
-		m_boundingSquare.min.x = std::min(m_boundingSquare.min.x, x[i].x);
-		m_boundingSquare.min.y = std::min(m_boundingSquare.min.y, x[i].y);
-
-		m_boundingSquare.max.x = std::max(m_boundingSquare.max.x, x[i].x);
-		m_boundingSquare.max.y = std::max(m_boundingSquare.max.y, x[i].y);
-
 		m_vertices[i] = x[i];
 	}
 }
@@ -38,12 +21,6 @@ void Polygon::AddVertex(const fVec2& vertex)
 	assert(fabs(vertex.y) < 10000.0f);
 
 	m_vertices[m_nVertices++] = vertex;
-
-	m_boundingSquare.min.x = std::min(m_boundingSquare.min.x, vertex.x);
-	m_boundingSquare.min.y = std::min(m_boundingSquare.min.y, vertex.y);
-
-	m_boundingSquare.max.x = std::max(m_boundingSquare.max.x, vertex.x);
-	m_boundingSquare.max.y = std::max(m_boundingSquare.max.y, vertex.y);
 }
 
 const fVec2* Polygon::GetVertices(int& n) const
@@ -56,12 +33,6 @@ Polygon Polygon::ReflectX() const
 {
 	Polygon poly;
 	poly.m_nVertices = m_nVertices;
-
-	poly.m_boundingSquare.min.y = m_boundingSquare.min.y;
-	poly.m_boundingSquare.max.y = m_boundingSquare.max.y;
-
-	poly.m_boundingSquare.min.x = -m_boundingSquare.max.x;
-	poly.m_boundingSquare.max.x = -m_boundingSquare.min.x;
 
 	for (int i = 0; i < m_nVertices; ++i)
 	{
@@ -143,78 +114,6 @@ bool Solve2x2(double A00, double A01, double A11, double b0, double b1, double& 
 
 	return true;
 }
-bool IntersectLineSegments(const dVec2& A_, const dVec2& u_, double& t0, const dVec2& B_, const dVec2& v_, double& t1)
-{
-	dVec2 A(A_);
-	dVec2 B(B_);
-	dVec2 u(u_);
-	dVec2 v(v_);
-
-	double uu = u.Dot(u);
-	double vv = v.Dot(v);
-	double uv = u.Dot(v);
-
-//	if ((float)abs(uu*vv - uv*uv) == 0.0f)
-//	{
-//		if (uv < 0.0)
-//		{
-//			// The lines are ANTIparallel. Since our polygons are CONVEX, even if the lines coincide,
-//			// the adjacent segments can only "curve away," so we trivially return no intersection.
-//			return false;
-//		}
-//		else
-//		{
-//			// The lines are parallel. If they are separated, return false, else return the enpoint
-//			// of the overlapping segment "farther" along the line direction.
-//			dVec2 perp(u.y, -u.x);
-//			perp = perp.Scale(1.0 / sqrt(perp.Dot(perp)));
-//			const float d = (float)abs((B - A).Dot(perp));
-
-//			if (d > 0.0f)
-//			{
-//				return false;
-//			}
-//			else
-//			{
-//				if ((B - A).Dot(u) > uu)
-//				{
-//					return false;
-//				}
-//				else 
-//				return true;
-//			}
-//		}
-//	}
-	if ((float)abs(uu*vv - uv*uv) < FLT_EPSILON)
-	{
-		A = A + dVec2(u.y, -u.x).Scale((double)FLT_EPSILON);
-		u = u + dVec2(-u.y, u.x).Scale((double)FLT_EPSILON);
-
-		B = B + dVec2(-v.y, v.x).Scale((double)FLT_EPSILON);
-		v = v + dVec2(v.y, -v.x).Scale((double)FLT_EPSILON);
-
-		uu = u.Dot(u);
-		vv = v.Dot(v);
-		uv = u.Dot(v);
-	}
-
-	double L00 = sqrt(uu);
-	double L11 = sqrt(vv - uv*uv / uu);
-	double L01 = -uv / L00;
-
-	double b0 = (B - A).Dot(u);
-	double b1 = (A - B).Dot(v);
-
-	double y0 = b0 / L00;
-	double y1 = (b1 - L01*y0) / L11;
-
-	t1 = y1 / L11;
-	t0 = (y0 - L01*t1) / L00;
-
-	return
-		0.0f <= (float)t0 && (float)t0 <= 1.0f &&
-		0.0f <= (float)t1 && (float)t1 <= 1.0f;
-}
 
 bool Polygon::PointEnclosed(const dVec2& x) const
 {
@@ -272,16 +171,13 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 		const dVec2 AB = B - A;
 		const dVec2 CD = D - C;
 
-		const double AB_AB = AB.Dot(AB);
-		const double AB_CD = AB.Dot(CD);
-		const double CD_CD = CD.Dot(CD);
+		const dVec2 AC = C - A;
 
-		const double b0 = (C - A).Dot(AB);
-		const double b1 = (A - C).Dot(CD);
+		const double AB_AB = AB.Dot(AB);
 
 		double x0, x1;
 
-		if (Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, x0, x1))
+		if (Solve2x2(AB_AB, -AB.Dot(CD), CD.Dot(CD), AC.Dot(AB), -AC.Dot(CD), x0, x1))
 		{
 			if (0.0f <= (float)x0 && (float)x0 <= 1.0f &&
 				0.0f <= (float)x1 && (float)x1 <= 1.0f)
@@ -318,24 +214,332 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 	default:
 	{
 		Polygon poly;
+
+		const dVec2 AB = B - A;
+		const dVec2 ABperp(-AB.y, AB.x);
+
+		dVec2 C, D, E, F;
+		C = m_vertices[m_nVertices - 1];
+		int prevSide = MathUtils::iSgn((C - A).Dot(ABperp));
+
 		for (int i = 0; i < m_nVertices; ++i)
 		{
-			double s, t;
-			if (IntersectLineSegments(A, B - A, s, m_vertices[i], m_vertices[(i + 1) % m_nVertices] - m_vertices[i], t))
+			D = m_vertices[i];
+			int side = MathUtils::iSgn((D - A).Dot(ABperp));
+			if (side != prevSide)
 			{
-				poly.AddVertex(A + (B - A).Scale(s));
+				const int dSide = side - prevSide;
+				prevSide = side;
+				E = D;
+				for (int j = i + 1; j < m_nVertices; ++j)
+				{
+					F = m_vertices[i];
+					side = MathUtils::sgn((F - A).Dot(ABperp));
+					if ((side - prevSide)*dSide < 0)
+					{
+						const dVec2 CD = D - C;
+						const dVec2 EF = F - E;
+						const dVec2 AC = C - A;
+						const dVec2 AE = E - A;
+						const double AB_AB = AB.Dot(AB);
+						double t0, t1;
+
+						assert(Solve2x2(AB_AB, -AB.Dot(CD), CD.Dot(CD), AC.Dot(AB), -AC.Dot(CD), t0, t1));
+						assert(0.0 <= t1 && t1 <= 1.0);
+						const dVec2 X = C + CD.Scale(t1);
+
+						assert(Solve2x2(AB_AB, -AB.Dot(EF), EF.Dot(EF), AE.Dot(AB), -AE.Dot(EF), t0, t1));
+						assert(0.0 <= t1 && t1 <= 1.0);
+						const dVec2 Y = E + EF.Scale(t1);
+
+						const double tA = 0.0;
+						const double tB = AB_AB;
+						const double tX = (X - A).Dot(AB);
+						const double tY = (Y - A).Dot(AB);
+
+						bool disjoint =
+							std::max(tA, tB) < std::min(tX, tY) ||
+							std::min(tA, tB) > std::max(tX, tY);
+						if (!disjoint)
+						{
+							double t[4] = { tA, tB, tX, tY };
+							std::sort(t, t + 4);
+							poly.AddVertex(A + AB.Scale(t[1] / AB_AB));
+							poly.AddVertex(A + AB.Scale(t[2] / AB_AB));
+						}
+						return poly;
+					}
+				}
 			}
-		}
-		if (poly.m_nVertices == 0)
-		{
-			if (PointEnclosed(A))
+			else
 			{
-				poly.AddVertex(A);
-				poly.AddVertex(B);
+				prevSide = side;
+				C = D;
 			}
 		}
 		return poly;
 	}
+	}
+}
+
+Polygon Polygon::WalkingIntersect(const Polygon& poly) const
+{
+	const int n0 = m_nVertices;
+	const int n1 = poly.m_nVertices;
+
+	HalfEdge edges0[6 * MAX_POLYGON_VERTICES];
+
+	for (HalfEdge& e : edges0)
+	{
+		e.next = nullptr;
+		e.prev = nullptr;
+		e.twin = nullptr;
+		e.visited = false;
+		e.vert.x = FLT_MAX;
+		e.vert.y = FLT_MAX;
+	}
+
+	HalfEdge* const edges1 = edges0 + 2 * n0;
+	HalfEdge* const freeEdges = edges0 + 2 * (n0 + n1);
+	HalfEdge* nextFreeEdge = freeEdges;
+
+	BuildEdges(edges0);
+	poly.BuildEdges(edges1);
+
+	HalfEdge* e0 = edges0;
+	HalfEdge* e1 = edges1;
+
+	HalfEdge* eIntersection = nullptr;
+
+	std::vector<fVec2> pts;
+
+	do
+	{
+		const dVec2 A(e0->prev->vert);
+		const dVec2 B(e0->vert);
+
+		const dVec2 C(e1->prev->vert);
+		const dVec2 D(e1->vert);
+
+		const dVec2 AB = B - A;
+		const dVec2 CD = D - C;
+
+		const double ABxCD = AB.x*CD.y - AB.y*CD.x;
+
+		const double AB_AB = AB.Dot(AB);
+		const double AB_CD = AB.Dot(CD);
+		const double CD_CD = CD.Dot(CD);
+		const double b0 = (C - A).Dot(AB);
+		const double b1 = (A - C).Dot(CD);
+
+		double t0, t1;
+
+		if (Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, t0, t1))
+		{
+			if (0.0 <= t0 && t0 <= 1.0 &&
+				0.0 <= t1 && t1 <= 1.0)
+			{
+				fVec2 X = A + AB.Scale(t0);
+				pts.push_back(X);
+
+				HalfEdge* XB = e0;
+				HalfEdge* XD = e1;
+				HalfEdge* BX = e0->twin;
+				HalfEdge* DX = e1->twin;
+
+				HalfEdge* EA = e0->prev;
+				HalfEdge* BF = e0->next;
+
+				HalfEdge* GC = e1->prev;
+				HalfEdge* DH = e1->next;
+
+				HalfEdge* AE = EA->twin;
+				HalfEdge* FB = BF->twin;
+				HalfEdge* CG = GC->twin;
+				HalfEdge* HD = DH->twin;
+
+				//         G
+				//         | 
+				//         C
+				//         |
+				// E___A___X___B___F
+				//	       |
+				//         D
+				//         |
+				//         H
+
+				HalfEdge* AX = nextFreeEdge++;
+				HalfEdge* XA = nextFreeEdge++;
+				HalfEdge* CX = nextFreeEdge++;
+				HalfEdge* XC = nextFreeEdge++;
+
+				AX->twin = XA;
+				XA->twin = AX;
+				CX->twin = XC;
+				XC->twin = CX;
+
+				AX->vert = X;
+				BX->vert = X;
+				CX->vert = X;
+				DX->vert = X;
+
+				XA->vert = A;
+				XC->vert = C;
+
+				// E --> A --> X
+
+				EA->next = AX;
+				AX->prev = EA;
+
+				XA->next = AE;
+				AE->prev = XA;
+
+				// X --> B --> F
+
+				XB->next = BF;
+				BF->prev = XB;
+
+				FB->next = BX;
+				BX->prev = FB;
+
+				// G --> C --> X
+
+				GC->next = CX;
+				CX->prev = GC;
+
+				XC->next = CG;
+				CG->prev = XC;
+
+				// X --> D --> H
+
+				XD->next = DH;
+				DH->prev = XD;
+
+				HD->next = DX;
+				DX->prev = HD;
+
+				if (ABxCD > 0.0f)
+				{
+					eIntersection = AX;
+
+					// A --> X --> D
+
+					AX->next = XD;
+					XD->prev = AX;
+
+					// B --> X --> C
+
+					BX->next = XC;
+					XC->prev = BX;
+
+					// C --> X --> A
+
+					CX->next = XA;
+					XA->prev = CX;
+
+					// D --> X --> B
+
+					DX->next = XB;
+					XB->prev = DX;
+				}
+				else
+				{
+					eIntersection = CX;
+
+					// A --> X --> C
+
+					AX->next = XC;
+					XC->prev = AX;
+
+					// B --> X --> D
+
+					BX->next = XD;
+					XD->prev = BX;
+
+					// C --> X --> B
+
+					CX->next = XB;
+					XB->prev = CX;
+
+					// D --> X --> A
+
+					DX->next = XA;
+					XA->prev = DX;
+				}
+			}
+		}
+		else
+		{
+			const dVec2 perp = dVec2(AB.y, -AB.x).Scale(1.0 / sqrt(AB_AB));
+			const double d = abs((C - A).Dot(perp));
+			if (d < (double)FLT_EPSILON)
+			{
+				const double tA = 0.0;
+				const double tB = AB_AB;
+				const double tC = (C - A).Dot(AB);
+				const double tD = (D - A).Dot(AB);
+
+				bool disjoint =
+					std::max(tA, tB) < std::min(tC, tD) ||
+					std::min(tA, tB) > std::max(tC, tD);
+
+				if (!disjoint)
+				{
+					double t[4] = { tA, tB, tC, tD };
+					std::sort(t, t + 4);
+					// TODO: So we found two points on the colinear AB and CD. Now what?
+					A + AB.Scale(t[1] / AB_AB);
+					A + AB.Scale(t[2] / AB_AB);
+				}
+			}
+		}
+
+		const float eps = FLT_EPSILON;
+
+		if (ABxCD > FLT_EPSILON)
+		{
+			e0->visited = true;
+			e0 = e0->next;
+		}
+		else if (ABxCD < -FLT_EPSILON)
+		{
+			e1->visited = true;
+			e1 = e1->next;
+		}
+		else
+		{
+			const dVec2 AC(C - A);
+			const dVec2 ABperp(AB.y, -AB.x);
+			const float dot = (float)AC.Dot(ABperp);
+
+			if (dot < 0.0f)
+			{
+				e0->visited = true;
+				e0 = e0->next;
+			}
+			else
+			{
+				e1->visited = true;
+				e1 = e1->next;
+			}
+		}
+	} while (!e0->visited && !e1->visited);
+
+	if (eIntersection != nullptr)
+	{
+		Polygon intersection;
+		HalfEdge* e = eIntersection;
+		do
+		{
+			intersection.AddVertex(e->vert);
+			e = e->next;
+		} while (e != eIntersection);
+
+		return intersection;
+	}
+	else
+	{
+		return Polygon();
 	}
 }
 
@@ -376,295 +580,9 @@ Polygon Polygon::Intersect(const Polygon& poly) const
 	{
 		return IntersectLineSegment(poly.m_vertices[0], poly.m_vertices[1]);
 	}
-	else if (
-		m_boundingSquare.max.x < poly.m_boundingSquare.min.x ||
-		m_boundingSquare.min.x > poly.m_boundingSquare.max.x ||
-		m_boundingSquare.max.y < poly.m_boundingSquare.min.y ||
-		m_boundingSquare.min.y > poly.m_boundingSquare.max.y)
-	{
-		return Polygon();
-	}
 	else
 	{
 		return DoIntersect(poly);
-//		const int n0 = m_nVertices;
-//		const int n1 = poly.m_nVertices;
-
-//		HalfEdge edges0[6 * MAX_POLYGON_VERTICES];
-
-//		for (HalfEdge& e : edges0)
-//		{
-//			e.next = nullptr;
-//			e.prev = nullptr;
-//			e.twin = nullptr;
-//			e.visited = false;
-//			e.vert.x = FLT_MAX;
-//			e.vert.y = FLT_MAX;
-//		}
-
-//		HalfEdge* const edges1 = edges0 + 2 * n0;
-//		HalfEdge* const freeEdges = edges0 + 2 * (n0 + n1);
-//		HalfEdge* nextFreeEdge = freeEdges;
-
-//		BuildEdges(edges0);
-//		poly.BuildEdges(edges1);
-
-//		HalfEdge* e0 = edges0;
-//		HalfEdge* e1 = edges1;
-
-//		HalfEdge* eIntersection = nullptr;
-
-//		std::vector<fVec2> pts;
-
-//		do
-//		{
-//			const dVec2 A(e0->prev->vert);
-//			const dVec2 B(e0->vert);
-
-//			const dVec2 C(e1->prev->vert);
-//			const dVec2 D(e1->vert);
-
-//			const dVec2 AB = B - A;
-//			const dVec2 CD = D - C;
-
-//			const double ABxCD = AB.x*CD.y - AB.y*CD.x;
-
-//			const double AB_AB = AB.Dot(AB);
-//			const double AB_CD = AB.Dot(CD);
-//			const double CD_CD = CD.Dot(CD);
-//			const double b0 = (C - A).Dot(AB);
-//			const double b1 = (A - C).Dot(CD);
-
-//			double t0, t1;
-
-//			if (Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, t0, t1))
-//			{
-//				if (0.0 <= t0 && t0 <= 1.0 &&
-//					0.0 <= t1 && t1 <= 1.0)
-//				{
-//					fVec2 X = A + AB.Scale(t0);
-//					pts.push_back(X);
-
-//					HalfEdge* XB = e0;
-//					HalfEdge* XD = e1;
-//					HalfEdge* BX = e0->twin;
-//					HalfEdge* DX = e1->twin;
-
-//					HalfEdge* EA = e0->prev;
-//					HalfEdge* BF = e0->next;
-
-//					HalfEdge* GC = e1->prev;
-//					HalfEdge* DH = e1->next;
-
-//					HalfEdge* AE = EA->twin;
-//					HalfEdge* FB = BF->twin;
-//					HalfEdge* CG = GC->twin;
-//					HalfEdge* HD = DH->twin;
-
-//					//         G
-//					//         | 
-//					//         C
-//					//         |
-//					// E___A___X___B___F
-//					//	       |
-//					//         D
-//					//         |
-//					//         H
-
-//					HalfEdge* AX = nextFreeEdge++;
-//					HalfEdge* XA = nextFreeEdge++;
-//					HalfEdge* CX = nextFreeEdge++;
-//					HalfEdge* XC = nextFreeEdge++;
-
-//					AX->twin = XA;
-//					XA->twin = AX;
-//					CX->twin = XC;
-//					XC->twin = CX;
-
-//					AX->vert = X;
-//					BX->vert = X;
-//					CX->vert = X;
-//					DX->vert = X;
-
-//					XA->vert = A;
-//					XC->vert = C;
-
-//					// E --> A --> X
-
-//					EA->next = AX;
-//					AX->prev = EA;
-
-//					XA->next = AE;
-//					AE->prev = XA;
-
-//					// X --> B --> F
-
-//					XB->next = BF;
-//					BF->prev = XB;
-
-//					FB->next = BX;
-//					BX->prev = FB;
-
-//					// G --> C --> X
-
-//					GC->next = CX;
-//					CX->prev = GC;
-
-//					XC->next = CG;
-//					CG->prev = XC;
-
-//					// X --> D --> H
-
-//					XD->next = DH;
-//					DH->prev = XD;
-
-//					HD->next = DX;
-//					DX->prev = HD;
-
-//					if (ABxCD > 0.0f)
-//					{
-//						eIntersection = AX;
-
-//						// A --> X --> D
-
-//						AX->next = XD;
-//						XD->prev = AX;
-
-//						// B --> X --> C
-
-//						BX->next = XC;
-//						XC->prev = BX;
-
-//						// C --> X --> A
-
-//						CX->next = XA;
-//						XA->prev = CX;
-
-//						// D --> X --> B
-
-//						DX->next = XB;
-//						XB->prev = DX;
-//					}
-//					else
-//					{
-//						eIntersection = CX;
-
-//						// A --> X --> C
-
-//						AX->next = XC;
-//						XC->prev = AX;
-
-//						// B --> X --> D
-
-//						BX->next = XD;
-//						XD->prev = BX;
-
-//						// C --> X --> B
-
-//						CX->next = XB;
-//						XB->prev = CX;
-
-//						// D --> X --> A
-
-//						DX->next = XA;
-//						XA->prev = DX;
-//					}
-//				}
-//			}
-//			else
-//			{
-//				const dVec2 perp = dVec2(AB.y, -AB.x).Scale(1.0 / sqrt(AB_AB));
-//				const double d = abs((C - A).Dot(perp));
-//				if (d < (double)FLT_EPSILON)
-//				{
-//					const double tA = 0.0;
-//					const double tB = AB_AB;
-//					const double tC = (C - A).Dot(AB);
-//					const double tD = (D - A).Dot(AB);
-
-//					bool disjoint =
-//						std::max(tA, tB) < std::min(tC, tD) ||
-//						std::min(tA, tB) > std::max(tC, tD);
-
-//					if (!disjoint)
-//					{
-//						double t[4] = { tA, tB, tC, tD };
-//						std::sort(t, t + 4);
-//						// TODO: So we found two points on the colinear AB and CD. Now what?
-//						A + AB.Scale(t[1] / AB_AB);
-//						A + AB.Scale(t[2] / AB_AB);
-//					}
-//				}
-//			}
-
-//			const float eps = FLT_EPSILON;
-
-//			if (ABxCD > FLT_EPSILON)
-//			{
-//				e0->visited = true;
-//				e0 = e0->next;
-//			}
-//			else if (ABxCD < -FLT_EPSILON)
-//			{
-//				e1->visited = true;
-//				e1 = e1->next;
-//			}
-//			else
-//			{
-//				const dVec2 AC(C - A);
-//				const dVec2 ABperp(AB.y, -AB.x);
-//				const float dot = (float)AC.Dot(ABperp);
-
-//				if (dot < 0.0f)
-//				{
-//					e0->visited = true;
-//					e0 = e0->next;
-//				}
-//				else
-//				{
-//					e1->visited = true;
-//					e1 = e1->next;
-//				}
-//			}
-//		} while (!e0->visited && !e1->visited);
-
-//		if (eIntersection != nullptr)
-//		{
-//			Polygon intersection;
-//			HalfEdge* e = eIntersection;
-//			do
-//			{
-//				intersection.AddVertex(e->vert);
-//				e = e->next;
-//			} while (e != eIntersection);
-
-//			return intersection;
-//		}
-//		else
-//		{
-//          // TODO: The following boundingSquare logic is actually rubbish if you really think about it
-//			if (
-//				m_boundingSquare.min.x >= poly.m_boundingSquare.min.x &&
-//				m_boundingSquare.max.x <= poly.m_boundingSquare.max.x &&
-//				m_boundingSquare.min.y >= poly.m_boundingSquare.min.y &&
-//				m_boundingSquare.max.y <= poly.m_boundingSquare.max.y)
-//			{
-//				return *this;
-//			}
-//			else if (
-//				m_boundingSquare.min.x <= poly.m_boundingSquare.min.x &&
-//				m_boundingSquare.max.x >= poly.m_boundingSquare.max.x &&
-//				m_boundingSquare.min.y <= poly.m_boundingSquare.min.y &&
-//				m_boundingSquare.max.y >= poly.m_boundingSquare.max.y)
-//			{
-//				return poly;
-//			}
-//			else
-//			{
-//				assert(false);
-//				return Polygon();
-//			}
-//		}
 	}
 }
 
@@ -699,27 +617,25 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 
 		Vertex* vi = nullptr;
 
-		double sides[3];
-
 		dVec2 C = vInit->prev->x;
 		dVec2 AC = C - A;
-		double prevSide = MathUtils::sgn(AC.Dot(ABperp));
-
-		sides[0] = prevSide;
+		int prevSide = MathUtils::iSgn(AC.Dot(ABperp));
 
 		Vertex* v = vInit;
+
+		int dSide;
 
 		do
 		{
 			C = v->x;
 			AC = C - A;
-			const double side = MathUtils::sgn(AC.Dot(ABperp));
+			const int side = MathUtils::iSgn(AC.Dot(ABperp));
 			if (side != prevSide)
 			{
 				vi = v;
 				v = v->next;
+				dSide = side - prevSide;
 				prevSide = side;
-				sides[1] = side;
 				break;
 			}
 			v = v->next;
@@ -733,11 +649,10 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 			{
 				C = v->x;
 				AC = C - A;
-				const double side = MathUtils::sgn(AC.Dot(ABperp));
-				if (side != prevSide)
+				const int side = MathUtils::iSgn(AC.Dot(ABperp));
+				if ((side - prevSide)*dSide < 0)
 				{
 					vf = v;
-					sides[2] = side;
 					break;
 				}
 				v = v->next;
@@ -746,15 +661,11 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 			assert(vf != nullptr);
 			assert(vi != vf);
 
-			if (sides[1] > sides[0] && sides[1] > sides[2])
+			if (dSide > 0)
 			{
 				Vertex* tmp = vi;
 				vi = vf;
 				vf = tmp;
-			}
-			else if (!(sides[1] < sides[0] && sides[1] < sides[2]))
-			{
-				assert(false);
 			}
 
 			Vertex* u[2] = { vi, vf };

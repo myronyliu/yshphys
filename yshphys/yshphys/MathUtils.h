@@ -12,6 +12,12 @@ namespace MathUtils
 	}
 
 	template <typename T>
+	int iSgn(T val)
+	{
+		return (T(0) < val) - (val < T(0));
+	}
+
+	template <typename T>
 	T Determinant(const T* const A, int n)
 	{
 		assert(n > 1);
