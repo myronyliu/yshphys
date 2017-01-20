@@ -33,6 +33,13 @@ private:
 	}
 	m_boundingSquare;
 
+	struct Vertex
+	{
+		fVec2 x;
+		Vertex* next;
+		Vertex* prev;
+	};
+
 	struct HalfEdge
 	{
 		fVec2 vert;
@@ -44,4 +51,6 @@ private:
 	};
 	// even indices are CCW edges, odd are twin CW edges
 	void BuildEdges(HalfEdge* edges) const;
+
+	Polygon DoIntersect(const Polygon& poly) const;
 };
