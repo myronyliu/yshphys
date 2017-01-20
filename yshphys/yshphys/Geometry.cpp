@@ -108,6 +108,7 @@ void CompleteSimplex3(
 	{
 		p0 = geom0->Support(pos0, rot0, n);
 		p1 = geom1->Support(pos1, rot1, -n);
+		assert(((p0 - p1) - A).Dot(n) > (double)FLT_EPSILON);
 	}
 	newSimplexPt.m_MinkDif = p0 - p1;
 	newSimplexPt.m_MinkSum = p0 + p1;
@@ -140,6 +141,18 @@ void CompleteSimplex2(
 			{
 				p0 = geom0->Support(pos0, rot0, n);
 				p1 = geom1->Support(pos1, rot1, -n);
+			}
+			if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
+			{
+				n = AB.Cross(n);
+				p0 = geom0->Support(pos0, rot0, -n);
+				p1 = geom1->Support(pos1, rot1, n);
+				if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
+				{
+					p0 = geom0->Support(pos0, rot0, n);
+					p1 = geom1->Support(pos1, rot1, -n);
+					assert(((p0 - p1) - A).Dot(n) > (double)FLT_EPSILON);
+				}
 			}
 			newSimplexPt.m_MinkDif = p0 - p1;
 			newSimplexPt.m_MinkSum = p0 + p1;

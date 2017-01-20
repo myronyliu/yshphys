@@ -234,7 +234,7 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 				for (int j = i + 1; j < m_nVertices; ++j)
 				{
 					F = m_vertices[i];
-					side = MathUtils::sgn((F - A).Dot(ABperp));
+					side = MathUtils::iSgn((F - A).Dot(ABperp));
 					if ((side - prevSide)*dSide < 0)
 					{
 						const dVec2 CD = D - C;
