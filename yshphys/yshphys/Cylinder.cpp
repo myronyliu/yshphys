@@ -59,9 +59,11 @@ Polygon Cylinder::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& pla
 		const double cx = planeOrigin.Dot(R.GetColumn(0));
 		const double cy = planeOrigin.Dot(R.GetColumn(1));
 
-		for (int i = 0; i < 8; ++i)
+		const int nPts = 8;
+
+		for (int i = 0; i < nPts; ++i)
 		{
-			double phi = 2.0*dPI*double(i) / (double)8;
+			double phi = 2.0*dPI*double(i) / (double)nPts;
 			poly.AddVertex(dVec2(m_radius*cos(phi) - cx, m_radius*sin(phi) - cy));
 		}
 	}

@@ -16,16 +16,17 @@ void Tests::CreateBVTest(Game* game)
 	const double h = 2.0;
 	geometry->SetRadius(r);
 	geometry->SetHalfHeight(h);
+
 //	Box* geometry = new Box();
 //	geometry->SetDimensions(1.0, 1.0, 1.0);
 
 //	dVec3 sceneCenter = dVec3(8.0, 0.0, 0.0);
 	dVec3 sceneCenter = dVec3(0.0, 0.0, 0.0);
-	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(0.0);
+	dVec3 sceneHalfDim = dVec3(1.0, 1.0, 1.0).Scale(8.0);
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
@@ -40,9 +41,9 @@ void Tests::CreateBVTest(Game* game)
 		const double m = 1.0;
 		rigidBody->SetMass(m);
 		dMat33 I = dMat33::Identity();
-		I(0, 0) = m*(3.0*r*r + 4.0*h*h) / 12.0;
-		I(1, 1) = m*(3.0*r*r + 4.0*h*h) / 12.0;
-		I(2, 2) = m*r*r / 2.0;
+//		I(0, 0) = m*(3.0*r*r + 4.0*h*h) / 12.0;
+//		I(1, 1) = m*(3.0*r*r + 4.0*h*h) / 12.0;
+//		I(2, 2) = m*r*r / 2.0;
 		rigidBody->SetInertia(I);
 
 		dVec3 alpha(
@@ -86,19 +87,24 @@ void Tests::CreateBVTest(Game* game)
 void Tests::CreateGJKTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
-	Capsule* geometry = new Capsule;
 //	Cylinder* geometry = new Cylinder;
-	geometry->SetRadius(1.0);
-	geometry->SetHalfHeight(1.0);
+//	geometry->SetRadius(1.0);
+//	geometry->SetHalfHeight(2.0);
+	Box* geometry = new Box;
+	geometry->SetDimensions(1.0, 1.0, 1.0);
 
-	dVec3 pos[2] = { dVec3(-1.1,16.0,0.0),dVec3(1.1,16.0,0.0) };
+//	dVec3 pos[2] = { dVec3(-0.9,1.0,0.0),dVec3(0.9,1.0,0.2) };
+//	dVec3 pos[2] = { dVec3(0.0,2.0,-1.9),dVec3(0.5,2.5,1.9) };
+	dVec3 pos[2] = { dVec3(0.0,0.0,-0.9),dVec3(0.0,0.0,0.9) };
 
+//	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI*0.0) };
 	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
 	
 	for (int i = 0; i < 2; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
-		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateCylinder(1.0f, 2.0f, fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateBox(1.0f, 1.0f, 1.0f, 0, 0, 0, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
 		renderObj->SetShader(shader);
@@ -115,20 +121,8 @@ void Tests::CreateGJKTest(Game* game)
 
 		GameObject* gameObject = new GameObject;
 		gameObject->SetPhysicsObject(rigidBody);
-		gameObject->SetRenderObject(renderObj);
+//		gameObject->SetRenderObject(renderObj);
 
 		game->AddGameObject(gameObject);
 	}
-
-//	GJKSimplex simplex;
-
-//	Geometry::ComputeSeparation(
-//		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(), dVec3(),
-//		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(), dVec3(),
-//		simplex);
-
-//	game->epa = new EPAHull(
-//		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(),
-//		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(),
-//		simplex);
 }

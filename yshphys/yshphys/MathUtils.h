@@ -129,7 +129,7 @@ namespace MathUtils
 			invDiag[i] = T(1.0) / A[n*i + i];
 		}
 
-		const int maxIter = n*n*n*n + 256;
+		const int maxIter = n*n*n*n + 1024;
 		const T rrThresh(0.000001*0.000001);
 		T rr(88888888.0);
 

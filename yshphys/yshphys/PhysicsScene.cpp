@@ -281,6 +281,13 @@ void PhysicsScene::ComputeContacts()
 			contact.body[0]->ApplyBruteForce(penalty0);
 			contact.body[1]->ApplyBruteForce(penalty1);
 
+			assert(abs(penalty0->F.x) < 10000.0f);
+			assert(abs(penalty0->F.y) < 10000.0f);
+			assert(abs(penalty0->F.z) < 10000.0f);
+			assert(abs(penalty1->F.x) < 10000.0f);
+			assert(abs(penalty1->F.y) < 10000.0f);
+			assert(abs(penalty1->F.z) < 10000.0f);
+
 			contact.n[0] = -n0;
 			contact.n[1] = -n1;
 
@@ -297,8 +304,22 @@ void PhysicsScene::ComputeContacts()
 
 			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, qPlane0);
 			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, qPlane1);
-
-			Polygon intersectionPoly = poly0.Intersect(poly1.ReflectX());
+			Polygon intersectionPoly;
+			int nVerts0, nVerts1;
+			const fVec2* verts0 = poly0.GetVertices(nVerts0);
+			const fVec2* verts1 = poly1.GetVertices(nVerts1);
+			if (nVerts0 == 1)
+			{
+				intersectionPoly = poly0;
+			}
+			else if (nVerts1 == 1)
+			{
+				intersectionPoly = poly1.ReflectX();
+			}
+			else
+			{
+				intersectionPoly = poly0.Intersect(poly1.ReflectX());
+			}
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
 
@@ -477,15 +498,25 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 
 			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, qPlane0);
 			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, qPlane1);
-
-			dMat33 R0(qPlane0);
-			dMat33 R1(qPlane1);
-
-			Polygon intersectionPoly = poly0.Intersect(poly1.ReflectX());
-
+			Polygon intersectionPoly;
+			int nVerts0, nVerts1;
+			const fVec2* verts0 = poly0.GetVertices(nVerts0);
+			const fVec2* verts1 = poly1.GetVertices(nVerts1);
+			if (nVerts0 == 1)
+			{
+				intersectionPoly = poly0;
+			}
+			else if (nVerts1 == 1)
+			{
+				intersectionPoly = poly1.ReflectX();
+			}
+			else
+			{
+				intersectionPoly = poly0.Intersect(poly1.ReflectX());
+			}
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
-			assert(nVerts > 0);
+//			assert(nVerts > 0);
 
 			const float k = 0.05f;
 			for (Polygon poly : { intersectionPoly })
@@ -494,20 +525,22 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 				for (int i = 0; i < nVerts; ++i)
 				{
 					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
-				}
-			}
-			for (Polygon poly : {poly0, poly1.ReflectX()})
-			{
-				verts = poly.GetVertices(nVerts);
-				for (int i = 0; i < nVerts; ++i)
-				{
-					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
 					const fVec3 y(xPlane + xHat.Scale((double)verts[(i + 1) % nVerts].x) + yHat.Scale((double)verts[(i + 1) % nVerts].y));
-					renderer->DrawLine(x, y, fVec3(0.0f, 1.0f, 0.0f));
-					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
+					renderer->DrawLine(x, y, fVec3(1.0f, 0.0f, 0.0f));
 				}
 			}
+//			for (Polygon poly : {poly0, poly1.ReflectX()})
+//			{
+//				verts = poly.GetVertices(nVerts);
+//				for (int i = 0; i < nVerts; ++i)
+//				{
+//					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+//					const fVec3 y(xPlane + xHat.Scale((double)verts[(i + 1) % nVerts].x) + yHat.Scale((double)verts[(i + 1) % nVerts].y));
+//					renderer->DrawLine(x, y, fVec3(0.0f, 1.0f, 0.0f));
+//					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+//				}
+//			}
 		}
 	}
 
