@@ -770,13 +770,20 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 		const dVec2 B = x0[(i + 1) % n0];
 
 		const dVec2 AB = B - A;
-		const dVec2 ABperp(-AB.y, AB.x);
+		const double ABinvnorm = sqrt(AB.Dot(AB));
+		const dVec2 ABperp(-AB.y*ABinvnorm, AB.x*ABinvnorm);
+
+		auto GetSide = [&](const Vertex* vert)
+		{
+			const dVec2 C = vert->x;
+			const dVec2 AC = C - A;
+			const double k = AC.Dot(ABperp);
+			return (abs(k) < (double)FLT_EPSILON) ? 0 : 2 * int(k > 0.0) - 1;
+		};
 
 		Vertex* vi = nullptr;
 
-		dVec2 C = vInit->prev->x;
-		dVec2 AC = C - A;
-		int prevSide = MathUtils::iSgn(AC.Dot(ABperp));
+		int prevSide = GetSide(vInit->prev);
 
 		Vertex* v = vInit;
 
@@ -784,9 +791,7 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 
 		do
 		{
-			C = v->x;
-			AC = C - A;
-			const int side = MathUtils::iSgn(AC.Dot(ABperp));
+			const int side = GetSide(v);
 			if (side != prevSide)
 			{
 				vi = v;
@@ -804,9 +809,7 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 			Vertex* vf = nullptr;
 			while (v != vInit)
 			{
-				C = v->x;
-				AC = C - A;
-				const int side = MathUtils::iSgn(AC.Dot(ABperp));
+				const int side = GetSide(v);
 				if ((side - prevSide)*dSide < 0)
 				{
 					vf = v;
@@ -840,21 +843,13 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 				const dVec2 ab = AB.Scale(1.0 / sqrt(AB.Dot(AB)));
 				const dVec2 cd = CD.Scale(1.0 / sqrt(CD.Dot(CD)));
 
-				const double AB_CD = AB.Dot(CD);
-				const double CD_CD = CD.Dot(CD);
-//				const double b0 = AC.Dot(AB);
-//				const double b1 = -AC.Dot(CD);
-
 				const double b0 = AC.Dot(ab);
 				const double b1 = -AC.Dot(cd);
 
 				double t0, t1;
 
-//				assert(Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, t0, t1));
 				assert(Solve2x2(1.0, -ab.Dot(cd), 1.0, b0, b1, t0, t1));
-//				assert(0.0 <= t1 && t1 <= 1.0);
 
-//				X[j] = A + AB.Scale(t0);
 				X[j] = C + cd.Scale(t1);
 			}
 
