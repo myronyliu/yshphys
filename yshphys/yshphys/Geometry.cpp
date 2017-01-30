@@ -100,15 +100,19 @@ void CompleteSimplex3(
 	const dVec3& A = simplex.m_pts[0].m_MinkDif;
 	const dVec3& B = simplex.m_pts[1].m_MinkDif;
 	const dVec3& C = simplex.m_pts[2].m_MinkDif;
-	const dVec3 n = (B - A).Cross(C - A);
+	dVec3 n = (B - A).Cross(C - A);
+	n = n.Scale(1.0 / sqrt(n.Dot(n)));
 	dMinkowskiPoint newSimplexPt;
 	dVec3 p0 = geom0->Support(pos0, rot0, -n);
 	dVec3 p1 = geom1->Support(pos1, rot1, n);
-	if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
+	dVec3 d = (p0 - p1) - A;
+	if (abs(d.Dot(n)) < (double)FLT_EPSILON)
 	{
-		p0 = geom0->Support(pos0, rot0, n);
-		p1 = geom1->Support(pos1, rot1, -n);
-		assert(((p0 - p1) - A).Dot(n) > (double)FLT_EPSILON);
+		n = -n;
+		p0 = geom0->Support(pos0, rot0, -n);
+		p1 = geom1->Support(pos1, rot1, n);
+		d = (p0 - p1) - A;
+		assert(abs(d.Dot(n)) > (double)FLT_EPSILON);
 	}
 	newSimplexPt.m_MinkDif = p0 - p1;
 	newSimplexPt.m_MinkSum = p0 + p1;
@@ -130,28 +134,36 @@ void CompleteSimplex2(
 		int k = (i + 2) % 3;
 		if (AB_AB[i] <= AB_AB[j] && AB_AB[i] <= AB_AB[k])
 		{
+			const double invNorm = 1.0 / sqrt(AB[j] * AB[i] + AB[k] * AB[k]);
 			n[i] = 0.0;
-			n[j] = AB[k];
-			n[k] = -AB[j];
+			n[j] = AB[k] * invNorm;
+			n[k] = -AB[j] * invNorm;
 
 			dMinkowskiPoint newSimplexPt;
 			dVec3 p0 = geom0->Support(pos0, rot0, -n);
 			dVec3 p1 = geom1->Support(pos1, rot1, n);
-			if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
+			dVec3 d = (p0 - p1) - A;
+			if (abs(d.Dot(n)) < (double)FLT_EPSILON)
 			{
-				p0 = geom0->Support(pos0, rot0, n);
-				p1 = geom1->Support(pos1, rot1, -n);
-			}
-			if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
-			{
-				n = AB.Cross(n);
+				n = -n;
 				p0 = geom0->Support(pos0, rot0, -n);
 				p1 = geom1->Support(pos1, rot1, n);
-				if (((p0 - p1) - A).Dot(n) < (double)FLT_EPSILON)
+				d = (p0 - p1) - A;
+				if (abs(d.Dot(n)) < (double)FLT_EPSILON)
 				{
-					p0 = geom0->Support(pos0, rot0, n);
-					p1 = geom1->Support(pos1, rot1, -n);
-					assert(((p0 - p1) - A).Dot(n) > (double)FLT_EPSILON);
+					n = AB.Cross(n);
+					n = n.Scale(1.0 / sqrt(n.Dot(n)));
+					p0 = geom0->Support(pos0, rot0, -n);
+					p1 = geom1->Support(pos1, rot1, n);
+					d = (p0 - p1) - A;
+					if (abs(d.Dot(n)) < (double)FLT_EPSILON)
+					{
+						n = -n;
+						p0 = geom0->Support(pos0, rot0, -n);
+						p1 = geom1->Support(pos1, rot1, n);
+						d = (p0 - p1) - A;
+						assert(abs(d.Dot(n)) > (double)FLT_EPSILON);
+					}
 				}
 			}
 			newSimplexPt.m_MinkDif = p0 - p1;
