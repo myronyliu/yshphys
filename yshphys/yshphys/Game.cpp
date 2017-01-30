@@ -104,6 +104,7 @@ void Game::Run()
 		}
 		if (t - m_tPhysics > m_dtPhys)
 		{
+			m_physicsScene.DebugDraw(&m_renderScene.DebugDrawSystem());
 			m_physicsScene.Step((double)m_dtPhys*0.001);
 
 			// RenderScene and PhysicsScene should know nothing about one another. All the coupling should be handled by Game and GameObject
@@ -115,7 +116,6 @@ void Game::Run()
 			}
 //			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
 			m_renderScene.DebugDrawSystem().DrawPicker(*m_renderScene.DebugDrawSystem().m_picker, fVec3(0.0f, 1.0f, 0.0f));
-			m_physicsScene.DebugDraw(&m_renderScene.DebugDrawSystem());
 
 //			if (rb[0] != nullptr && rb[1] != nullptr)
 //			{

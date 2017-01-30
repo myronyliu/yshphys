@@ -42,9 +42,166 @@ Polygon Polygon::ReflectX() const
 	return poly;
 }
 
-Polygon Polygon::PruneColinearVertices(double cosThresh) const
+Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
 {
-	return Polygon();
+	if (m_nVertices < 3)
+	{
+		return *this;
+	}
+
+	const double cosThresh = cos(minTurnAngle);
+
+	struct Vert;
+	struct HeapElement;
+
+	struct Vert
+	{
+		fVec2 x;
+		Vert* next;
+		Vert* prev;
+
+		bool valid;
+		
+		Vert* nextFree;
+	};
+
+	struct HeapElement
+	{
+		double cosAngle;
+		Vert* vert;
+	};
+	bool (*HeapCmp) (const HeapElement&, const HeapElement&) = [](const HeapElement& lhs, const HeapElement& rhs)
+	{
+		assert(lhs.vert != rhs.vert);
+		if (lhs.cosAngle > rhs.cosAngle)
+		{
+			return false;
+		}
+		else if (lhs.cosAngle < rhs.cosAngle)
+		{
+			return true;
+		}
+		else
+		{
+			return lhs.vert > rhs.vert;
+		}
+	};
+
+	const int maxVerts = 2 * MAX_POLYGON_VERTICES;
+	Vert verts[maxVerts];
+	HeapElement heap[maxVerts];
+	Vert* freeVert = &verts[m_nVertices];
+
+	for (int i = 0; i < m_nVertices; ++i)
+	{
+		const dVec2 AB = dVec2(m_vertices[i]) - dVec2(m_vertices[(i - 1 + m_nVertices) % m_nVertices]);
+		const dVec2 BC = dVec2(m_vertices[(i + 1) % m_nVertices]) - dVec2(m_vertices[i]);
+
+		verts[i].x = m_vertices[i];
+		verts[i].next = &verts[(i + 1) % m_nVertices];
+		verts[i].prev = &verts[(i - 1 + m_nVertices) % m_nVertices];
+		verts[i].valid = true;
+		verts[i].nextFree = nullptr;
+
+		heap[i].vert = &verts[i];
+		heap[i].cosAngle = AB.Scale(1.0 / sqrt(AB.Dot(AB))).Dot(BC.Scale(1.0 / sqrt(BC.Dot(BC))));
+	}
+	for (int i = m_nVertices; i < maxVerts - 1; ++i)
+	{
+		verts[i].valid = false;
+		verts[i].nextFree = &verts[i + 1];
+	}
+	verts[maxVerts - 1].valid = false;
+	verts[maxVerts - 1].nextFree = nullptr;
+
+	int nHeap = m_nVertices;
+	std::make_heap(heap, heap + nHeap, HeapCmp);
+
+	while (true)
+	{
+		std::pop_heap(heap, heap + nHeap, HeapCmp);
+		HeapElement* elem = &heap[--nHeap];
+		Vert* vert = elem->vert;
+		if (vert->valid)
+		{
+			if (elem->cosAngle < cosThresh)
+			{
+				Polygon poly;
+				Vert* v = vert;
+				do
+				{
+					poly.AddVertex(v->x);
+					v = v->next;
+				} while (v != vert);
+				return poly;
+			}
+			else
+			{
+				Vert* pA = vert->prev->prev;
+				Vert* pB = vert->prev;
+				Vert* pC = vert->next;
+				Vert* pD = vert->next->next;
+
+				const fVec2 A = pA->x;
+				const fVec2 B = pB->x;
+				const fVec2 C = pC->x;
+				const fVec2 D = pD->x;
+
+				const dVec2 AB = dVec2(B) - dVec2(A);
+				const dVec2 BC = dVec2(C) - dVec2(B);
+				const dVec2 CD = dVec2(D) - dVec2(C);
+
+				const dVec2 ab = AB.Scale(1.0 / sqrt(AB.Dot(AB)));
+				const dVec2 bc = BC.Scale(1.0 / sqrt(BC.Dot(BC)));
+				const dVec2 cd = CD.Scale(1.0 / sqrt(CD.Dot(CD)));
+
+				const double cosAngleB = ab.Dot(bc);
+				const double cosAngleC = bc.Dot(cd);
+
+				pB->valid = false;
+				pC->valid = false;
+
+				Vert* newB = freeVert;
+				freeVert = freeVert->nextFree;
+				Vert* newC = freeVert;
+				freeVert = freeVert->nextFree;
+
+				newB->prev = pA;
+				newB->x = B;
+				newB->next = newC;
+				newB->nextFree = nullptr;
+				newB->valid = true;
+
+				newC->prev = newB;
+				newC->x = C;
+				newC->next = pD;
+				newC->nextFree = nullptr;
+				newC->valid = true;
+
+				pA->next = newB;
+				pD->prev = newC;
+
+				HeapElement* heapB = elem;
+				HeapElement* heapC = elem + 1;
+
+				heapB->vert = newB;
+				heapB->cosAngle = cosAngleB;
+
+				heapC->vert = newC;
+				heapC->cosAngle = cosAngleC;
+
+				std::push_heap(heap, heap + (++nHeap), HeapCmp);
+				std::push_heap(heap, heap + (++nHeap), HeapCmp);
+			}
+		}
+		else
+		{
+			vert->nextFree = freeVert;
+			freeVert = vert;
+		}
+	}
+
+
 }
 
 void Polygon::BuildEdges(HalfEdge* edges) const
@@ -680,18 +837,25 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 				const dVec2 CD = D - C;
 				const dVec2 AC = C - A;
 
+				const dVec2 ab = AB.Scale(1.0 / sqrt(AB.Dot(AB)));
+				const dVec2 cd = CD.Scale(1.0 / sqrt(CD.Dot(CD)));
+
 				const double AB_CD = AB.Dot(CD);
 				const double CD_CD = CD.Dot(CD);
-				const double b0 = AC.Dot(AB);
-				const double b1 = -AC.Dot(CD);
+//				const double b0 = AC.Dot(AB);
+//				const double b1 = -AC.Dot(CD);
+
+				const double b0 = AC.Dot(ab);
+				const double b1 = -AC.Dot(cd);
 
 				double t0, t1;
 
-				assert(Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, t0, t1));
-				assert(0.0 <= t1 && t1 <= 1.0);
+//				assert(Solve2x2(AB_AB, -AB_CD, CD_CD, b0, b1, t0, t1));
+				assert(Solve2x2(1.0, -ab.Dot(cd), 1.0, b0, b1, t0, t1));
+//				assert(0.0 <= t1 && t1 <= 1.0);
 
 //				X[j] = A + AB.Scale(t0);
-				X[j] = C + CD.Scale(t1);
+				X[j] = C + cd.Scale(t1);
 			}
 
 			Vertex* const newVert = freeVert++;

@@ -3,6 +3,8 @@
 #include "Force_Constant.h"
 #include "Material.h"
 
+#define COLINEAR_ANGLE_THRESH (dPI*0.25)
+
 PhysicsScene::PhysicsScene() : m_firstNode(nullptr), m_firstIsland(nullptr)
 {
 	Material::InitializeTables();
@@ -320,6 +322,8 @@ void PhysicsScene::ComputeContacts()
 			{
 				intersectionPoly = poly0.Intersect(poly1.ReflectX());
 			}
+			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
 
@@ -514,6 +518,8 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 			{
 				intersectionPoly = poly0.Intersect(poly1.ReflectX());
 			}
+			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
 //			assert(nVerts > 0);

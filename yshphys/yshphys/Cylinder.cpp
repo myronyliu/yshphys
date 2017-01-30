@@ -59,7 +59,7 @@ Polygon Cylinder::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& pla
 		const double cx = planeOrigin.Dot(R.GetColumn(0));
 		const double cy = planeOrigin.Dot(R.GetColumn(1));
 
-		const int nPts = 8;
+		const int nPts = 32;
 
 		for (int i = 0; i < nPts; ++i)
 		{
