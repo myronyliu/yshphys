@@ -3,6 +3,22 @@
 #include "YshMath.h"
 #include <freeglut.h>
 
+struct CubeMapFace
+{
+	GLenum iFace;
+	fVec3 viewDir;
+	fVec3 viewUp;
+};
+static const CubeMapFace gCubeMapFaces[6] =
+{
+	{ GL_TEXTURE_CUBE_MAP_POSITIVE_X, fVec3(1.0f, 0.0f, 0.0f), fVec3(0.0f, -1.0f, 0.0f) },
+	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_X, fVec3(-1.0f, 0.0f, 0.0f),fVec3(0.0f, -1.0f, 0.0f) },
+	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Y, fVec3(0.0f, 1.0f, 0.0f), fVec3(0.0f, 0.0f, -1.0f) },
+	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, fVec3(0.0f, -1.0f, 0.0f),fVec3(0.0f, 0.0f, 1.0f)  },
+	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Z, fVec3(0.0f, 0.0f, 1.0f), fVec3(0.0f, -1.0f, 0.0f) },
+	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, fVec3(0.0f, 0.0f, -1.0f),fVec3(0.0f, -1.0f, 0.0f) }
+};
+
 RenderNode::RenderNode() : m_renderObject(nullptr), m_prev(nullptr), m_next(nullptr)
 {
 }
@@ -165,6 +181,53 @@ void RenderScene::AttachCamera(Camera* camera)
 {
 	camera->SetViewport(&m_viewport);
 }
+
+void RenderScene::RenderShadowMaps()
+{
+	glCullFace(GL_FRONT);
+
+	Viewport lightView;
+
+	lightView.m_fov = 90.0f;
+	lightView.m_aspect = 1.0f;
+	lightView.m_near = 1.0f;
+	lightView.m_far = 256.0f;
+	const fMat44 projectionMatrix = lightView.CreateProjectionMatrix();
+
+	glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+
+	for (PointLight& pointLight : m_pointLights)
+	{
+		ShadowCubeMap& cubeMap = pointLight.shadowCubeMap;
+
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			cubeMap.BindForWriting(gCubeMapFaces[i].iFace);
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+			fMat44 viewMatrix = fHomogeneousTransformation::CreateViewMatrix
+			(
+				pointLight.position,
+				gCubeMapFaces[i].viewDir,
+				gCubeMapFaces[i].viewUp
+			);
+
+			const RenderNode* node = m_firstNode;
+			while (node)
+			{
+				if (RenderObject* obj = node->GetRenderObject())
+				{
+					RenderMesh* mesh = obj->GetRenderMesh();
+					Shader* shader = obj->GetShader();
+					obj->Draw(projectionMatrix, viewMatrix);
+				}
+
+				node = node->GetNext();
+			}
+		}
+	}
+}
+
 void RenderScene::DrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -179,27 +242,7 @@ void RenderScene::DrawScene()
 		{
 			RenderMesh* mesh = obj->GetRenderMesh();
 			Shader* shader = obj->GetShader();
-			if (mesh != nullptr && shader != nullptr)
-			{
-				const RenderObject* obj = node->GetRenderObject();
-				const fMat44 modelMatrix = obj->CreateModelMatrix();
-				const GLuint program = obj->GetShader()->GetProgram();
-				const GLuint vao = mesh->GetVAO();
-				const GLuint ibo = mesh->GetIBO();
-				const unsigned int nTriangles = obj->GetRenderMesh()->GetNTriangles();
-				glUseProgram(program);
-				glBindVertexArray(vao);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-				const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
-				const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
-				const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
-				// Pass in the transpose because OpenGL likes to be all edgy with its
-				// column major matrices while we are row major like everybody else.
-				glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
-				glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
-				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
-				glDrawElements(GL_TRIANGLES, 3 * nTriangles, GL_UNSIGNED_INT, 0);
-			}
+			obj->Draw(projectionMatrix, viewMatrix);
 		}
 
 		node = node->GetNext();

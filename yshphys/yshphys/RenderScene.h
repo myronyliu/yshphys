@@ -7,6 +7,7 @@
 #include "Window.h"
 #include "Camera.h"
 #include "DebugRenderer.h"
+#include "Light.h"
 #include <glew.h>
 
 #define MAX_RENDER_NODES 1024
@@ -62,6 +63,8 @@ public:
 	void AddRenderObject(RenderObject* renderObject);
 	void RemoveRenderObject(RenderObject* renderObject);
 
+	void RenderShadowMaps();
+
 	void DrawScene();
 
 	void AttachCamera(Camera* camera);
@@ -74,5 +77,7 @@ protected:
 	RenderNode* m_firstNode;
 
 	DebugRenderer m_debugRenderer;
+
+	std::vector<PointLight> m_pointLights;
 };
 

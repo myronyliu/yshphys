@@ -26,10 +26,10 @@ public:
 	void SetRenderMesh(RenderMesh* mesh);
 	void SetShader(Shader* shader);
 
-
 	RenderNode* GetRenderNode() const;
 
 	fMat44 CreateModelMatrix() const;
+	void Draw(const fMat44& projectionMatrix, const fMat44& viewMatrix) const;
 
 protected:
 

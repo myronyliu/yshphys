@@ -58,6 +58,9 @@
     <Filter Include="Physics\Materials">
       <UniqueIdentifier>{29c84271-2119-4796-9ea4-b8168a562d54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\Lighting">
+      <UniqueIdentifier>{51d68764-059a-4028-93b8-f6e89be4bb02}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -237,6 +240,12 @@
     <ClInclude Include="Polygon.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Rendering\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowCubeMap.h">
+      <Filter>Rendering\Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -406,6 +415,12 @@
     </ClCompile>
     <ClCompile Include="Polygon.cpp">
       <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowCubeMap.cpp">
+      <Filter>Rendering\Lighting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

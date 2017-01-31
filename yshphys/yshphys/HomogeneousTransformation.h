@@ -9,6 +9,8 @@ public:
 	static Mat44_t<T> CreateTranslation(const Vec3_t<T>& t);
 	static Mat44_t<T> CreateScale(T sx, T sy, T sz);
 
+	static Mat44_t<T> CreateViewMatrix(const Vec3_t<T>& eye, const Vec3_t<T>& viewDir, const Vec3_t<T>& viewUp);
+
 	static Mat44_t<T> CreateProjection(T fov, T aspect, T near, T far);
 
 private:

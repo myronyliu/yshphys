@@ -136,6 +136,29 @@ Mat44_t<T> HomogeneousTransformation_t<T>::CreateProjection(T fov, T aspect, T n
 
 	return P;
 }
+template <class T>
+Mat44_t<T> HomogeneousTransformation_t<T>::CreateViewMatrix(const Vec3_t<T>& eye, const Vec3_t<T>& viewDir, const Vec3_t<T>& viewUp)
+{
+	const Vec3_t<T> viewLeft = viewUp.Cross(viewDir);
+	Mat44_t<T> viewMatrix;
+	Mat33_t<T> Rinv;
+	Rinv.SetRow(0, viewLeft);
+	Rinv.SetRow(1, viewUp);
+	Rinv.SetRow(2, viewDir);
+	Vec3_t<T> Tinv = -Rinv.Transform(eye);
+	for (int i = 0; i < 3; ++i)
+	{
+		viewMatrix(i, 0) = Rinv(i, 0);
+		viewMatrix(i, 1) = Rinv(i, 1);
+		viewMatrix(i, 2) = Rinv(i, 2);
+		viewMatrix(i, 3) = Tinv[i];
+	}
+	viewMatrix(3, 0) = (T)0.0;
+	viewMatrix(3, 1) = (T)0.0;
+	viewMatrix(3, 2) = (T)0.0;
+	viewMatrix(3, 3) = (T)1.0;
+	return viewMatrix;
+}
 
 template class HomogeneousTransformation_t<float>;
-template class HomogeneousTransformation_t<double> ;
+template class HomogeneousTransformation_t<double>;
