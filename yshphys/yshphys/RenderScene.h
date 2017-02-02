@@ -3,6 +3,7 @@
 #include "RenderObject.h"
 #include "Shader.h"
 #include "Shader_FlatUniformColor.h"
+#include "Shader_ShadowCubeMap.h"
 #include "Viewport.h"
 #include "Window.h"
 #include "Camera.h"
@@ -58,12 +59,17 @@ public:
 	RenderScene();
 	virtual ~RenderScene();
 
+	bool Init();
+
 	DebugRenderer& DebugDrawSystem();
 
 	void AddRenderObject(RenderObject* renderObject);
 	void RemoveRenderObject(RenderObject* renderObject);
 
-	void RenderShadowMaps();
+	void AddPointLight(const PointLight& pointLight);
+
+	void ShadowPass();
+	void RenderPass();
 
 	void DrawScene();
 
@@ -79,5 +85,7 @@ protected:
 	DebugRenderer m_debugRenderer;
 
 	std::vector<PointLight> m_pointLights;
+
+	Shader_ShadowCubeMap m_shadowCubeMapShader;
 };
 

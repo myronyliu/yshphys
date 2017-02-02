@@ -5,18 +5,20 @@
 
 struct CubeMapFace
 {
+	CubeMapFace(GLenum iFace_, const fVec3& viewDir_, const fVec3& viewUp_) : iFace(iFace_), viewDir(viewDir_), viewUp(viewUp_) {}
+
 	GLenum iFace;
 	fVec3 viewDir;
 	fVec3 viewUp;
 };
 static const CubeMapFace gCubeMapFaces[6] =
 {
-	{ GL_TEXTURE_CUBE_MAP_POSITIVE_X, fVec3(1.0f, 0.0f, 0.0f), fVec3(0.0f, -1.0f, 0.0f) },
-	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_X, fVec3(-1.0f, 0.0f, 0.0f),fVec3(0.0f, -1.0f, 0.0f) },
-	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Y, fVec3(0.0f, 1.0f, 0.0f), fVec3(0.0f, 0.0f, -1.0f) },
-	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, fVec3(0.0f, -1.0f, 0.0f),fVec3(0.0f, 0.0f, 1.0f)  },
-	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Z, fVec3(0.0f, 0.0f, 1.0f), fVec3(0.0f, -1.0f, 0.0f) },
-	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, fVec3(0.0f, 0.0f, -1.0f),fVec3(0.0f, -1.0f, 0.0f) }
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_X, fVec3( 1.0f,  0.0f,  0.0f), fVec3(0.0f, -1.0f,  0.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_X, fVec3(-1.0f,  0.0f,  0.0f), fVec3(0.0f, -1.0f,  0.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_Y, fVec3( 0.0f,  1.0f,  0.0f), fVec3(0.0f,  0.0f, -1.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, fVec3( 0.0f, -1.0f,  0.0f), fVec3(0.0f,  0.0f,  1.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_Z, fVec3( 0.0f,  0.0f,  1.0f), fVec3(0.0f, -1.0f,  0.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, fVec3( 0.0f,  0.0f, -1.0f), fVec3(0.0f, -1.0f,  0.0f) )
 };
 
 RenderNode::RenderNode() : m_renderObject(nullptr), m_prev(nullptr), m_next(nullptr)
@@ -177,18 +179,23 @@ void RenderScene::RemoveRenderObject(RenderObject* renderObject)
 	}
 }
 
+void RenderScene::AddPointLight(const PointLight& pointLight)
+{
+	m_pointLights.push_back(pointLight);
+}
+
 void RenderScene::AttachCamera(Camera* camera)
 {
 	camera->SetViewport(&m_viewport);
 }
 
-void RenderScene::RenderShadowMaps()
+void RenderScene::ShadowPass()
 {
 	glCullFace(GL_FRONT);
 
 	Viewport lightView;
 
-	lightView.m_fov = 90.0f;
+	lightView.m_fov = fPI*0.5f;
 	lightView.m_aspect = 1.0f;
 	lightView.m_near = 1.0f;
 	lightView.m_far = 256.0f;
@@ -198,6 +205,8 @@ void RenderScene::RenderShadowMaps()
 
 	for (PointLight& pointLight : m_pointLights)
 	{
+		lightView.m_pos = pointLight.position;
+
 		ShadowCubeMap& cubeMap = pointLight.shadowCubeMap;
 
 		for (unsigned int i = 0; i < 6; i++)
@@ -217,9 +226,13 @@ void RenderScene::RenderShadowMaps()
 			{
 				if (RenderObject* obj = node->GetRenderObject())
 				{
+					GLuint shadowMapShaderProgram = m_shadowCubeMapShader.GetProgram();
+					glUseProgram(shadowMapShaderProgram);
+					GLint pointLightPos = glGetUniformLocation(shadowMapShaderProgram, "pointLightPos");
+					glUniform3f(pointLightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
+
 					RenderMesh* mesh = obj->GetRenderMesh();
-					Shader* shader = obj->GetShader();
-					obj->Draw(projectionMatrix, viewMatrix);
+					mesh->Draw(&m_shadowCubeMapShader, projectionMatrix, viewMatrix, obj->CreateModelMatrix());
 				}
 
 				node = node->GetNext();
@@ -228,13 +241,17 @@ void RenderScene::RenderShadowMaps()
 	}
 }
 
-void RenderScene::DrawScene()
+void RenderScene::RenderPass()
 {
+	glCullFace(GL_BACK);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
-	
+
 	const RenderNode* node = m_firstNode;
 	while (node)
 	{
@@ -242,6 +259,17 @@ void RenderScene::DrawScene()
 		{
 			RenderMesh* mesh = obj->GetRenderMesh();
 			Shader* shader = obj->GetShader();
+
+			for (PointLight pointLight : m_pointLights)
+			{
+				glUseProgram(shader->GetProgram());
+				GLint shadowCubeMapTex = glGetUniformLocation(shader->GetProgram(), "shadowCubeMap");
+				GLint pointLightPos = glGetUniformLocation(shader->GetProgram(), "pointLightPos");
+				glUniform1i(shadowCubeMapTex, 0);
+				glUniform3f(pointLightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
+				pointLight.shadowCubeMap.BindForReading(GL_TEXTURE0);
+			}
+
 			obj->Draw(projectionMatrix, viewMatrix);
 		}
 
@@ -254,4 +282,10 @@ void RenderScene::DrawScene()
 
 	m_debugRenderer.DrawObjects(m_viewport);
 	m_debugRenderer.EvictObjects();
+}
+
+void RenderScene::DrawScene()
+{
+	ShadowPass();
+	RenderPass();
 }

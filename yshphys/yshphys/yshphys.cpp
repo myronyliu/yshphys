@@ -38,6 +38,13 @@ int main(int argc, char *args[])
 	game.m_renderScene.AttachCamera(&camera);
 	game.m_window = &window;
 
+	PointLight pl;
+	pl.color = fVec3(1.0f, 1.0f, 1.0f);
+	pl.intensity = 8.0f;
+	pl.position = fVec3(0.0f, 0.0f, 32.0f - 16.0f);
+	pl.shadowCubeMap.Init(1024, 1024);
+	game.m_renderScene.AddPointLight(pl);
+
 	game.m_renderScene.DebugDrawSystem().m_picker = &picker;
 
 	Tests::CreateBVTest(&game);

@@ -153,6 +153,24 @@ void RenderMesh::GenerateGLBufferObjects()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void RenderMesh::Draw(const Shader* const shader, const fMat44& projectionMatrix, const fMat44& viewMatrix, const fMat44& modelMatrix) const
+{
+	const GLuint program = shader->GetProgram();
+	const unsigned int nTriangles = m_nTriangles;
+	glUseProgram(program);
+	glBindVertexArray(m_VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+	const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
+	const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
+	const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
+	// Pass in the transpose because OpenGL likes to be all edgy with its
+	// column major matrices while we are row major like everybody else.
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
+	glDrawElements(GL_TRIANGLES, 3 * nTriangles, GL_UNSIGNED_INT, 0);
+}
+
 void RenderMesh::CreateTriangle(const fVec3& v0, const fVec3 v1, const fVec3& v2, const fVec3& color)
 {
 	AllocateMesh(3, 1);

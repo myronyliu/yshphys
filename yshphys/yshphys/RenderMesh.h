@@ -3,6 +3,7 @@
 #include "Vec3.h"
 #include "Quat.h"
 #include "glew.h"
+#include "Shader.h"
 
 class RenderMesh
 {
@@ -21,6 +22,8 @@ public:
 
 	void SetVertex(unsigned int i, const fVec3& position, const fVec3& normal, const fVec3& color);
 	void SetTriangleIndices(unsigned int iTriangle, unsigned int iVertexA, unsigned int iVertexB, unsigned int iVertexC);
+
+	void Draw(const Shader* const shader, const fMat44& projectionMatrix, const fMat44& viewMatrix, const fMat44& modelMatrix) const;
 
 	// FACTORY
 	void CreateTriangle(const fVec3& v0, const fVec3 v1, const fVec3& v2, const fVec3& color);

@@ -69,5 +69,6 @@ void ShadowCubeMap::BindForWriting(GLenum CubeFace)
 void ShadowCubeMap::BindForReading(GLenum TextureUnit)
 {
 	glActiveTexture(TextureUnit);
+//	glBindTexture(GL_TEXTURE_CUBE_MAP, m_shadowMap);
 	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 }

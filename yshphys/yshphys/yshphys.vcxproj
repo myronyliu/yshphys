@@ -186,6 +186,7 @@
     <ClInclude Include="Picker.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
+    <ClInclude Include="Shader_ShadowCubeMap.h" />
     <ClInclude Include="ShadowCubeMap.h" />
     <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
@@ -253,6 +254,7 @@
     <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
+    <ClCompile Include="Shader_ShadowCubeMap.cpp" />
     <ClCompile Include="ShadowCubeMap.cpp" />
     <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
@@ -288,6 +290,8 @@
     <None Include="FlatUniformColorFragmentShader.glsl" />
     <None Include="FlatUniformColorVertexShader.glsl" />
     <None Include="packages.config" />
+    <None Include="ShadowCubeMapFragmentShader.glsl" />
+    <None Include="ShadowCubeMapVertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="yshphys.rc" />

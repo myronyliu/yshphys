@@ -246,11 +246,11 @@
     <ClInclude Include="ShadowCubeMap.h">
       <Filter>Rendering\Lighting</Filter>
     </ClInclude>
+    <ClInclude Include="Shader_ShadowCubeMap.h">
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="yshphys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -422,6 +422,12 @@
     <ClCompile Include="ShadowCubeMap.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_ShadowCubeMap.cpp">
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -435,6 +441,12 @@
       <Filter>Rendering\Shaders</Filter>
     </None>
     <None Include="FlatUniformColorVertexShader.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
+    <None Include="ShadowCubeMapVertexShader.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
+    <None Include="ShadowCubeMapFragmentShader.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
   </ItemGroup>

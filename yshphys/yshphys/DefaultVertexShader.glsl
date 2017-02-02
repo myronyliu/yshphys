@@ -9,11 +9,14 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 out vec3 ex_color;
+out vec3 ex_fragPos;
 
 void main(void)
 {
 	mat4 viewModelMatrix = viewMatrix * modelMatrix;
 	mat4 projectionViewModelMatrix = projectionMatrix * viewModelMatrix;
+
+	ex_fragPos = (modelMatrix * vec4(in_position, 1.0f)).xyz;
 
 	gl_Position = projectionViewModelMatrix * vec4(in_position, 1.0f);
 
