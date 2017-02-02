@@ -8,6 +8,8 @@ public:
 	Mat44_t();
 	virtual ~Mat44_t();
 
+	void GetData(T* const rowMajorEntries) const;
+
 	Vec4_t<T> GetRow(int i) const;
 	Vec4_t<T> GetColumn(int j) const;
 

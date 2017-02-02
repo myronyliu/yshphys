@@ -12,13 +12,16 @@ public:
 
 	virtual bool Init(int width);
 
-	void BindForWriting(GLenum CubeFace);
+	virtual fMat44 CreateProjectionMatrix() const;
+
+	void BindForWriting();
 
 	void BindForReading(GLenum TextureUnit);
 
-
 	GLuint m_FBO;
-	GLuint m_shadowMap;
 	GLuint m_depth;
+
+	float m_near;
+	float m_far;
 };
 

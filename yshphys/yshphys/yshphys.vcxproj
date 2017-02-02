@@ -285,13 +285,14 @@
     <ClCompile Include="yshphys.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DefaultFragmentShader.glsl" />
-    <None Include="DefaultVertexShader.glsl" />
-    <None Include="FlatUniformColorFragmentShader.glsl" />
-    <None Include="FlatUniformColorVertexShader.glsl" />
+    <None Include="Default_frag.glsl" />
+    <None Include="Default_vert.glsl" />
+    <None Include="FlatUniformColor_frag.glsl" />
+    <None Include="FlatUniformColor_vert.glsl" />
     <None Include="packages.config" />
-    <None Include="ShadowCubeMapFragmentShader.glsl" />
-    <None Include="ShadowCubeMapVertexShader.glsl" />
+    <None Include="ShadowCubeMap_frag.glsl" />
+    <None Include="ShadowCubeMap_geom.glsl" />
+    <None Include="ShadowCubeMap_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="yshphys.rc" />

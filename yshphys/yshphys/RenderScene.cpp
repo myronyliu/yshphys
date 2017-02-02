@@ -193,54 +193,60 @@ void RenderScene::ShadowPass()
 {
 	glCullFace(GL_FRONT);
 
-	Viewport lightView;
-
-	lightView.m_fov = fPI*0.5f;
-	lightView.m_aspect = 1.0f;
-	lightView.m_near = 1.0f;
-	lightView.m_far = 256.0f;
-	const fMat44 projectionMatrix = lightView.CreateProjectionMatrix();
-
 	glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
 	// Damn graphics library mumbo jumbo...
 	// https://www.opengl.org/discussion_boards/showthread.php/189389-Shadow-Mapping-not-working-for-textures-not-size-of-screen
 	// http://www.idevgames.com/forums/thread-2744.html
 	glViewport(0, 0, 1024, 1024);
 
+	GLuint shadowMapShaderProgram = m_shadowCubeMapShader.GetProgram();
+	glUseProgram(shadowMapShaderProgram);
+
+	const GLint projectionViewLoc = glGetUniformLocation(shadowMapShaderProgram, "projectionViewMatrices");
+	const GLint modelLoc = glGetUniformLocation(shadowMapShaderProgram, "modelMatrix");
+	const GLint pointLightPosLoc = glGetUniformLocation(shadowMapShaderProgram, "pointLightPos");
+	const GLint pointLightFarLoc = glGetUniformLocation(shadowMapShaderProgram, "pointLightFarPlane");
+
 	for (PointLight& pointLight : m_pointLights)
 	{
-		lightView.m_pos = pointLight.position;
+		const fMat44 projMat = pointLight.shadowCubeMap.CreateProjectionMatrix();
+
+		float projViewMats[16 * 6];
+		float* ptr = projViewMats;
 
 		ShadowCubeMap& cubeMap = pointLight.shadowCubeMap;
+		cubeMap.BindForWriting();
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 		for (unsigned int i = 0; i < 6; i++)
 		{
-			cubeMap.BindForWriting(gCubeMapFaces[i].iFace);
-			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-			fMat44 viewMatrix = fHomogeneousTransformation::CreateViewMatrix
+			const fMat44 viewMat = fHomogeneousTransformation::CreateViewMatrix
 			(
 				pointLight.position,
 				gCubeMapFaces[i].viewDir,
 				gCubeMapFaces[i].viewUp
 			);
+			const fMat44 projViewMat = projMat*viewMat;
+			projViewMat.Transpose().GetData(ptr);
+			ptr += 16;
+		}
+		glUniformMatrix4fv(projectionViewLoc, 6, GL_FALSE, projViewMats);
+		glUniform3f(pointLightPosLoc, pointLight.position.x, pointLight.position.y, pointLight.position.z);
+		glUniform1f(pointLightFarLoc, pointLight.shadowCubeMap.m_far);
 
-			const RenderNode* node = m_firstNode;
-			while (node)
+		const RenderNode* node = m_firstNode;
+		while (node)
+		{
+			if (RenderObject* obj = node->GetRenderObject())
 			{
-				if (RenderObject* obj = node->GetRenderObject())
-				{
-					GLuint shadowMapShaderProgram = m_shadowCubeMapShader.GetProgram();
-					glUseProgram(shadowMapShaderProgram);
-					GLint pointLightPos = glGetUniformLocation(shadowMapShaderProgram, "pointLightPos");
-					glUniform3f(pointLightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
-
-					RenderMesh* mesh = obj->GetRenderMesh();
-					mesh->Draw(&m_shadowCubeMapShader, projectionMatrix, viewMatrix, obj->CreateModelMatrix());
-				}
-
-				node = node->GetNext();
+				RenderMesh* mesh = obj->GetRenderMesh();
+				glBindVertexArray(mesh->GetVAO());
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->GetIBO());
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(obj->CreateModelMatrix().Transpose()(0, 0)));
+				glDrawElements(GL_TRIANGLES, 3 * mesh->GetNTriangles(), GL_UNSIGNED_INT, 0);
 			}
+
+			node = node->GetNext();
 		}
 	}
 }
@@ -274,8 +280,10 @@ void RenderScene::RenderPass(Window* window)
 				glUseProgram(shader->GetProgram());
 				GLint shadowCubeMapTex = glGetUniformLocation(shader->GetProgram(), "shadowCubeMap");
 				GLint pointLightPos = glGetUniformLocation(shader->GetProgram(), "pointLightPos");
+				GLint pointLightFar = glGetUniformLocation(shader->GetProgram(), "pointLightFarPlane");
 				glUniform1i(shadowCubeMapTex, 0);
 				glUniform3f(pointLightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
+				glUniform1f(pointLightFar, pointLight.shadowCubeMap.m_far);
 				pointLight.shadowCubeMap.BindForReading(GL_TEXTURE0);
 			}
 

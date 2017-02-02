@@ -4,7 +4,7 @@
 
 Shader_ShadowCubeMap::Shader_ShadowCubeMap()
 {
-	Shader::LoadShader("ShadowCubeMapVertexShader.glsl", "ShadowCubeMapFragmentShader.glsl");
+	Shader::LoadShader("ShadowCubeMap_vert.glsl", "ShadowCubeMap_geom.glsl", "ShadowCubeMap_frag.glsl");
 }
 
 

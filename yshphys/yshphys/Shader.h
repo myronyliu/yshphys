@@ -11,7 +11,8 @@ public:
 
 protected:
 	// Each shader class will load from hardcoded filepaths in the constructor
-	void LoadShader(const char *vertex_path, const char *fragment_path);
+	void LoadShader(const char* vertex_path, const char* fragment_path);
+	void LoadShader(const char* vertex_path, const char* geometry_path, const char* fragment_path);
 
 	GLuint m_program;
 };

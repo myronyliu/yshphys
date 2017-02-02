@@ -4,7 +4,7 @@
 
 Shader_Default::Shader_Default()
 {
-	Shader::LoadShader("DefaultVertexShader.glsl", "DefaultFragmentShader.glsl");
+	Shader::LoadShader("Default_vert.glsl", "Default_frag.glsl");
 }
 
 

@@ -6,15 +6,17 @@ in vec3 ex_fragPos;
 out vec4 fragColor;
 
 uniform vec3 pointLightPos;
+uniform float pointLightFarPlane;
+
 uniform samplerCube shadowCubeMap;
 
 float CalcShadowFactor(vec3 LightDirection)
 {
-	float SampledDistance = texture(shadowCubeMap, LightDirection).r;
+	float SampledDistance = texture(shadowCubeMap, LightDirection).r * pointLightFarPlane;
 
 	float Distance = length(LightDirection);
 
-	if (Distance < SampledDistance + 0.01f)
+	if (Distance < SampledDistance + 0.001f)
 	{
 		return 1.0f; // Inside the light
 	}

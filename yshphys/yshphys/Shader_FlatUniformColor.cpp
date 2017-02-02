@@ -4,7 +4,7 @@
 
 Shader_FlatUniformColor::Shader_FlatUniformColor()
 {
-	Shader::LoadShader("FlatUniformColorVertexShader.glsl", "FlatUniformColorFragmentShader.glsl");
+	Shader::LoadShader("FlatUniformColor_vert.glsl", "FlatUniformColor_frag.glsl");
 }
 
 

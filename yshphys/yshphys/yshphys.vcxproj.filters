@@ -431,22 +431,25 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="DefaultFragmentShader.glsl">
+    <None Include="ShadowCubeMap_frag.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
-    <None Include="DefaultVertexShader.glsl">
+    <None Include="ShadowCubeMap_vert.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
-    <None Include="FlatUniformColorFragmentShader.glsl">
+    <None Include="FlatUniformColor_frag.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
-    <None Include="FlatUniformColorVertexShader.glsl">
+    <None Include="FlatUniformColor_vert.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
-    <None Include="ShadowCubeMapVertexShader.glsl">
+    <None Include="Default_vert.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
-    <None Include="ShadowCubeMapFragmentShader.glsl">
+    <None Include="Default_frag.glsl">
+      <Filter>Rendering\Shaders</Filter>
+    </None>
+    <None Include="ShadowCubeMap_geom.glsl">
       <Filter>Rendering\Shaders</Filter>
     </None>
   </ItemGroup>

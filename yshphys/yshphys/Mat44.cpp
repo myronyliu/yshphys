@@ -14,6 +14,12 @@ Mat44_t<T>::~Mat44_t()
 }
 
 template <class T>
+void Mat44_t<T>::GetData(T* const rowMajorEntries) const
+{
+	std::memcpy(rowMajorEntries, M_ij, sizeof(M_ij));
+}
+
+template <class T>
 Vec4_t<T> Mat44_t<T>::GetRow(int i) const
 {
 	return Vec4_t<T>(M_ij[i][0], M_ij[i][1], M_ij[i][2], M_ij[i][3]);
