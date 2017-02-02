@@ -68,15 +68,15 @@ public:
 
 	void AddPointLight(const PointLight& pointLight);
 
-	void ShadowPass();
-	void RenderPass();
-
-	void DrawScene();
+	void DrawScene(Window* window);
 
 	void AttachCamera(Camera* camera);
 
 	Viewport m_viewport;
 protected:
+
+	void ShadowPass();
+	void RenderPass(Window* window);
 
 	std::stack<FreedRenderNode> m_freedNodeStack;
 	RenderNode* m_renderNodes;

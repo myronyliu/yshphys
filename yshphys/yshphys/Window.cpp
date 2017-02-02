@@ -13,10 +13,26 @@ Window::~Window()
 {
 }
 
-void Window::CreateWindow()
+void Window::GetUpperLeftCorner(int& x, int& y) const
 {
+	x = m_x;
+	y = m_y;
+}
+void Window::GetDimensions(int& w, int& h) const
+{
+	w = m_w;
+	h = m_h;
+}
+
+void Window::CreateWindow(int x, int y, int w, int h)
+{
+	m_x = x;
+	m_y = y;
+	m_w = w;
+	m_h = h;
+
 	SDL_Init(SDL_INIT_EVERYTHING);
-	m_window = SDL_CreateWindow("yshphys", 88, 88, 1024, 1024, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	m_window = SDL_CreateWindow("yshphys", x, y, w, h, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	m_screenSurface = SDL_GetWindowSurface(m_window);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	InitGL();

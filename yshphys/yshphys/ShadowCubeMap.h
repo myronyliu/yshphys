@@ -10,7 +10,7 @@ public:
 	ShadowCubeMap();
 	virtual ~ShadowCubeMap();
 
-	virtual bool Init(int width, int height);
+	virtual bool Init(int width);
 
 	void BindForWriting(GLenum CubeFace);
 

@@ -3,7 +3,7 @@
 
 Viewport::Viewport() :
 	m_fov(fPI*0.33f),
-	m_aspect(1.0f),
+	m_aspect(1.33f),
 	m_near(0.25f),
 	m_far(256.0f),
 	m_pos(0.0f, 0.0f, 0.0f),

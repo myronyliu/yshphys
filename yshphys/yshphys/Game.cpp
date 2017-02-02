@@ -138,7 +138,7 @@ void Game::Run()
 			m_renderScene.DebugDrawSystem().DrawLine(fVec3(0.0f, -axesLength, 0.0f), fVec3(0.0f, axesLength, 0.0f), fVec3(0.0f, 1.0f, 0.0f));
 			m_renderScene.DebugDrawSystem().DrawLine(fVec3(0.0f, 0.0f, -axesLength), fVec3(0.0f, 0.0f, axesLength), fVec3(0.0f, 0.0f, 1.0f));
 
-			m_renderScene.DrawScene();
+			m_renderScene.DrawScene(m_window);
 
 			m_window->UpdateGLRender();
 

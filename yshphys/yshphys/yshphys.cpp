@@ -21,7 +21,7 @@
 int main(int argc, char *args[])
 {
 	Window window;
-	window.CreateWindow();
+	window.CreateWindow(88, 88, 1200, 900);
 
 	Camera camera;
 	Picker picker;
@@ -42,7 +42,7 @@ int main(int argc, char *args[])
 	pl.color = fVec3(1.0f, 1.0f, 1.0f);
 	pl.intensity = 8.0f;
 	pl.position = fVec3(0.0f, 0.0f, 32.0f - 16.0f);
-	pl.shadowCubeMap.Init(1024, 1024);
+	pl.shadowCubeMap.Init(1024);
 	game.m_renderScene.AddPointLight(pl);
 
 	game.m_renderScene.DebugDrawSystem().m_picker = &picker;

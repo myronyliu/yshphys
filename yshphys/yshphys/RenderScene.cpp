@@ -202,6 +202,10 @@ void RenderScene::ShadowPass()
 	const fMat44 projectionMatrix = lightView.CreateProjectionMatrix();
 
 	glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+	// Damn graphics library mumbo jumbo...
+	// https://www.opengl.org/discussion_boards/showthread.php/189389-Shadow-Mapping-not-working-for-textures-not-size-of-screen
+	// http://www.idevgames.com/forums/thread-2744.html
+	glViewport(0, 0, 1024, 1024);
 
 	for (PointLight& pointLight : m_pointLights)
 	{
@@ -241,13 +245,18 @@ void RenderScene::ShadowPass()
 	}
 }
 
-void RenderScene::RenderPass()
+void RenderScene::RenderPass(Window* window)
 {
 	glCullFace(GL_BACK);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	int w, h;
+	window->GetDimensions(w, h);
+
+	glViewport(0, 0, w, h);
 
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
@@ -284,8 +293,8 @@ void RenderScene::RenderPass()
 	m_debugRenderer.EvictObjects();
 }
 
-void RenderScene::DrawScene()
+void RenderScene::DrawScene(Window* window)
 {
 	ShadowPass();
-	RenderPass();
+	RenderPass(window);
 }
