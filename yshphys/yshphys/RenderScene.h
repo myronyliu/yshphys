@@ -3,7 +3,8 @@
 #include "RenderObject.h"
 #include "Shader.h"
 #include "Shader_FlatUniformColor.h"
-#include "Shader_ShadowCubeMap.h"
+#include "Shader_DepthCube.h"
+#include "Shader_DepthPerspective.h"
 #include "Viewport.h"
 #include "Window.h"
 #include "Camera.h"
@@ -76,6 +77,7 @@ public:
 protected:
 
 	void ShadowPass();
+	void RenderDepthFromEye(Window* window);
 	void RenderPass(Window* window);
 
 	std::stack<FreedRenderNode> m_freedNodeStack;
@@ -86,6 +88,7 @@ protected:
 
 	std::vector<PointLight> m_pointLights;
 
-	Shader_ShadowCubeMap m_shadowCubeMapShader;
+	Shader_DepthCube m_shadowCubeMapShader;
+	Shader_DepthPerspective m_depthPerspectiveShader;
 };
 

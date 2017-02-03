@@ -203,7 +203,8 @@ void RenderScene::ShadowPass()
 	const GLint projectionViewLoc = glGetUniformLocation(shadowMapShaderProgram, "projectionViewMatrices");
 	const GLint modelLoc = glGetUniformLocation(shadowMapShaderProgram, "modelMatrix");
 	const GLint pointLightPosLoc = glGetUniformLocation(shadowMapShaderProgram, "pointLightPos");
-	const GLint pointLightFarLoc = glGetUniformLocation(shadowMapShaderProgram, "pointLightFarPlane");
+	const GLint uniLoc_near = glGetUniformLocation(shadowMapShaderProgram, "gNear");
+	const GLint uniLoc_far = glGetUniformLocation(shadowMapShaderProgram, "gFar");
 
 	for (PointLight& pointLight : m_pointLights)
 	{
@@ -231,7 +232,8 @@ void RenderScene::ShadowPass()
 		}
 		glUniformMatrix4fv(projectionViewLoc, 6, GL_FALSE, projViewMats);
 		glUniform3f(pointLightPosLoc, pointLight.position.x, pointLight.position.y, pointLight.position.z);
-		glUniform1f(pointLightFarLoc, pointLight.shadowCubeMap.m_far);
+		glUniform1f(uniLoc_near, pointLight.shadowCubeMap.m_near);
+		glUniform1f(uniLoc_far, pointLight.shadowCubeMap.m_far);
 
 		const RenderNode* node = m_firstNode;
 		while (node)
@@ -247,6 +249,52 @@ void RenderScene::ShadowPass()
 
 			node = node->GetNext();
 		}
+	}
+}
+
+void RenderScene::RenderDepthFromEye(Window* window)
+{
+	glCullFace(GL_BACK);
+
+	GLuint program = m_depthPerspectiveShader.GetProgram();
+	glUseProgram(program);
+
+	const GLint uniLoc_projection = glGetUniformLocation(program, "gProjection");
+	const GLint uniLoc_view = glGetUniformLocation(program, "gView");
+	const GLint uniLoc_model = glGetUniformLocation(program, "gModel");
+
+	const GLint uniLoc_near = glGetUniformLocation(program, "gNear");
+	const GLint uniLoc_far = glGetUniformLocation(program, "gFar");
+
+	glUniformMatrix4fv(uniLoc_projection, 1, GL_FALSE, &(m_viewport.CreateProjectionMatrix().Transpose()(0, 0)));
+	glUniformMatrix4fv(uniLoc_view, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Transpose()(0, 0)));
+	glUniform1f(uniLoc_near, m_viewport.m_near);
+	glUniform1f(uniLoc_far, m_viewport.m_far);
+
+	glUniform1f(uniLoc_near, m_viewport.m_near);
+	glUniform1f(uniLoc_far, m_viewport.m_far);
+
+	int w, h;
+	window->GetDimensions(w, h);
+	glViewport(0, 0, w, h);
+
+	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
+	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
+
+	const RenderNode* node = m_firstNode;
+	while (node)
+	{
+		if (RenderObject* obj = node->GetRenderObject())
+		{
+			if (RenderMesh* mesh = obj->GetRenderMesh())
+			{
+				glBindVertexArray(mesh->GetVAO());
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->GetIBO());
+				glUniformMatrix4fv(uniLoc_model, 1, GL_FALSE, &(obj->CreateModelMatrix().Transpose()(0, 0)));
+				glDrawElements(GL_TRIANGLES, 3 * mesh->GetNTriangles(), GL_UNSIGNED_INT, 0);
+			}
+		}
+		node = node->GetNext();
 	}
 }
 
@@ -281,11 +329,13 @@ void RenderScene::RenderPass(Window* window)
 				GLint shadowCubeMapTex = glGetUniformLocation(program, "shadowCubeMap");
 				GLint pointLightPos = glGetUniformLocation(program, "pointLightPos");
 				const GLint pointLightInt = glGetUniformLocation(program , "pointLightInt");
-				GLint pointLightFar = glGetUniformLocation(program, "pointLightFarPlane");
+				const GLint uniLoc_near = glGetUniformLocation(program, "gNear");
+				const GLint uniLoc_far = glGetUniformLocation(program, "gFar");
 				glUniform1i(shadowCubeMapTex, 0);
 				glUniform3f(pointLightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
 				glUniform3f(pointLightInt, pointLight.intensity.x, pointLight.intensity.y, pointLight.intensity.z);
-				glUniform1f(pointLightFar, pointLight.shadowCubeMap.m_far);
+				glUniform1f(uniLoc_near, pointLight.shadowCubeMap.m_near);
+				glUniform1f(uniLoc_far, pointLight.shadowCubeMap.m_far);
 				pointLight.shadowCubeMap.BindForReading(GL_TEXTURE0);
 			}
 

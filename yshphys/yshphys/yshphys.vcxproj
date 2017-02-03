@@ -167,6 +167,7 @@
     <ClInclude Include="ContactBuffer.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DebugRenderer.h" />
+    <ClInclude Include="DepthMap.h" />
     <ClInclude Include="EPAHull.h" />
     <ClInclude Include="Force.h" />
     <ClInclude Include="Force_Constant.h" />
@@ -186,7 +187,8 @@
     <ClInclude Include="Picker.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
-    <ClInclude Include="Shader_ShadowCubeMap.h" />
+    <ClInclude Include="Shader_DepthPerspective.h" />
+    <ClInclude Include="Shader_DepthCube.h" />
     <ClInclude Include="DepthCubeMap.h" />
     <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
@@ -230,6 +232,7 @@
     <ClCompile Include="ContactBuffer.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
+    <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="EPAHull.cpp" />
     <ClCompile Include="Force.cpp" />
     <ClCompile Include="Force_Constant.cpp" />
@@ -254,7 +257,8 @@
     <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
-    <ClCompile Include="Shader_ShadowCubeMap.cpp" />
+    <ClCompile Include="Shader_DepthPerspective.cpp" />
+    <ClCompile Include="Shader_DepthCube.cpp" />
     <ClCompile Include="DepthCubeMap.cpp" />
     <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
@@ -287,12 +291,14 @@
   <ItemGroup>
     <None Include="Default_frag.glsl" />
     <None Include="Default_vert.glsl" />
+    <None Include="DepthPerspective_frag.glsl" />
+    <None Include="DepthPerspective_vert.glsl" />
     <None Include="FlatUniformColor_frag.glsl" />
     <None Include="FlatUniformColor_vert.glsl" />
     <None Include="packages.config" />
-    <None Include="ShadowCubeMap_frag.glsl" />
-    <None Include="ShadowCubeMap_geom.glsl" />
-    <None Include="ShadowCubeMap_vert.glsl" />
+    <None Include="DepthCube_frag.glsl" />
+    <None Include="DepthCube_geom.glsl" />
+    <None Include="DepthCube_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="yshphys.rc" />

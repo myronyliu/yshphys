@@ -6,7 +6,8 @@ in vec3 ex_fragPos;
 out vec4 out_fragColor;
 
 uniform vec3 pointLightPos;
-uniform float pointLightFarPlane;
+uniform float gNear;
+uniform float gFar;
 
 uniform samplerCube shadowCubeMap;
 
@@ -31,11 +32,11 @@ float CalcShadowFactor(vec3 lightToFrag)
 
 	for (int i = 0; i < samples; ++i)
 	{
-		float closestDepth = texture(shadowCubeMap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
-//		float closestDepth = texture(shadowCubeMap, lightToFrag).r;
-		closestDepth *= pointLightFarPlane;
+//		float closestDepth = texture(shadowCubeMap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
+		float alpha = texture(shadowCubeMap, lightToFrag).r;
+		float closestDepth = (1.0f - alpha) * gNear + alpha * gFar;
 
-		if (currentDepth < pointLightFarPlane && currentDepth - bias > closestDepth)
+		if (currentDepth < gFar && currentDepth - bias > closestDepth)
 		{
 			shadow += 1.0f;
 		}

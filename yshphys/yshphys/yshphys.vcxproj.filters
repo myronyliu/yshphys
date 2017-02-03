@@ -61,6 +61,9 @@
     <Filter Include="Rendering\Lighting">
       <UniqueIdentifier>{51d68764-059a-4028-93b8-f6e89be4bb02}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\Shaders\GLSL">
+      <UniqueIdentifier>{d0206498-469e-4344-8226-101433ad7e52}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -243,11 +246,17 @@
     <ClInclude Include="Light.h">
       <Filter>Rendering\Lighting</Filter>
     </ClInclude>
-    <ClInclude Include="Shader_ShadowCubeMap.h">
-      <Filter>Rendering\Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="DepthCubeMap.h">
       <Filter>Rendering\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthMap.h">
+      <Filter>Rendering\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader_DepthPerspective.h">
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader_DepthCube.h">
+      <Filter>Rendering\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -422,35 +431,47 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shader_ShadowCubeMap.cpp">
-      <Filter>Rendering\Shaders</Filter>
-    </ClCompile>
     <ClCompile Include="DepthCubeMap.cpp">
       <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthMap.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_DepthPerspective.cpp">
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_DepthCube.cpp">
+      <Filter>Rendering\Shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="ShadowCubeMap_frag.glsl">
-      <Filter>Rendering\Shaders</Filter>
-    </None>
-    <None Include="ShadowCubeMap_vert.glsl">
-      <Filter>Rendering\Shaders</Filter>
-    </None>
-    <None Include="FlatUniformColor_frag.glsl">
-      <Filter>Rendering\Shaders</Filter>
-    </None>
-    <None Include="FlatUniformColor_vert.glsl">
-      <Filter>Rendering\Shaders</Filter>
+    <None Include="Default_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
     <None Include="Default_vert.glsl">
-      <Filter>Rendering\Shaders</Filter>
+      <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
-    <None Include="Default_frag.glsl">
-      <Filter>Rendering\Shaders</Filter>
+    <None Include="FlatUniformColor_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
-    <None Include="ShadowCubeMap_geom.glsl">
-      <Filter>Rendering\Shaders</Filter>
+    <None Include="FlatUniformColor_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DepthPerspective_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DepthPerspective_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DepthCube_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DepthCube_geom.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DepthCube_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
