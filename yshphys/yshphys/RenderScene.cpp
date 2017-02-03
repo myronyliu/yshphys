@@ -15,8 +15,8 @@ static const CubeMapFace gCubeMapFaces[6] =
 {
 	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_X, fVec3( 1.0f,  0.0f,  0.0f), fVec3(0.0f, -1.0f,  0.0f) ),
 	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_X, fVec3(-1.0f,  0.0f,  0.0f), fVec3(0.0f, -1.0f,  0.0f) ),
-	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_Y, fVec3( 0.0f,  1.0f,  0.0f), fVec3(0.0f,  0.0f, -1.0f) ),
-	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, fVec3( 0.0f, -1.0f,  0.0f), fVec3(0.0f,  0.0f,  1.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_Y, fVec3( 0.0f,  1.0f,  0.0f), fVec3(0.0f,  0.0f,  1.0f) ),
+	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, fVec3( 0.0f, -1.0f,  0.0f), fVec3(0.0f,  0.0f, -1.0f) ),
 	CubeMapFace( GL_TEXTURE_CUBE_MAP_POSITIVE_Z, fVec3( 0.0f,  0.0f,  1.0f), fVec3(0.0f, -1.0f,  0.0f) ),
 	CubeMapFace( GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, fVec3( 0.0f,  0.0f, -1.0f), fVec3(0.0f, -1.0f,  0.0f) )
 };
@@ -191,13 +191,11 @@ void RenderScene::AttachCamera(Camera* camera)
 
 void RenderScene::ShadowPass()
 {
-	glCullFace(GL_FRONT);
+//	glCullFace(GL_FRONT);
 
-	glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
 	// Damn graphics library mumbo jumbo...
 	// https://www.opengl.org/discussion_boards/showthread.php/189389-Shadow-Mapping-not-working-for-textures-not-size-of-screen
 	// http://www.idevgames.com/forums/thread-2744.html
-	glViewport(0, 0, 1024, 1024);
 
 	GLuint shadowMapShaderProgram = m_shadowCubeMapShader.GetProgram();
 	glUseProgram(shadowMapShaderProgram);
@@ -216,7 +214,8 @@ void RenderScene::ShadowPass()
 
 		ShadowCubeMap& cubeMap = pointLight.shadowCubeMap;
 		cubeMap.BindForWriting();
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glViewport(0, 0, pointLight.shadowCubeMap.m_width, pointLight.shadowCubeMap.m_width);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
 		for (unsigned int i = 0; i < 6; i++)
 		{
@@ -303,6 +302,11 @@ void RenderScene::RenderPass(Window* window)
 
 void RenderScene::DrawScene(Window* window)
 {
+	for (PointLight pointLight : m_pointLights)
+	{
+		m_debugRenderer.DrawBox(0.25f, 0.25f, 0.25f, pointLight.position, fQuat::Identity(), fVec3(1.0f, 1.0f, 0.0f), false, false);
+	}
+
 	ShadowPass();
 	RenderPass(window);
 }

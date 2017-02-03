@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ShadowCubeMap.h"
 
-ShadowCubeMap::ShadowCubeMap() : m_near(1.0f), m_far(256.0f)
+ShadowCubeMap::ShadowCubeMap() : m_near(1.0f), m_far(64.0f)
 {
 }
 
@@ -11,6 +11,8 @@ ShadowCubeMap::~ShadowCubeMap()
 
 bool ShadowCubeMap::Init(int width)
 {
+	m_width = width;
+
 	glGenFramebuffers(1, &m_FBO);
 
 	// Create the depth buffer

@@ -424,14 +424,14 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
 
 		rect[0] = corners[0][0][0];
-		rect[3] = corners[1][0][0];
+		rect[3] = corners[0][0][1];
 		rect[2] = corners[1][0][1];
-		rect[1] = corners[0][0][1];
+		rect[1] = corners[1][0][0];
 		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
 		rect[0] = corners[0][1][0];
-		rect[3] = corners[0][1][1];
+		rect[3] = corners[1][1][0];
 		rect[2] = corners[1][1][1];
-		rect[1] = corners[1][1][0];
+		rect[1] = corners[0][1][1];
 		DrawPolygon(rect, 4, pos, rot, color, false, shaded);
 
 		rect[0] = corners[0][0][0];

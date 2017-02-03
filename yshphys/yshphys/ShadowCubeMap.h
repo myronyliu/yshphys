@@ -23,5 +23,7 @@ public:
 
 	float m_near;
 	float m_far;
+
+	int m_width;
 };
 

@@ -8,6 +8,8 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
+uniform vec3 pointLightPos;
+
 out vec3 ex_color;
 out vec3 ex_fragPos;
 
@@ -20,10 +22,10 @@ void main(void)
 
 	gl_Position = projectionViewModelMatrix * vec4(in_position, 1.0f);
 
-//	float colorScale = (mat3(viewModelMatrix) * in_normal).z;
-	float cosTheta = (mat3(modelMatrix) * in_normal).z;
-	float theta = acos(cosTheta);
-	float colorScale = max(0.0f, cos(theta * 0.75f)) + 0.1f;
+	vec3 normal = mat3(modelMatrix) * in_normal;
+
+	float cosTheta = dot(normalize(pointLightPos - ex_fragPos), normal);
+	float colorScale = max(0.0f, cosTheta) + 0.25f;
 	colorScale = min(1.0f, colorScale);
 
 	ex_color = vec3(in_color) * colorScale;
