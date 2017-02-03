@@ -212,7 +212,7 @@ void RenderScene::ShadowPass()
 		float projViewMats[16 * 6];
 		float* ptr = projViewMats;
 
-		ShadowCubeMap& cubeMap = pointLight.shadowCubeMap;
+		DepthCubeMap& cubeMap = pointLight.shadowCubeMap;
 		cubeMap.BindForWriting();
 		glViewport(0, 0, pointLight.shadowCubeMap.m_width, pointLight.shadowCubeMap.m_width);
 		glClear(GL_DEPTH_BUFFER_BIT);

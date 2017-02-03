@@ -1,15 +1,15 @@
 #include "stdafx.h"
-#include "ShadowCubeMap.h"
+#include "DepthCubeMap.h"
 
-ShadowCubeMap::ShadowCubeMap() : m_near(1.0f), m_far(64.0f)
+DepthCubeMap::DepthCubeMap() : m_near(1.0f), m_far(64.0f)
 {
 }
 
-ShadowCubeMap::~ShadowCubeMap()
+DepthCubeMap::~DepthCubeMap()
 {
 }
 
-bool ShadowCubeMap::Init(int width)
+bool DepthCubeMap::Init(int width)
 {
 	m_width = width;
 
@@ -48,17 +48,17 @@ bool ShadowCubeMap::Init(int width)
 	return true;
 }
 
-fMat44 ShadowCubeMap::CreateProjectionMatrix() const
+fMat44 DepthCubeMap::CreateProjectionMatrix() const
 {
 	return fHomogeneousTransformation::CreateProjection(fPI*0.5f, 1.0f, m_near, m_far);
 }
 
-void ShadowCubeMap::BindForWriting()
+void DepthCubeMap::BindForWriting()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
 }
 
-void ShadowCubeMap::BindForReading(GLenum TextureUnit)
+void DepthCubeMap::BindForReading(GLenum TextureUnit)
 {
 	glActiveTexture(TextureUnit);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_depth);

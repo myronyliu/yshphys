@@ -4,11 +4,11 @@
 
 // Ripped from http://ogldev.atspace.co.uk/www/tutorial43/tutorial43.html
 
-class ShadowCubeMap
+class DepthCubeMap
 {
 public:
-	ShadowCubeMap();
-	virtual ~ShadowCubeMap();
+	DepthCubeMap();
+	virtual ~DepthCubeMap();
 
 	virtual bool Init(int width);
 

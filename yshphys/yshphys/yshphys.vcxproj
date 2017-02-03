@@ -187,7 +187,7 @@
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
     <ClInclude Include="Shader_ShadowCubeMap.h" />
-    <ClInclude Include="ShadowCubeMap.h" />
+    <ClInclude Include="DepthCubeMap.h" />
     <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
@@ -255,7 +255,7 @@
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
     <ClCompile Include="Shader_ShadowCubeMap.cpp" />
-    <ClCompile Include="ShadowCubeMap.cpp" />
+    <ClCompile Include="DepthCubeMap.cpp" />
     <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="Ray.cpp" />

@@ -1,6 +1,6 @@
 #pragma once
 #include "YshMath.h"
-#include "ShadowCubeMap.h"
+#include "DepthCubeMap.h"
 
 struct Light
 {
@@ -11,7 +11,7 @@ struct PointLight : public Light
 {
 	fVec3 position;
 
-	ShadowCubeMap shadowCubeMap;
+	DepthCubeMap shadowCubeMap;
 };
 
 struct DirectionalLight : public Light

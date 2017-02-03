@@ -243,11 +243,11 @@
     <ClInclude Include="Light.h">
       <Filter>Rendering\Lighting</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowCubeMap.h">
-      <Filter>Rendering\Lighting</Filter>
-    </ClInclude>
     <ClInclude Include="Shader_ShadowCubeMap.h">
       <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthCubeMap.h">
+      <Filter>Rendering\Lighting</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -419,14 +419,14 @@
     <ClCompile Include="Light.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowCubeMap.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Shader_ShadowCubeMap.cpp">
       <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthCubeMap.cpp">
+      <Filter>Rendering\Lighting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
