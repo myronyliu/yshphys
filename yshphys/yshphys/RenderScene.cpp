@@ -276,12 +276,15 @@ void RenderScene::RenderPass(Window* window)
 
 			for (PointLight pointLight : m_pointLights)
 			{
-				glUseProgram(shader->GetProgram());
-				GLint shadowCubeMapTex = glGetUniformLocation(shader->GetProgram(), "shadowCubeMap");
-				GLint pointLightPos = glGetUniformLocation(shader->GetProgram(), "pointLightPos");
-				GLint pointLightFar = glGetUniformLocation(shader->GetProgram(), "pointLightFarPlane");
+				GLuint program = shader->GetProgram();
+				glUseProgram(program);
+				GLint shadowCubeMapTex = glGetUniformLocation(program, "shadowCubeMap");
+				GLint pointLightPos = glGetUniformLocation(program, "pointLightPos");
+				const GLint pointLightInt = glGetUniformLocation(program , "pointLightInt");
+				GLint pointLightFar = glGetUniformLocation(program, "pointLightFarPlane");
 				glUniform1i(shadowCubeMapTex, 0);
 				glUniform3f(pointLightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
+				glUniform3f(pointLightInt, pointLight.intensity.x, pointLight.intensity.y, pointLight.intensity.z);
 				glUniform1f(pointLightFar, pointLight.shadowCubeMap.m_far);
 				pointLight.shadowCubeMap.BindForReading(GL_TEXTURE0);
 			}

@@ -4,8 +4,7 @@
 
 struct Light
 {
-	fVec3 color;
-	float intensity;
+	fVec3 intensity;
 };
 
 struct PointLight : public Light

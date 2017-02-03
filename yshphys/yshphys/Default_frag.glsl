@@ -32,6 +32,7 @@ float CalcShadowFactor(vec3 lightToFrag)
 	for (int i = 0; i < samples; ++i)
 	{
 		float closestDepth = texture(shadowCubeMap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
+//		float closestDepth = texture(shadowCubeMap, lightToFrag).r;
 		closestDepth *= pointLightFarPlane;
 
 		if (currentDepth < pointLightFarPlane && currentDepth - bias > closestDepth)

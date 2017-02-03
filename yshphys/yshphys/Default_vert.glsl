@@ -9,6 +9,7 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 uniform vec3 pointLightPos;
+uniform vec3 pointLightInt;
 
 out vec3 ex_color;
 out vec3 ex_fragPos;
@@ -24,9 +25,16 @@ void main(void)
 
 	vec3 normal = mat3(modelMatrix) * in_normal;
 
-	float cosTheta = dot(normalize(pointLightPos - ex_fragPos), normal);
-	float colorScale = max(0.0f, cosTheta) + 0.25f;
-	colorScale = min(1.0f, colorScale);
+	vec3 vFragToLight = pointLightPos - ex_fragPos;
+	float dFragToLight = length(vFragToLight);
+
+	vec3 ambient = vec3(0.25f, 0.25f, 0.25f);
+
+	float cosTheta = dot(vFragToLight / dFragToLight, normal);
+	vec3 colorScale = pointLightInt * max(0.0f, cosTheta) / dFragToLight + ambient;
+	colorScale.x = min(1.0f, colorScale.x);
+	colorScale.y = min(1.0f, colorScale.y);
+	colorScale.z = min(1.0f, colorScale.z);
 
 	ex_color = vec3(in_color) * colorScale;
 }
