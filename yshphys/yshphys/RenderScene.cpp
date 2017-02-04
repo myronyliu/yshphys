@@ -316,6 +316,12 @@ void RenderScene::RenderPass(Window* window)
 
 	glViewport(0, 0, w, h);
 
+//	glUseProgram(m_fullScreenQuadShader.GetProgram());
+//	glActiveTexture(GL_TEXTURE0);
+//	glBindTexture(GL_TEXTURE_2D, m_depthMap.m_depth);
+//	glDrawArrays(GL_POINTS, 0, 1);
+//	return;
+
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
 

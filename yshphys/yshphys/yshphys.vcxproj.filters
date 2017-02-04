@@ -258,6 +258,9 @@
     <ClInclude Include="Shader_DepthCube.h">
       <Filter>Rendering\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Shader_FullScreenQuad.h">
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -443,6 +446,9 @@
     <ClCompile Include="Shader_DepthCube.cpp">
       <Filter>Rendering\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="Shader_FullScreenQuad.cpp">
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -471,6 +477,15 @@
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
     <None Include="DepthCube_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="FullScreenQuad_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="FullScreenQuad_geom.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="FullScreenQuad_vert.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
   </ItemGroup>

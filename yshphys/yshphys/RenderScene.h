@@ -5,6 +5,7 @@
 #include "Shader_FlatUniformColor.h"
 #include "Shader_DepthCube.h"
 #include "Shader_DepthPerspective.h"
+#include "Shader_FullScreenQuad.h"
 #include "Viewport.h"
 #include "Window.h"
 #include "Camera.h"
@@ -91,6 +92,7 @@ protected:
 
 	Shader_DepthCube m_shadowCubeMapShader;
 	Shader_DepthPerspective m_depthPerspectiveShader;
+	Shader_FullScreenQuad m_fullScreenQuadShader;
 
 	DepthMap m_depthMap; // from the perspective of m_viewport
 };

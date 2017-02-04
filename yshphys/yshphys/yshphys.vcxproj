@@ -190,6 +190,7 @@
     <ClInclude Include="Shader_DepthPerspective.h" />
     <ClInclude Include="Shader_DepthCube.h" />
     <ClInclude Include="DepthCubeMap.h" />
+    <ClInclude Include="Shader_FullScreenQuad.h" />
     <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
@@ -260,6 +261,7 @@
     <ClCompile Include="Shader_DepthPerspective.cpp" />
     <ClCompile Include="Shader_DepthCube.cpp" />
     <ClCompile Include="DepthCubeMap.cpp" />
+    <ClCompile Include="Shader_FullScreenQuad.cpp" />
     <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="Ray.cpp" />
@@ -295,6 +297,9 @@
     <None Include="DepthPerspective_vert.glsl" />
     <None Include="FlatUniformColor_frag.glsl" />
     <None Include="FlatUniformColor_vert.glsl" />
+    <None Include="FullScreenQuad_frag.glsl" />
+    <None Include="FullScreenQuad_geom.glsl" />
+    <None Include="FullScreenQuad_vert.glsl" />
     <None Include="packages.config" />
     <None Include="DepthCube_frag.glsl" />
     <None Include="DepthCube_geom.glsl" />
