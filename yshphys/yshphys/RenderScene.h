@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "DebugRenderer.h"
 #include "Light.h"
+#include "DepthMap.h"
 #include <glew.h>
 
 #define MAX_RENDER_NODES 1024
@@ -90,5 +91,7 @@ protected:
 
 	Shader_DepthCube m_shadowCubeMapShader;
 	Shader_DepthPerspective m_depthPerspectiveShader;
+
+	DepthMap m_depthMap; // from the perspective of m_viewport
 };
 

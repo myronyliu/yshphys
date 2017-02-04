@@ -128,6 +128,8 @@ RenderScene::RenderScene()
 	freeNode.m_node = &m_renderNodes[0];
 	freeNode.m_precedingNode = nullptr;
 	m_freedNodeStack.push(freeNode);
+
+	m_depthMap.Init(1200, 900);
 }
 
 
@@ -274,6 +276,9 @@ void RenderScene::RenderDepthFromEye(Window* window)
 	glUniform1f(uniLoc_near, m_viewport.m_near);
 	glUniform1f(uniLoc_far, m_viewport.m_far);
 
+	m_depthMap.BindForWriting();
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 	int w, h;
 	window->GetDimensions(w, h);
 	glViewport(0, 0, w, h);
@@ -361,5 +366,6 @@ void RenderScene::DrawScene(Window* window)
 	}
 
 	ShadowPass();
+	RenderDepthFromEye(window);
 	RenderPass(window);
 }
