@@ -261,6 +261,18 @@
     <ClInclude Include="Shader_FullScreenQuad.h">
       <Filter>Rendering\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="ForwardRenderBuffer.h">
+      <Filter>Rendering\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader_ForwardPass.h">
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="FinalRenderBuffer.h">
+      <Filter>Rendering\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader_DeferredPointLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -449,6 +461,18 @@
     <ClCompile Include="Shader_FullScreenQuad.cpp">
       <Filter>Rendering\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="ForwardRenderBuffer.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_ForwardPass.cpp">
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="FinalRenderBuffer.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_DeferredPointLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -486,6 +510,21 @@
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
     <None Include="FullScreenQuad_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="ForwardPass_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="ForwardPass_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DeferredLighting_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DeferredLighting_geom.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DeferredLighting_vert.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
   </ItemGroup>

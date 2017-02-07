@@ -3,7 +3,7 @@
 in vec3 ex_color;
 in vec3 ex_fragPos;
 
-out vec4 out_fragColor;
+layout (location = 0) out vec4 out_fragColor;
 
 uniform vec3 pointLightPos;
 uniform float gNear;
@@ -22,6 +22,8 @@ vec3 sampleOffsetDirections[20] = vec3[]
 
 float CalcShadowFactor(vec3 lightToFrag)
 {
+	return 1.0f;
+
 	float shadow = 0.0f;
 	float bias = 0.01f;
 	int samples = 20;

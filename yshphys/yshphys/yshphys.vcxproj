@@ -163,6 +163,8 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraPickerToggle.h" />
     <ClInclude Include="Capsule.h" />
+    <ClInclude Include="FinalRenderBuffer.h" />
+    <ClInclude Include="ForwardRenderBuffer.h" />
     <ClInclude Include="Contact.h" />
     <ClInclude Include="ContactBuffer.h" />
     <ClInclude Include="Cylinder.h" />
@@ -187,9 +189,11 @@
     <ClInclude Include="Picker.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
+    <ClInclude Include="Shader_DeferredPointLight.h" />
     <ClInclude Include="Shader_DepthPerspective.h" />
     <ClInclude Include="Shader_DepthCube.h" />
     <ClInclude Include="DepthCubeMap.h" />
+    <ClInclude Include="Shader_ForwardPass.h" />
     <ClInclude Include="Shader_FullScreenQuad.h" />
     <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
@@ -229,6 +233,8 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraPickerToggle.cpp" />
     <ClCompile Include="Capsule.cpp" />
+    <ClCompile Include="FinalRenderBuffer.cpp" />
+    <ClCompile Include="ForwardRenderBuffer.cpp" />
     <ClCompile Include="Contact.cpp" />
     <ClCompile Include="ContactBuffer.cpp" />
     <ClCompile Include="Cylinder.cpp" />
@@ -258,9 +264,11 @@
     <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
+    <ClCompile Include="Shader_DeferredPointLight.cpp" />
     <ClCompile Include="Shader_DepthPerspective.cpp" />
     <ClCompile Include="Shader_DepthCube.cpp" />
     <ClCompile Include="DepthCubeMap.cpp" />
+    <ClCompile Include="Shader_ForwardPass.cpp" />
     <ClCompile Include="Shader_FullScreenQuad.cpp" />
     <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
@@ -293,10 +301,15 @@
   <ItemGroup>
     <None Include="Default_frag.glsl" />
     <None Include="Default_vert.glsl" />
+    <None Include="DeferredLighting_frag.glsl" />
+    <None Include="DeferredLighting_geom.glsl" />
+    <None Include="DeferredLighting_vert.glsl" />
     <None Include="DepthPerspective_frag.glsl" />
     <None Include="DepthPerspective_vert.glsl" />
     <None Include="FlatUniformColor_frag.glsl" />
     <None Include="FlatUniformColor_vert.glsl" />
+    <None Include="ForwardPass_frag.glsl" />
+    <None Include="ForwardPass_vert.glsl" />
     <None Include="FullScreenQuad_frag.glsl" />
     <None Include="FullScreenQuad_geom.glsl" />
     <None Include="FullScreenQuad_vert.glsl" />

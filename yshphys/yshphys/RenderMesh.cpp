@@ -160,9 +160,9 @@ void RenderMesh::Draw(const Shader* const shader, const fMat44& projectionMatrix
 	glUseProgram(program);
 	glBindVertexArray(m_VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
-	const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
-	const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
+	const GLint projectionLoc = glGetUniformLocation(program, "gProjection");
+	const GLint viewLoc = glGetUniformLocation(program, "gView");
+	const GLint modelLoc = glGetUniformLocation(program, "gModel");
 	// Pass in the transpose because OpenGL likes to be all edgy with its
 	// column major matrices while we are row major like everybody else.
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));

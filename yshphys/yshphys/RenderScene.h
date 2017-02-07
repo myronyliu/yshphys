@@ -6,12 +6,16 @@
 #include "Shader_DepthCube.h"
 #include "Shader_DepthPerspective.h"
 #include "Shader_FullScreenQuad.h"
+#include "Shader_ForwardPass.h"
+#include "Shader_DeferredPointLight.h"
 #include "Viewport.h"
 #include "Window.h"
 #include "Camera.h"
 #include "DebugRenderer.h"
 #include "Light.h"
 #include "DepthMap.h"
+#include "ForwardRenderBuffer.h"
+#include "FinalRenderBuffer.h"
 #include <glew.h>
 
 #define MAX_RENDER_NODES 1024
@@ -78,8 +82,13 @@ public:
 	Viewport m_viewport;
 protected:
 
+	void InitFinalRender();
+
 	void ShadowPass();
 	void RenderDepthFromEye(Window* window);
+	void LightingPass();
+	void ForwardPass();
+	void FinalizeRender(Window* window);
 	void RenderPass(Window* window);
 
 	std::stack<FreedRenderNode> m_freedNodeStack;
@@ -92,8 +101,12 @@ protected:
 
 	Shader_DepthCube m_shadowCubeMapShader;
 	Shader_DepthPerspective m_depthPerspectiveShader;
+	Shader_ForwardPass m_forwardPassShader;
 	Shader_FullScreenQuad m_fullScreenQuadShader;
+	Shader_DeferredPointLight m_deferredPointLightShader;
 
 	DepthMap m_depthMap; // from the perspective of m_viewport
+	ForwardRenderBuffer m_forwardRender;
+	FinalRenderBuffer m_finalRender;
 };
 
