@@ -519,7 +519,6 @@ void RenderScene::RenderPass(Window* window)
 
 void RenderScene::DrawScene(Window* window)
 {
-	return;
 	for (PointLight pointLight : m_pointLights)
 	{
 		m_debugRenderer.DrawBox(0.25f, 0.25f, 0.25f, pointLight.position, fQuat::Identity(), fVec3(1.0f, 1.0f, 0.0f), false, false);
