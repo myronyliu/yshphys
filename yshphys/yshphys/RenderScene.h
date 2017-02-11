@@ -8,6 +8,7 @@
 #include "Shader_FullScreenQuad.h"
 #include "Shader_ForwardPass.h"
 #include "Shader_DeferredPointLight.h"
+#include "Shader_DeferredPointLightShadow.h"
 #include "Viewport.h"
 #include "Window.h"
 #include "Camera.h"
@@ -84,10 +85,11 @@ protected:
 
 	void InitFinalRender();
 
-	void ShadowPass();
+	void RenderDepthFromLights();
 	void RenderDepthFromEye(Window* window);
-	void LightingPass();
 	void ForwardPass();
+	void LightingPass();
+	void ShadowPass();
 	void FinalizeRender(Window* window);
 	void RenderPass(Window* window);
 
@@ -104,6 +106,7 @@ protected:
 	Shader_ForwardPass m_forwardPassShader;
 	Shader_FullScreenQuad m_fullScreenQuadShader;
 	Shader_DeferredPointLight m_deferredPointLightShader;
+	Shader_DeferredPointLightShadow m_deferredPointLightShadowShader;
 
 	DepthMap m_depthMap; // from the perspective of m_viewport
 	ForwardRenderBuffer m_forwardRender;

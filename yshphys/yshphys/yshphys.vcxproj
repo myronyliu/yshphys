@@ -190,6 +190,7 @@
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
     <ClInclude Include="Shader_DeferredPointLight.h" />
+    <ClInclude Include="Shader_DeferredPointLightShadow.h" />
     <ClInclude Include="Shader_DepthPerspective.h" />
     <ClInclude Include="Shader_DepthCube.h" />
     <ClInclude Include="DepthCubeMap.h" />
@@ -265,6 +266,7 @@
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
     <ClCompile Include="Shader_DeferredPointLight.cpp" />
+    <ClCompile Include="Shader_DeferredPointLightShadow.cpp" />
     <ClCompile Include="Shader_DepthPerspective.cpp" />
     <ClCompile Include="Shader_DepthCube.cpp" />
     <ClCompile Include="DepthCubeMap.cpp" />
@@ -301,9 +303,12 @@
   <ItemGroup>
     <None Include="Default_frag.glsl" />
     <None Include="Default_vert.glsl" />
-    <None Include="DeferredLighting_frag.glsl" />
-    <None Include="DeferredLighting_geom.glsl" />
-    <None Include="DeferredLighting_vert.glsl" />
+    <None Include="DeferredPointLighting_frag.glsl" />
+    <None Include="DeferredPointLighting_geom.glsl" />
+    <None Include="DeferredPointLighting_vert.glsl" />
+    <None Include="DeferredPointLightShadow_frag.glsl" />
+    <None Include="DeferredPointLightShadow_geom.glsl" />
+    <None Include="DeferredPointLightShadow_vert.glsl" />
     <None Include="DepthPerspective_frag.glsl" />
     <None Include="DepthPerspective_vert.glsl" />
     <None Include="FlatUniformColor_frag.glsl" />

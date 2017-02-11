@@ -271,7 +271,10 @@
       <Filter>Rendering\Lighting</Filter>
     </ClInclude>
     <ClInclude Include="Shader_DeferredPointLight.h">
-      <Filter>Header Files</Filter>
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader_DeferredPointLightShadow.h">
+      <Filter>Rendering\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -471,7 +474,10 @@
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
     <ClCompile Include="Shader_DeferredPointLight.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_DeferredPointLightShadow.cpp">
+      <Filter>Rendering\Shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -518,13 +524,22 @@
     <None Include="ForwardPass_vert.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
-    <None Include="DeferredLighting_frag.glsl">
+    <None Include="DeferredPointLighting_frag.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
-    <None Include="DeferredLighting_geom.glsl">
+    <None Include="DeferredPointLighting_geom.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
-    <None Include="DeferredLighting_vert.glsl">
+    <None Include="DeferredPointLighting_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DeferredPointLightShadow_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DeferredPointLightShadow_geom.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="DeferredPointLightShadow_vert.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
   </ItemGroup>

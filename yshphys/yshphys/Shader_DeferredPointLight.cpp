@@ -4,7 +4,7 @@
 
 Shader_DeferredPointLight::Shader_DeferredPointLight()
 {
-	LoadShader("DeferredLighting_vert.glsl", "DeferredLighting_geom.glsl", "DeferredLighting_frag.glsl");
+	LoadShader("DeferredPointLighting_vert.glsl", "DeferredPointLighting_geom.glsl", "DeferredPointLighting_frag.glsl");
 }
 
 

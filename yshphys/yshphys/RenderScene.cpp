@@ -193,7 +193,7 @@ void RenderScene::AttachCamera(Camera* camera)
 	camera->SetViewport(&m_viewport);
 }
 
-void RenderScene::ShadowPass()
+void RenderScene::RenderDepthFromLights()
 {
 //	glCullFace(GL_FRONT);
 
@@ -424,6 +424,64 @@ void RenderScene::LightingPass()
 	}
 }
 
+void RenderScene::ShadowPass()
+{
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	glViewport(0, 0, m_finalRender.m_width, m_finalRender.m_height);
+
+	GLuint program = m_deferredPointLightShadowShader.GetProgram();
+	glUseProgram(program);
+	const GLint uniLoc_viewInv = glGetUniformLocation(program, "gViewInv");
+	const GLint uniLoc_fov = glGetUniformLocation(program, "gFOV");
+	const GLint uniLoc_aspect = glGetUniformLocation(program, "gAspect");
+	const GLint uniLoc_near_eye = glGetUniformLocation(program, "gNear_eye");
+	const GLint uniLoc_far_eye = glGetUniformLocation(program, "gFar_eye");
+	const GLint uniLoc_depthTex = glGetUniformLocation(program, "gDepthTex");
+	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
+
+	const GLint uniLoc_near_light = glGetUniformLocation(program, "gNear_light");
+	const GLint uniLoc_far_light = glGetUniformLocation(program, "gFar_light");
+
+//	glUniformMatrix4fv(uniLoc_viewInv, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Inverse().Transpose()(0, 0)));
+	glUniformMatrix4fv(uniLoc_viewInv, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Transpose()(0, 0)));
+	glUniform1f(uniLoc_fov, m_viewport.m_fov);
+	glUniform1f(uniLoc_aspect, m_viewport.m_aspect);
+	glUniform1f(uniLoc_near_eye, m_viewport.m_near);
+	glUniform1f(uniLoc_far_eye, m_viewport.m_far);
+
+	m_forwardRender.BindDepthForReading(GL_TEXTURE0);
+
+	glUniform1i(uniLoc_depthTex, 0);
+
+	for (PointLight pointLight : m_pointLights)
+	{
+		m_finalRender.BindForModification(GL_TEXTURE1);
+		glUniform1i(uniLoc_colorTex, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		const GLint uniLoc_lightPos = glGetUniformLocation(program, "gLightPos");
+		glUniform3f(uniLoc_lightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
+
+		pointLight.shadowCubeMap.BindForReading(GL_TEXTURE2);
+		const GLint uniLoc_shadowCubeMap = glGetUniformLocation(program, "gShadowCubeMap");
+		glUniform1i(uniLoc_shadowCubeMap, 2);
+
+		glUniform1f(uniLoc_near_light, pointLight.shadowCubeMap.m_near);
+		glUniform1f(uniLoc_far_light, pointLight.shadowCubeMap.m_far);
+
+		GLuint dummyVAO;
+		glGenVertexArrays(1, &dummyVAO);
+		glBindVertexArray(dummyVAO);
+		glDrawArrays(GL_POINTS, 0, 1);
+		glBindVertexArray(0);
+		glDeleteVertexArrays(1, &dummyVAO);
+
+		m_finalRender.SwapReadWriteTextures();
+	}
+
+}
+
 void RenderScene::FinalizeRender(Window* window)
 {
 	glCullFace(GL_BACK);
@@ -462,18 +520,18 @@ void RenderScene::RenderPass(Window* window)
 
 	glViewport(0, 0, w, h);
 
-	glUseProgram(m_fullScreenQuadShader.GetProgram());
-	glActiveTexture(GL_TEXTURE0);
-//	glBindTexture(GL_TEXTURE_2D, m_forwardRender.m_normal);
-	glBindTexture(GL_TEXTURE_2D, m_forwardRender.m_color);
+//	glUseProgram(m_fullScreenQuadShader.GetProgram());
+//	glActiveTexture(GL_TEXTURE0);
+////	glBindTexture(GL_TEXTURE_2D, m_forwardRender.m_normal);
+//	glBindTexture(GL_TEXTURE_2D, m_forwardRender.m_color);
 
-	GLuint dummyVAO;
-	glGenVertexArrays(1, &dummyVAO);
-	glBindVertexArray(dummyVAO);
-	glDrawArrays(GL_POINTS, 0, 1);
-	glBindVertexArray(0);
-	glDeleteVertexArrays(1, &dummyVAO);
-	return;
+//	GLuint dummyVAO;
+//	glGenVertexArrays(1, &dummyVAO);
+//	glBindVertexArray(dummyVAO);
+//	glDrawArrays(GL_POINTS, 0, 1);
+//	glBindVertexArray(0);
+//	glDeleteVertexArrays(1, &dummyVAO);
+//	return;
 
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = m_viewport.CreateProjectionMatrix();
@@ -524,11 +582,16 @@ void RenderScene::DrawScene(Window* window)
 		m_debugRenderer.DrawBox(0.25f, 0.25f, 0.25f, pointLight.position, fQuat::Identity(), fVec3(1.0f, 1.0f, 0.0f), false, false);
 	}
 
-	ShadowPass();
+	RenderDepthFromLights();
 	RenderDepthFromEye(window);
 	ForwardPass();
 	InitFinalRender();
+	InitFinalRender();
+	InitFinalRender();
 	LightingPass();
+	ShadowPass();
 //	RenderPass(window);
 	FinalizeRender(window);
+
+	m_debugRenderer.EvictObjects();
 }

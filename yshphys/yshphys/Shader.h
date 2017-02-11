@@ -8,6 +8,7 @@ public:
 	virtual ~Shader();
 
 	GLuint GetProgram() const;
+	bool Bind() const;
 
 protected:
 	// Each shader class will load from hardcoded filepaths in the constructor

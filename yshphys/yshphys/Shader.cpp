@@ -15,6 +15,19 @@ GLuint Shader::GetProgram() const
 	return m_program;
 }
 
+bool Shader::Bind() const
+{
+	if (m_program == 0)
+	{
+		return false;
+	}
+	else
+	{
+		glUseProgram(m_program);
+		return true;
+	}
+}
+
 // http://www.nexcius.net/2012/11/20/how-to-load-a-glsl-shader-in-opengl-using-c/
 void Shader::LoadShader(const char* vertex_path, const char* fragment_path)
 {
