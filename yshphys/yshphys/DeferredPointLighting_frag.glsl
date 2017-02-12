@@ -7,26 +7,14 @@ layout (location = 0) out vec4 out_fragColor;
 uniform vec3 gLightPos;
 uniform vec3 gLightInt;
 
-uniform mat4 gViewInv;
-uniform float gFOV;
-uniform float gAspect;
-uniform float gNear;
-uniform float gFar;
-
-uniform sampler2D gDepthTex;
+uniform sampler2D gPositionTex;
 uniform sampler2D gNormalTex;
 
 uniform sampler2D gColorTex;
 
 void main()
 {
-	float alpha = texture(gDepthTex, ex_texCoord).x;
-	float xAng = (ex_texCoord.x - 0.5f) * gFOV * gAspect;
-	float yAng = (ex_texCoord.y - 0.5f) * gFOV;
-	float z = (1.0f - alpha) * gNear + alpha * gFar;
-	float x = z * tan(xAng);
-	float y = z * tan(yAng);
-	vec3 fragPos = (inverse(gViewInv) * vec4(x, y, -z, 1.0f)).xyz;
+	vec3 fragPos = texture(gPositionTex, ex_texCoord).xyz;
 
 	vec3 vFragToLight = gLightPos - fragPos;
 	float dFragToLight = length(vFragToLight);

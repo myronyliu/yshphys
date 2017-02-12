@@ -13,12 +13,12 @@ public:
 //	void BindForReading(GLenum textureUnit);
 	void BindColorForReading(GLenum textureUnit);
 	void BindNormalForReading(GLenum textureUnit);
-	void BindDepthForReading(GLenum textureUnit);
+	void BindPositionForReading(GLenum textureUnit);
 
 	GLuint m_FBO;
 
 	GLuint m_color; // the texture into which the colored image is rendered
-	GLuint m_depth;
+	GLuint m_position;
 	GLuint m_normal;
 
 	int m_width;

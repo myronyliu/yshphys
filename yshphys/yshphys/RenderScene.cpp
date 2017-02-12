@@ -380,28 +380,16 @@ void RenderScene::LightingPass()
 
 	GLuint program = m_deferredPointLightShader.GetProgram();
 	glUseProgram(program);
-	const GLint uniLoc_viewInv = glGetUniformLocation(program, "gViewInv");
-	const GLint uniLoc_fov = glGetUniformLocation(program, "gFOV");
-	const GLint uniLoc_aspect = glGetUniformLocation(program, "gAspect");
-	const GLint uniLoc_near = glGetUniformLocation(program, "gNear");
-	const GLint uniLoc_far = glGetUniformLocation(program, "gFar");
-	const GLint uniLoc_depthTex = glGetUniformLocation(program, "gDepthTex");
+	const GLint uniLoc_positionTex = glGetUniformLocation(program, "gPositionTex");
 	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
 	const GLint uniLoc_normalTex = glGetUniformLocation(program, "gNormalTex");
 
-//	glUniformMatrix4fv(uniLoc_viewInv, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Inverse().Transpose()(0, 0)));
-	glUniformMatrix4fv(uniLoc_viewInv, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Transpose()(0, 0)));
-	glUniform1f(uniLoc_fov, m_viewport.m_fov);
-	glUniform1f(uniLoc_aspect, m_viewport.m_aspect);
-	glUniform1f(uniLoc_near, m_viewport.m_near);
-	glUniform1f(uniLoc_far, m_viewport.m_far);
-
 	m_forwardRender.BindNormalForReading(GL_TEXTURE1);
-	m_forwardRender.BindDepthForReading(GL_TEXTURE2);
+	m_forwardRender.BindPositionForReading(GL_TEXTURE2);
 
 	glUniform1i(uniLoc_colorTex, 0);
 	glUniform1i(uniLoc_normalTex, 1);
-	glUniform1i(uniLoc_depthTex, 2);
+	glUniform1i(uniLoc_positionTex, 2);
 
 	for (PointLight pointLight : m_pointLights)
 	{
@@ -432,27 +420,15 @@ void RenderScene::ShadowPass()
 
 	GLuint program = m_deferredPointLightShadowShader.GetProgram();
 	glUseProgram(program);
-	const GLint uniLoc_viewInv = glGetUniformLocation(program, "gViewInv");
-	const GLint uniLoc_fov = glGetUniformLocation(program, "gFOV");
-	const GLint uniLoc_aspect = glGetUniformLocation(program, "gAspect");
-	const GLint uniLoc_near_eye = glGetUniformLocation(program, "gNear_eye");
-	const GLint uniLoc_far_eye = glGetUniformLocation(program, "gFar_eye");
-	const GLint uniLoc_depthTex = glGetUniformLocation(program, "gDepthTex");
+	const GLint uniLoc_positionTex = glGetUniformLocation(program, "gPositionTex");
 	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
 
 	const GLint uniLoc_near_light = glGetUniformLocation(program, "gNear_light");
 	const GLint uniLoc_far_light = glGetUniformLocation(program, "gFar_light");
 
-//	glUniformMatrix4fv(uniLoc_viewInv, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Inverse().Transpose()(0, 0)));
-	glUniformMatrix4fv(uniLoc_viewInv, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Transpose()(0, 0)));
-	glUniform1f(uniLoc_fov, m_viewport.m_fov);
-	glUniform1f(uniLoc_aspect, m_viewport.m_aspect);
-	glUniform1f(uniLoc_near_eye, m_viewport.m_near);
-	glUniform1f(uniLoc_far_eye, m_viewport.m_far);
+	m_forwardRender.BindPositionForReading(GL_TEXTURE0);
 
-	m_forwardRender.BindDepthForReading(GL_TEXTURE0);
-
-	glUniform1i(uniLoc_depthTex, 0);
+	glUniform1i(uniLoc_positionTex, 0);
 
 	for (PointLight pointLight : m_pointLights)
 	{
@@ -585,8 +561,6 @@ void RenderScene::DrawScene(Window* window)
 	RenderDepthFromLights();
 	RenderDepthFromEye(window);
 	ForwardPass();
-	InitFinalRender();
-	InitFinalRender();
 	InitFinalRender();
 	LightingPass();
 	ShadowPass();

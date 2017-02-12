@@ -30,7 +30,7 @@ float CalcShadowFactor(vec3 lightToFrag)
 	float currentDepth = length(lightToFrag);
 	float diskRadius = 0.01f;
 
-	return texture(shadowCubeMap, lightToFrag).r;
+//	return texture(shadowCubeMap, lightToFrag).r;
 
 	for (int i = 0; i < samples; ++i)
 	{
@@ -51,6 +51,6 @@ void main(void)
 {
 	vec3 lightToFrag = ex_fragPos - pointLightPos;
 	float shadowFactor = CalcShadowFactor(lightToFrag);
-//	out_fragColor = vec4(ex_color * shadowFactor, 1.0f);
-	out_fragColor = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0f);
+	out_fragColor = vec4(ex_color * shadowFactor, 1.0f);
+//	out_fragColor = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0f);
 }

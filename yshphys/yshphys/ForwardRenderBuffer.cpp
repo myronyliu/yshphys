@@ -24,16 +24,16 @@ bool ForwardRenderBuffer::Init(int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Create the depth buffer
-	glGenTextures(1, &m_depth);
-	glBindTexture(GL_TEXTURE_2D, m_depth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glGenTextures(1, &m_position);
+	glBindTexture(GL_TEXTURE_2D, m_position);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Create the normal buffer
 	glGenTextures(1, &m_normal);
 	glBindTexture(GL_TEXTURE_2D, m_normal);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
@@ -47,11 +47,11 @@ bool ForwardRenderBuffer::Init(int width, int height)
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_position, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_normal, 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth, 0);
-		GLenum drawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-		glDrawBuffers(2, drawBuffers);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_color, 0);
+		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+		glDrawBuffers(3, drawBuffers);
 		glReadBuffer(GL_NONE);
 
 		GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -84,8 +84,8 @@ void ForwardRenderBuffer::BindNormalForReading(GLenum textureUnit)
 	glBindTexture(GL_TEXTURE_2D, m_normal);
 }
 
-void ForwardRenderBuffer::BindDepthForReading(GLenum textureUnit)
+void ForwardRenderBuffer::BindPositionForReading(GLenum textureUnit)
 {
 	glActiveTexture(textureUnit);
-	glBindTexture(GL_TEXTURE_2D, m_depth);
+	glBindTexture(GL_TEXTURE_2D, m_position);
 }
