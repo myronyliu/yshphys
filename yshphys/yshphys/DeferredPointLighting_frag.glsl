@@ -2,15 +2,20 @@
 
 in vec2 ex_texCoord;
 
-layout (location = 0) out vec4 out_fragColor;
+layout (location = 0) out vec3 out_fragColor;
+
+uniform vec3 gEyePos;
 
 uniform vec3 gLightPos;
 uniform vec3 gLightInt;
 
+uniform sampler2D gColorTex;
+
 uniform sampler2D gPositionTex;
 uniform sampler2D gNormalTex;
 
-uniform sampler2D gColorTex;
+uniform sampler2D gDiffuseTex;
+uniform sampler2D gSpecularTex;
 
 void main()
 {
@@ -23,11 +28,17 @@ void main()
 
 	vec3 normal = texture(gNormalTex, ex_texCoord).xyz;
 	float cosTheta = dot(vFragToLight / dFragToLight, normal);
-	vec3 colorScale = gLightInt * max(0.0f, cosTheta) / dFragToLight + ambient;
-	colorScale.x = min(1.0f, colorScale.x);
-	colorScale.y = min(1.0f, colorScale.y);
-	colorScale.z = min(1.0f, colorScale.z);
+	vec3 kDiffuse = gLightInt * max(0.0f, cosTheta) / dFragToLight;
 
+	vec3 diffuse = texture(gDiffuseTex, ex_texCoord).rgb * kDiffuse;
 
-	out_fragColor = texture(gColorTex, ex_texCoord) * vec4(colorScale, 1.0f);
+	// Blinn Phong
+	float phongExp = 0.8f;
+	vec3 L = normalize(gLightPos - fragPos);
+	vec3 V = normalize(gEyePos - fragPos);
+	vec3 H = normalize(L + V);
+	vec3 kSpecular = gLightInt * pow(max(dot(H, normal), 0.0f), phongExp);
+	vec3 specular = texture(gSpecularTex, ex_texCoord).rgb * kSpecular;
+
+	out_fragColor = texture(gColorTex, ex_texCoord).rbg + diffuse + specular;
 }

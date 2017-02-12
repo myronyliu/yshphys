@@ -107,8 +107,9 @@ FreedRenderNode::~FreedRenderNode()
 {
 }
 
-RenderScene::RenderScene()
-	: m_firstNode(nullptr)
+RenderScene::RenderScene() :
+	m_firstNode(nullptr),
+	m_ambient(0.1f, 0.1f, 0.1f)
 {
 	m_renderNodes = new RenderNode[MAX_RENDER_NODES];
 
@@ -351,16 +352,35 @@ void RenderScene::ForwardPass()
 
 void RenderScene::InitFinalRender()
 {
-	m_finalRender.BindForModification(GL_TEXTURE1);
+	glViewport(0, 0, m_finalRender.m_width, m_finalRender.m_height);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	m_finalRender.BindForModification(GL_TEXTURE0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	m_finalRender.SwapReadWriteTextures();
+
+	m_finalRender.BindForModification(GL_TEXTURE0);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void RenderScene::FinalizeLighting()
+{
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	glViewport(0, 0, m_finalRender.m_width, m_finalRender.m_height);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	GLuint program = m_finalizeLightingShader.GetProgram();
+	glUseProgram(program);
 
-	glUseProgram(m_fullScreenQuadShader.GetProgram());
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_forwardRender.m_color);
+	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
+	const GLint uniLoc_ambient = glGetUniformLocation(program, "gAmbient");
+
+	glUniform1i(uniLoc_colorTex, 0);
+	glUniform3f(uniLoc_ambient, m_ambient.x, m_ambient.y, m_ambient.z);
+
+	m_finalRender.BindForModification(GL_TEXTURE0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	GLuint dummyVAO;
 	glGenVertexArrays(1, &dummyVAO);
@@ -380,16 +400,29 @@ void RenderScene::LightingPass()
 
 	GLuint program = m_deferredPointLightShader.GetProgram();
 	glUseProgram(program);
-	const GLint uniLoc_positionTex = glGetUniformLocation(program, "gPositionTex");
+
 	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
+
+	const GLint uniLoc_positionTex = glGetUniformLocation(program, "gPositionTex");
 	const GLint uniLoc_normalTex = glGetUniformLocation(program, "gNormalTex");
+	const GLint uniLoc_diffuseTex = glGetUniformLocation(program, "gDiffuseTex");
+	const GLint uniLoc_specularTex = glGetUniformLocation(program, "gSpecularTex");
+
+	const GLint uniLoc_eyePos = glGetUniformLocation(program, "gEyePos");
+
+	glUniform3f(uniLoc_eyePos, m_viewport.m_pos.x, m_viewport.m_pos.y, m_viewport.m_pos.z);
 
 	m_forwardRender.BindNormalForReading(GL_TEXTURE1);
 	m_forwardRender.BindPositionForReading(GL_TEXTURE2);
+	m_forwardRender.BindDiffuseForReading(GL_TEXTURE3);
+	m_forwardRender.BindSpecularForReading(GL_TEXTURE4);
 
 	glUniform1i(uniLoc_colorTex, 0);
+
 	glUniform1i(uniLoc_normalTex, 1);
 	glUniform1i(uniLoc_positionTex, 2);
+	glUniform1i(uniLoc_diffuseTex, 3);
+	glUniform1i(uniLoc_specularTex, 4);
 
 	for (PointLight pointLight : m_pointLights)
 	{
@@ -455,7 +488,6 @@ void RenderScene::ShadowPass()
 
 		m_finalRender.SwapReadWriteTextures();
 	}
-
 }
 
 void RenderScene::FinalizeRender(Window* window)
@@ -563,6 +595,7 @@ void RenderScene::DrawScene(Window* window)
 	ForwardPass();
 	InitFinalRender();
 	LightingPass();
+	FinalizeLighting();
 	ShadowPass();
 //	RenderPass(window);
 	FinalizeRender(window);

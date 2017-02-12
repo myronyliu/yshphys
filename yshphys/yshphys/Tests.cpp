@@ -11,14 +11,14 @@ void Tests::CreateBVTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
 //	Capsule* geometry = new Capsule();
-//	Cylinder* geometry = new Cylinder();
-//	const double r = 1.0;
-//	const double h = 2.0;
-//	geometry->SetRadius(r);
-//	geometry->SetHalfHeight(h);
+	Cylinder* geometry = new Cylinder();
+	const double r = 1.0;
+	const double h = 2.0;
+	geometry->SetRadius(r);
+	geometry->SetHalfHeight(h);
 
-	Box* geometry = new Box();
-	geometry->SetDimensions(1.0, 1.0, 1.0);
+//	Box* geometry = new Box();
+//	geometry->SetDimensions(1.0, 1.0, 1.0);
 
 //	dVec3 sceneCenter = dVec3(8.0, 0.0, 0.0);
 	dVec3 sceneCenter = dVec3(0.0, 0.0, 0.0);
@@ -29,9 +29,9 @@ void Tests::CreateBVTest(Game* game)
 	for (int i = 0; i < 8; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
-		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f));
+//		mesh->CreateBox(1.0f, 1.0f, 1.0f, 8, 8, 8, fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 //		mesh->CreateCapsule((float)r, (float)h, fVec3(1.0f, 1.0f, 1.0f));
-//		mesh->CreateCylinder((float)r, (float)h, fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateCylinder((float)r, (float)h, fVec3(0.0f, 1.0f, 1.0f), fVec3(0.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
 		renderObj->SetShader(shader);
@@ -73,7 +73,7 @@ void Tests::CreateBVTest(Game* game)
 	rigidBody->SetMass(0.0);
 	rigidBody->SetInertia(dMat33::Identity().Scale(0.0));
 	RenderMesh* mesh = new RenderMesh;
-	mesh->CreateBox(float(k), (float)k, 1.0f, 64, 64, 64, fVec3(1.0f, 1.0f, 1.0f));
+	mesh->CreateBox(float(k), (float)k, 1.0f, 64, 64, 64, fVec3(1.0f, 1.0f, 1.0f), fVec3(0.0f, 0.0f, 0.0f));
 	RenderObject* renderObj = new RenderObject;
 	renderObj->SetRenderMesh(mesh);
 	renderObj->SetShader(shader);
@@ -103,7 +103,7 @@ void Tests::CreateGJKTest(Game* game)
 	for (int i = 0; i < 2; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
-		mesh->CreateCylinder(1.0f, 2.0f, fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateCylinder(1.0f, 2.0f, fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 0, 0, 0, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);

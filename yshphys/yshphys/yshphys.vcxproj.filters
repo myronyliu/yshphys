@@ -276,6 +276,9 @@
     <ClInclude Include="Shader_DeferredPointLightShadow.h">
       <Filter>Rendering\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Shader_FinalizeLighting.h">
+      <Filter>Rendering\Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -479,6 +482,9 @@
     <ClCompile Include="Shader_DeferredPointLightShadow.cpp">
       <Filter>Rendering\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="Shader_FinalizeLighting.cpp">
+      <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -540,6 +546,15 @@
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
     <None Include="DeferredPointLightShadow_vert.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="FinalizeLighting_frag.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="FinalizeLighting_geom.glsl">
+      <Filter>Rendering\Shaders\GLSL</Filter>
+    </None>
+    <None Include="FinalizeLighting_vert.glsl">
       <Filter>Rendering\Shaders\GLSL</Filter>
     </None>
   </ItemGroup>

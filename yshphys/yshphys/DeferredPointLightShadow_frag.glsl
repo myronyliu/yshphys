@@ -31,12 +31,10 @@ float CalcShadowFactor(vec3 lightToFrag)
 	float currentDepth = length(lightToFrag);
 	float diskRadius = 0.01f;
 
-//	return texture(gShadowCubeMap, lightToFrag).r;
-
 	for (int i = 0; i < samples; ++i)
 	{
-//		float closestDepth = texture(gShadowCubeMap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
-		float alpha = texture(gShadowCubeMap, lightToFrag).r;
+		float alpha = texture(gShadowCubeMap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
+//		float alpha = texture(gShadowCubeMap, lightToFrag).r;
 		float closestDepth = (1.0f - alpha) * gNear_light + alpha * gFar_light;
 
 		if (currentDepth < gFar_light && currentDepth - bias > closestDepth)

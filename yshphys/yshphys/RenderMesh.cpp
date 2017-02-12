@@ -5,7 +5,7 @@
 #define VERTEX_NORMAL_DIM 3
 #define VERTEX_COLOR_DIM 3
 
-RenderMesh::RenderMesh() : m_VAO(0), m_VBO_positions(0), m_VBO_normals(0), m_VBO_colors(0), m_IBO(0)
+RenderMesh::RenderMesh() : m_VAO(0), m_VBO_positions(0), m_VBO_normals(0), m_VBO_diffuse(0), m_VBO_specular(0), m_IBO(0)
 {
 }
 
@@ -32,7 +32,7 @@ GLuint RenderMesh::GetIBO() const
 
 void RenderMesh::GetMeshData
 (
-	unsigned int& nVertices, const float* positions, const float* normals, const float* colors,
+	unsigned int& nVertices, const float* positions, const float* normals, const float* diffuse, const float* specular,
 	unsigned int& nTriangles, const unsigned int* indices
 )
 const
@@ -41,22 +41,27 @@ const
 	nTriangles = m_nTriangles;
 	positions = m_positions;
 	normals = m_normals;
-	colors = m_colors;
+	diffuse = m_diffuse;
+	specular = m_specular;
 }
-void RenderMesh::SetVertex(unsigned int i, const fVec3& position, const fVec3& normal, const fVec3& color)
+void RenderMesh::SetVertex(unsigned int i, const fVec3& position, const fVec3& normal, const fVec3& diffuse, const fVec3& specular)
 {
 	float* position_i = &m_positions[3 * i];
 	float* normal_i = &m_normals[3 * i];
-	float* color_i = &m_colors[3 * i];
+	float* diffuse_i = &m_diffuse[3 * i];
+	float* specular_i = &m_specular[3 * i];
 	position_i[0] = position.x;
 	position_i[1] = position.y;
 	position_i[2] = position.z;
 	normal_i[0] = normal.x;
 	normal_i[1] = normal.y;
 	normal_i[2] = normal.z;
-	color_i[0] = color.x;
-	color_i[1] = color.y;
-	color_i[2] = color.z;
+	diffuse_i[0] = diffuse.x;
+	diffuse_i[1] = diffuse.y;
+	diffuse_i[2] = diffuse.z;
+	specular_i[0] = specular.x;
+	specular_i[1] = specular.y;
+	specular_i[2] = specular.z;
 }
 void RenderMesh::SetTriangleIndices(unsigned int iTriangle, unsigned int iVertexA, unsigned int iVertexB, unsigned int iVertexC)
 {
@@ -75,7 +80,8 @@ void RenderMesh::ClearMesh()
 
 	delete[] m_positions;
 	delete[] m_normals;
-	delete[] m_colors;
+	delete[] m_diffuse;
+	delete[] m_specular;
 }
 
 void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nTriangles)
@@ -87,7 +93,8 @@ void RenderMesh::AllocateMesh(unsigned int nVertices, unsigned int nTriangles)
 
 	m_positions = new float[nVertices*VERTEX_POSITION_DIM];
 	m_normals = new float[nVertices*VERTEX_NORMAL_DIM];
-	m_colors = new float[nVertices*VERTEX_COLOR_DIM];
+	m_diffuse = new float[nVertices*VERTEX_COLOR_DIM];
+	m_specular = new float[nVertices*VERTEX_COLOR_DIM];
 
 	m_triangles = new unsigned int[nTriangles * 3];
 }
@@ -103,7 +110,8 @@ void RenderMesh::ClearGLBufferObjects()
 	glDeleteVertexArrays(1, &m_VAO);
 	glDeleteBuffers(1, &m_VBO_positions);
 	glDeleteBuffers(1, &m_VBO_normals);
-	glDeleteBuffers(1, &m_VBO_colors);
+	glDeleteBuffers(1, &m_VBO_diffuse);
+	glDeleteBuffers(1, &m_VBO_specular);
 	glDeleteBuffers(1, &m_IBO);
 }
 
@@ -115,7 +123,8 @@ void RenderMesh::GenerateGLBufferObjects()
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO_positions);
 	glGenBuffers(1, &m_VBO_normals);
-	glGenBuffers(1, &m_VBO_colors);
+	glGenBuffers(1, &m_VBO_diffuse);
+	glGenBuffers(1, &m_VBO_specular);
 	glGenBuffers(1, &m_IBO);
 
 	glBindVertexArray(m_VAO);
@@ -131,10 +140,15 @@ void RenderMesh::GenerateGLBufferObjects()
 			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_normals, GL_STATIC_DRAW);
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBO_colors);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO_diffuse);
 		{
-			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_colors, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_diffuse, GL_STATIC_DRAW);
 			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO_specular);
+		{
+			glBufferData(GL_ARRAY_BUFFER, 3 * m_nVertices * sizeof(GL_FLOAT), m_specular, GL_STATIC_DRAW);
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -142,6 +156,7 @@ void RenderMesh::GenerateGLBufferObjects()
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
 	}
 	glBindVertexArray(0);
 
@@ -171,16 +186,16 @@ void RenderMesh::Draw(const Shader* const shader, const fMat44& projectionMatrix
 	glDrawElements(GL_TRIANGLES, 3 * nTriangles, GL_UNSIGNED_INT, 0);
 }
 
-void RenderMesh::CreateTriangle(const fVec3& v0, const fVec3 v1, const fVec3& v2, const fVec3& color)
+void RenderMesh::CreateTriangle(const fVec3& v0, const fVec3 v1, const fVec3& v2, const fVec3& diffuse, const fVec3& specular)
 {
 	AllocateMesh(3, 1);
 
 	fVec3 n = (v1 - v0).Cross(v2 - v0);
 	n.Scale(sqrtf(1.0f / n.Dot(n)));
 
-	SetVertex(0, v0, n, color);
-	SetVertex(1, v1, n, color);
-	SetVertex(2, v2, n, color);
+	SetVertex(0, v0, n, diffuse, specular);
+	SetVertex(1, v1, n, diffuse, specular);
+	SetVertex(2, v2, n, diffuse, specular);
 
 	SetTriangleIndices(0, 0, 1, 2);
 
@@ -191,7 +206,7 @@ void RenderMesh::CreateBox
 (
 	float halfDimX, float halfDimY, float halfDimZ,
 	unsigned int divisionsX, unsigned int divisionsY, unsigned int divisionsZ,
-	const fVec3& color
+	const fVec3& diffuse, const fVec3& specular
 )
 {
 	const unsigned int nVertices(2 * (
@@ -243,7 +258,7 @@ void RenderMesh::CreateBox
 				normal[iDimY] = 0.0f;
 				normal[iDimZ] = 0.0f;
 
-				SetVertex(iVertex, position, normal, color);
+				SetVertex(iVertex, position, normal, diffuse, specular);
 				
 				position[iDimX] = halfDims[iDimX];
 				position[iDimY] = y;
@@ -253,7 +268,7 @@ void RenderMesh::CreateBox
 				normal[iDimY] = 0.0f;
 				normal[iDimZ] = 0.0f;
 
-				SetVertex(iVertex + nVertices / 2, position, normal, color);
+				SetVertex(iVertex + nVertices / 2, position, normal, diffuse, specular);
 
 				iVertex++;
 			}
@@ -281,7 +296,7 @@ void RenderMesh::CreateBox
 	GenerateGLBufferObjects();
 }
 
-void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& color)
+void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& diffuse, const fVec3& specular)
 {
 	const int nCirclePts = 32; // also the number of segments
 	const int nRadiusPts = 8;
@@ -317,11 +332,11 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 			normal.x = cosPhi;
 			normal.y = sinPhi;
 			normal.z = 0.0f;
-			SetVertex(iVertex, position, normal, color);
+			SetVertex(iVertex, position, normal, diffuse, specular);
 		}
 	}
 
-	SetVertex(iVertex++, fVec3(0.0f, 0.0f, -halfHeight), fVec3(0.0f, 0.0f, -1.0f), color);
+	SetVertex(iVertex++, fVec3(0.0f, 0.0f, -halfHeight), fVec3(0.0f, 0.0f, -1.0f), diffuse, specular);
 	for (int j = 0; j < nCirclePts; ++j)
 	{
 		const float phi = (float)j * 2.0f *fPI / nCirclePts;
@@ -340,10 +355,10 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 			normal.x = 0.0f;
 			normal.y = 0.0f;
 			normal.z = -1.0f;
-			SetVertex(iVertex, position, normal, color);
+			SetVertex(iVertex, position, normal, diffuse, specular);
 		}
 	}
-	SetVertex(iVertex++, fVec3(0.0f, 0.0f, halfHeight), fVec3(0.0f, 0.0f, 1.0f), color);
+	SetVertex(iVertex++, fVec3(0.0f, 0.0f, halfHeight), fVec3(0.0f, 0.0f, 1.0f), diffuse, specular);
 	for (int j = 0; j < nCirclePts; ++j)
 	{
 		const float phi = (float)j * 2.0f *fPI / nCirclePts;
@@ -362,7 +377,7 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 			normal.x = 0.0f;
 			normal.y = 0.0f;
 			normal.z = 1.0f;
-			SetVertex(iVertex, position, normal, color);
+			SetVertex(iVertex, position, normal, diffuse, specular);
 		}
 	}
 
@@ -385,8 +400,8 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 		SetTriangleIndices(
 			iTriangle++,
 			nWallVertices,
-			nWallVertices + 1 + 0 + (nRadiusPts - 1)*j0,
-			nWallVertices + 1 + 0 + (nRadiusPts - 1)*j1
+			nWallVertices + 1 + 0 + (nRadiusPts - 1)*j1,
+			nWallVertices + 1 + 0 + (nRadiusPts - 1)*j0
 		);
 		for (int i = 0; i < nRadiusPts - 2; ++i, iTriangle +=2)
 		{
@@ -409,13 +424,13 @@ void RenderMesh::CreateCylinder(float radius, float halfHeight, const fVec3& col
 			const int i10 = nWallVertices + nCapVertices + 1 + (i + 1) + (nRadiusPts - 1)*j0;
 			const int i11 = nWallVertices + nCapVertices + 1 + (i + 1) + (nRadiusPts - 1)*j1;
 			const int i01 = nWallVertices + nCapVertices + 1 + (i + 0) + (nRadiusPts - 1)*j1;
-			SetTriangleIndices(iTriangle + 0, i00, i01, i11);
-			SetTriangleIndices(iTriangle + 1, i00, i11, i10);
+			SetTriangleIndices(iTriangle + 0, i00, i11, i01);
+			SetTriangleIndices(iTriangle + 1, i00, i10, i11);
 		}
 	}
 	GenerateGLBufferObjects();
 }
-void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& color)
+void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& diffuse, const fVec3& specular)
 {
 	const int nCirclePts = 32; // also the number of segments
 	const int nTheta = 16;
@@ -433,7 +448,7 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 
 	int iVertex = 0;
 
-	SetVertex(iTipBot, fVec3(0.0f, 0.0f, -halfHeight - radius), fVec3(0.0f, 0.0f, -1.0f), color);
+	SetVertex(iTipBot, fVec3(0.0f, 0.0f, -halfHeight - radius), fVec3(0.0f, 0.0f, -1.0f), diffuse, specular);
 	iVertex++;
 
 	for (int j = 0; j < nCirclePts; ++j)
@@ -455,7 +470,7 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 			normal.x = sinTheta*cosPhi;
 			normal.y = sinTheta*sinPhi;
 			normal.z = -cosTheta;
-			SetVertex(iVertex, position, normal, color);
+			SetVertex(iVertex, position, normal, diffuse, specular);
 		}
 		for (int i = 0; i < nHeightPts; ++i, ++iVertex)
 		{
@@ -467,7 +482,7 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 			normal.x = cosPhi;
 			normal.y = sinPhi;
 			normal.z = 0.0f;
-			SetVertex(iVertex, position, normal, color);
+			SetVertex(iVertex, position, normal, diffuse, specular);
 		}
 		for (int i = 1; i < nTheta - 1; ++i, ++iVertex)
 		{
@@ -482,11 +497,11 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& colo
 			normal.x = sinTheta*cosPhi;
 			normal.y = sinTheta*sinPhi;
 			normal.z = cosTheta;
-			SetVertex(iVertex, position, normal, color);
+			SetVertex(iVertex, position, normal, diffuse, specular);
 		}
 	}
 
-	SetVertex(iTipTop, fVec3(0.0f, 0.0f, halfHeight + radius), fVec3(0.0f, 0.0f, 1.0f), color);
+	SetVertex(iTipTop, fVec3(0.0f, 0.0f, halfHeight + radius), fVec3(0.0f, 0.0f, 1.0f), diffuse, specular);
 	iVertex++;
 
 	int iTriangle = 0;

@@ -194,6 +194,7 @@
     <ClInclude Include="Shader_DepthPerspective.h" />
     <ClInclude Include="Shader_DepthCube.h" />
     <ClInclude Include="DepthCubeMap.h" />
+    <ClInclude Include="Shader_FinalizeLighting.h" />
     <ClInclude Include="Shader_ForwardPass.h" />
     <ClInclude Include="Shader_FullScreenQuad.h" />
     <ClInclude Include="Trimesh.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="Shader_DepthPerspective.cpp" />
     <ClCompile Include="Shader_DepthCube.cpp" />
     <ClCompile Include="DepthCubeMap.cpp" />
+    <ClCompile Include="Shader_FinalizeLighting.cpp" />
     <ClCompile Include="Shader_ForwardPass.cpp" />
     <ClCompile Include="Shader_FullScreenQuad.cpp" />
     <ClCompile Include="Trimesh.cpp" />
@@ -311,6 +313,9 @@
     <None Include="DeferredPointLightShadow_vert.glsl" />
     <None Include="DepthPerspective_frag.glsl" />
     <None Include="DepthPerspective_vert.glsl" />
+    <None Include="FinalizeLighting_frag.glsl" />
+    <None Include="FinalizeLighting_geom.glsl" />
+    <None Include="FinalizeLighting_vert.glsl" />
     <None Include="FlatUniformColor_frag.glsl" />
     <None Include="FlatUniformColor_vert.glsl" />
     <None Include="ForwardPass_frag.glsl" />

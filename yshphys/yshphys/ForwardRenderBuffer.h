@@ -10,14 +10,16 @@ public:
 	virtual bool Init(int width, int height);
 
 	void BindForWriting();
-//	void BindForReading(GLenum textureUnit);
-	void BindColorForReading(GLenum textureUnit);
+
+	void BindDiffuseForReading(GLenum textureUnit);
+	void BindSpecularForReading(GLenum textureUnit);
 	void BindNormalForReading(GLenum textureUnit);
 	void BindPositionForReading(GLenum textureUnit);
 
 	GLuint m_FBO;
 
-	GLuint m_color; // the texture into which the colored image is rendered
+	GLuint m_diffuse;
+	GLuint m_specular;
 	GLuint m_position;
 	GLuint m_normal;
 

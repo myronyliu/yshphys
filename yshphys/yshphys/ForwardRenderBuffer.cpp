@@ -17,9 +17,15 @@ bool ForwardRenderBuffer::Init(int width, int height)
 	glGenFramebuffers(1, &m_FBO);
 
 	// Create the color buffer
-	glGenTextures(1, &m_color);
-	glBindTexture(GL_TEXTURE_2D, m_color);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glGenTextures(1, &m_diffuse);
+	glBindTexture(GL_TEXTURE_2D, m_diffuse);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glGenTextures(1, &m_specular);
+	glBindTexture(GL_TEXTURE_2D, m_specular);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -49,9 +55,10 @@ bool ForwardRenderBuffer::Init(int width, int height)
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_position, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_normal, 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_color, 0);
-		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glDrawBuffers(3, drawBuffers);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_diffuse, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_specular, 0);
+		GLenum drawBuffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+		glDrawBuffers(4, drawBuffers);
 		glReadBuffer(GL_NONE);
 
 		GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -72,10 +79,16 @@ void ForwardRenderBuffer::BindForWriting()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FBO);
 }
 
-void ForwardRenderBuffer::BindColorForReading(GLenum textureUnit)
+void ForwardRenderBuffer::BindDiffuseForReading(GLenum textureUnit)
 {
 	glActiveTexture(textureUnit);
-	glBindTexture(GL_TEXTURE_2D, m_color);
+	glBindTexture(GL_TEXTURE_2D, m_diffuse);
+}
+
+void ForwardRenderBuffer::BindSpecularForReading(GLenum textureUnit)
+{
+	glActiveTexture(textureUnit);
+	glBindTexture(GL_TEXTURE_2D, m_specular);
 }
 
 void ForwardRenderBuffer::BindNormalForReading(GLenum textureUnit)

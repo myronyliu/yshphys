@@ -39,7 +39,7 @@ int main(int argc, char *args[])
 	game.m_window = &window;
 
 	PointLight pl;
-	pl.intensity = fVec3(1.0f, 1.0f, 1.0f).Scale(8.0f);
+	pl.intensity = fVec3(1.0f, 1.0f, 1.0f).Scale(2.0f);
 	pl.position = fVec3(0.0f, 0.0f, 8.0f - 16.0f);
 	pl.shadowCubeMap.Init(1024);
 	game.m_renderScene.AddPointLight(pl);
