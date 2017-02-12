@@ -23,6 +23,10 @@ BoundingBox Geometry::GetLocalOOBB() const
 
 dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
 {
+	assert(abs(v.x) < 100000.0);
+	assert(abs(v.y) < 100000.0);
+	assert(abs(v.z) < 100000.0);
+
 	return x + q.Transform(SupportLocal((-q).Transform(v)));
 }
 
@@ -134,7 +138,7 @@ void CompleteSimplex2(
 		int k = (i + 2) % 3;
 		if (AB_AB[i] <= AB_AB[j] && AB_AB[i] <= AB_AB[k])
 		{
-			const double invNorm = 1.0 / sqrt(AB[j] * AB[i] + AB[k] * AB[k]);
+			const double invNorm = 1.0 / sqrt(AB[j] * AB[j] + AB[k] * AB[k]);
 			n[i] = 0.0;
 			n[j] = AB[k] * invNorm;
 			n[k] = -AB[j] * invNorm;

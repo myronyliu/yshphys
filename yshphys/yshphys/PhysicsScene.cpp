@@ -322,7 +322,8 @@ void PhysicsScene::ComputeContacts()
 			{
 				intersectionPoly = poly0.Intersect(poly1.ReflectX());
 			}
-			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+//			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+			intersectionPoly = intersectionPoly.LimitVertices(3);
 
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
@@ -518,7 +519,8 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 			{
 				intersectionPoly = poly0.Intersect(poly1.ReflectX());
 			}
-			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+//			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+			intersectionPoly = intersectionPoly.LimitVertices(3);
 
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);

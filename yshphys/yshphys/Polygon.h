@@ -12,6 +12,7 @@ public:
 	void AddVertex(const fVec2& vertex);
 
 	Polygon PruneColinearVertices(double minTurnAngle) const;
+	Polygon LimitVertices(int maxVertices) const;
 
 	// The following function assumes both polygons are convex
 	Polygon Intersect(const Polygon& poly) const;
@@ -48,4 +49,6 @@ private:
 	Polygon WalkingIntersect(const Polygon& poly) const;
 
 	Polygon DoIntersect(const Polygon& poly) const;
+
+	Polygon PruneVertices(double minTurnAngle, int maxVertices) const;
 };

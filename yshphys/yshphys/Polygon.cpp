@@ -42,7 +42,7 @@ Polygon Polygon::ReflectX() const
 	return poly;
 }
 
-Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
+Polygon Polygon::PruneVertices(double minTurnAngle, int maxVertices) const
 {
 	if (m_nVertices < 3)
 	{
@@ -117,6 +117,8 @@ Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
 	int nHeap = m_nVertices;
 	std::make_heap(heap, heap + nHeap, HeapCmp);
 
+	int nRemainingVerts = m_nVertices;
+
 	while (true)
 	{
 		std::pop_heap(heap, heap + nHeap, HeapCmp);
@@ -124,7 +126,7 @@ Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
 		Vert* vert = elem->vert;
 		if (vert->valid)
 		{
-			if (elem->cosAngle < cosThresh)
+			if (elem->cosAngle < cosThresh || nRemainingVerts <= maxVertices)
 			{
 				Polygon poly;
 				Vert* v = vert;
@@ -192,6 +194,8 @@ Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
 
 				std::push_heap(heap, heap + (++nHeap), HeapCmp);
 				std::push_heap(heap, heap + (++nHeap), HeapCmp);
+
+				nRemainingVerts--;
 			}
 		}
 		else
@@ -200,8 +204,15 @@ Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
 			freeVert = vert;
 		}
 	}
+}
 
-
+Polygon Polygon::PruneColinearVertices(double minTurnAngle) const
+{
+	return PruneVertices(minTurnAngle, MAX_POLYGON_VERTICES);
+}
+Polygon Polygon::LimitVertices(int maxVertices) const
+{
+	return PruneVertices(dPI, maxVertices);
 }
 
 void Polygon::BuildEdges(HalfEdge* edges) const
