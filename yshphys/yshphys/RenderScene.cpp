@@ -310,8 +310,6 @@ void RenderScene::ForwardPass()
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_forwardRender.m_near = m_viewport.m_near;
-	m_forwardRender.m_far = m_viewport.m_far;
 	glViewport(0, 0, m_forwardRender.m_width, m_forwardRender.m_height);
 
 	const fMat44 viewMatrix = m_viewport.CreateViewMatrix();
@@ -322,12 +320,8 @@ void RenderScene::ForwardPass()
 	const GLint uniLoc_projection = glGetUniformLocation(program, "gProjection");
 	const GLint uniLoc_view = glGetUniformLocation(program, "gView");
 	const GLint uniLoc_model = glGetUniformLocation(program, "gModel");
-	const GLint uniLoc_near = glGetUniformLocation(program, "gNear");
-	const GLint uniLoc_far = glGetUniformLocation(program, "gFar");
 	glUniformMatrix4fv(uniLoc_projection, 1, GL_FALSE, &(m_viewport.CreateProjectionMatrix().Transpose()(0, 0)));
 	glUniformMatrix4fv(uniLoc_view, 1, GL_FALSE, &(m_viewport.CreateViewMatrix().Transpose()(0, 0)));
-	glUniform1f(uniLoc_near, m_viewport.m_near);
-	glUniform1f(uniLoc_far, m_viewport.m_far);
 
 	const RenderNode* node = m_firstNode;
 	while (node)
@@ -344,6 +338,9 @@ void RenderScene::ForwardPass()
 		}
 		node = node->GetNext();
 	}
+
+	m_debugRenderer.DrawObjectsToGBuffer(m_viewport);
+	m_debugRenderer.EvictObjects();
 
 	glUseProgram(0);
 	glBindVertexArray(0);
@@ -375,10 +372,13 @@ void RenderScene::FinalizeLighting()
 
 	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
 	const GLint uniLoc_ambient = glGetUniformLocation(program, "gAmbient");
+	const GLint uniLoc_lightingStencil = glGetUniformLocation(program, "gLightingStencil");
 
 	glUniform1i(uniLoc_colorTex, 0);
+	glUniform1i(uniLoc_lightingStencil, 1);
 	glUniform3f(uniLoc_ambient, m_ambient.x, m_ambient.y, m_ambient.z);
 
+	m_forwardRender.BindStencilForReading(GL_TEXTURE1);
 	m_finalRender.BindForModification(GL_TEXTURE0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -407,6 +407,7 @@ void RenderScene::LightingPass()
 	const GLint uniLoc_normalTex = glGetUniformLocation(program, "gNormalTex");
 	const GLint uniLoc_diffuseTex = glGetUniformLocation(program, "gDiffuseTex");
 	const GLint uniLoc_specularTex = glGetUniformLocation(program, "gSpecularTex");
+	const GLint uniLoc_lightingStencil = glGetUniformLocation(program, "gLightingStencil");
 
 	const GLint uniLoc_eyePos = glGetUniformLocation(program, "gEyePos");
 
@@ -416,6 +417,7 @@ void RenderScene::LightingPass()
 	m_forwardRender.BindPositionForReading(GL_TEXTURE2);
 	m_forwardRender.BindDiffuseForReading(GL_TEXTURE3);
 	m_forwardRender.BindSpecularForReading(GL_TEXTURE4);
+	m_forwardRender.BindStencilForReading(GL_TEXTURE5);
 
 	glUniform1i(uniLoc_colorTex, 0);
 
@@ -423,6 +425,8 @@ void RenderScene::LightingPass()
 	glUniform1i(uniLoc_positionTex, 2);
 	glUniform1i(uniLoc_diffuseTex, 3);
 	glUniform1i(uniLoc_specularTex, 4);
+
+	glUniform1i(uniLoc_lightingStencil, 5);
 
 	for (PointLight pointLight : m_pointLights)
 	{
@@ -455,26 +459,29 @@ void RenderScene::ShadowPass()
 	glUseProgram(program);
 	const GLint uniLoc_positionTex = glGetUniformLocation(program, "gPositionTex");
 	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
+	const GLint uniLoc_lightingStencil = glGetUniformLocation(program, "gLightingStencil");
 
 	const GLint uniLoc_near_light = glGetUniformLocation(program, "gNear_light");
 	const GLint uniLoc_far_light = glGetUniformLocation(program, "gFar_light");
 
-	m_forwardRender.BindPositionForReading(GL_TEXTURE0);
+	m_forwardRender.BindPositionForReading(GL_TEXTURE2);
+	m_forwardRender.BindStencilForReading(GL_TEXTURE3);
 
-	glUniform1i(uniLoc_positionTex, 0);
+	glUniform1i(uniLoc_positionTex, 2);
+	glUniform1i(uniLoc_lightingStencil, 3);
 
 	for (PointLight pointLight : m_pointLights)
 	{
-		m_finalRender.BindForModification(GL_TEXTURE1);
-		glUniform1i(uniLoc_colorTex, 1);
+		m_finalRender.BindForModification(GL_TEXTURE0);
+		glUniform1i(uniLoc_colorTex, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		const GLint uniLoc_lightPos = glGetUniformLocation(program, "gLightPos");
 		glUniform3f(uniLoc_lightPos, pointLight.position.x, pointLight.position.y, pointLight.position.z);
 
-		pointLight.shadowCubeMap.BindForReading(GL_TEXTURE2);
+		pointLight.shadowCubeMap.BindForReading(GL_TEXTURE1);
 		const GLint uniLoc_shadowCubeMap = glGetUniformLocation(program, "gShadowCubeMap");
-		glUniform1i(uniLoc_shadowCubeMap, 2);
+		glUniform1i(uniLoc_shadowCubeMap, 1);
 
 		glUniform1f(uniLoc_near_light, pointLight.shadowCubeMap.m_near);
 		glUniform1f(uniLoc_far_light, pointLight.shadowCubeMap.m_far);
@@ -579,8 +586,6 @@ void RenderScene::RenderPass(Window* window)
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	m_debugRenderer.DrawObjects(m_viewport);
-	m_debugRenderer.EvictObjects();
 }
 
 void RenderScene::DrawScene(Window* window)

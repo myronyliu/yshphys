@@ -2,7 +2,7 @@
 
 in vec2 ex_texCoord;
 
-layout (location = 0) out vec4 out_fragColor;
+layout (location = 0) out vec3 out_fragColor;
 
 uniform vec3 gLightPos;
 
@@ -11,6 +11,7 @@ uniform float gFar_light;
 
 uniform sampler2D gPositionTex;
 uniform sampler2D gColorTex;
+uniform sampler2D gLightingStencil;
 
 uniform samplerCube gShadowCubeMap;
 
@@ -48,13 +49,14 @@ float CalcShadowFactor(vec3 lightToFrag)
 
 void main()
 {
-	vec3 fragPos = texture(gPositionTex, ex_texCoord).xyz;
-
-	vec3 lightToFrag = fragPos - gLightPos;
-
-	out_fragColor = texture(gColorTex, ex_texCoord) * CalcShadowFactor(lightToFrag);
-//	out_fragColor.r = CalcShadowFactor(lightToFrag);
-//	out_fragColor.g = 0.0f;
-//	out_fragColor.b = 0.0f;
-//	out_fragColor.a = 1.0f;
+	if (texture(gLightingStencil, ex_texCoord).r == 0.0f)
+	{
+		out_fragColor = texture(gColorTex, ex_texCoord).rgb;
+	}
+	else
+	{
+		vec3 fragPos = texture(gPositionTex, ex_texCoord).xyz;
+		vec3 lightToFrag = fragPos - gLightPos;
+		out_fragColor = texture(gColorTex, ex_texCoord).rgb * CalcShadowFactor(lightToFrag);
+	}
 }

@@ -42,7 +42,7 @@ DebugRenderer::~DebugRenderer()
 	glDeleteBuffers(1, &m_IBO);
 }
 
-void DebugRenderer::DrawObjects(const Viewport& viewport) const
+void DebugRenderer::DrawObjectsToGBuffer(const Viewport& viewport) const
 {
 	const fMat44 viewMatrix = viewport.CreateViewMatrix();
 	const fMat44 projectionMatrix = viewport.CreateProjectionMatrix();
@@ -70,19 +70,19 @@ void DebugRenderer::DrawObjects(const Viewport& viewport) const
 
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.nIndices * sizeof(GL_UNSIGNED_INT), data.indices, GL_DYNAMIC_DRAW);
 
-		const GLint useNormalsLoc = glGetUniformLocation(program, "useNormals");
-		const GLint colorLoc = glGetUniformLocation(program, "color");
-		const GLint projectionLoc = glGetUniformLocation(program, "projectionMatrix");
-		const GLint viewLoc = glGetUniformLocation(program, "viewMatrix");
-		const GLint modelLoc = glGetUniformLocation(program, "modelMatrix");
+		const GLint uniLoc_lit = glGetUniformLocation(program, "gLit");
+		const GLint uniLoc_diffuse = glGetUniformLocation(program, "gDiffuse");
+		const GLint uniLoc_projection = glGetUniformLocation(program, "gProjection");
+		const GLint uniLoc_view = glGetUniformLocation(program, "gView");
+		const GLint uniLoc_model = glGetUniformLocation(program, "gModel");
 		// Pass in the transpose because OpenGL likes to be all edgy with its
 		// column major matrices while we are row major like everybody else.
-		bool useNormals = (data.polygonType == GL_LINES) ? false : data.shaded;
-		glUniform1i(useNormalsLoc, useNormals);
-		glUniform3fv(colorLoc, 1, data.color);
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
+		bool lit = (data.polygonType == GL_LINES) ? false : data.lit;
+		glUniform1i(uniLoc_lit, lit);
+		glUniform3fv(uniLoc_diffuse, 1, data.diffuse);
+		glUniformMatrix4fv(uniLoc_projection, 1, GL_FALSE, &(projectionMatrix.Transpose()(0, 0)));
+		glUniformMatrix4fv(uniLoc_view, 1, GL_FALSE, &(viewMatrix.Transpose()(0, 0)));
+		glUniformMatrix4fv(uniLoc_model, 1, GL_FALSE, &(modelMatrix.Transpose()(0, 0)));
 		glDrawElements(data.polygonType, data.nIndices, GL_UNSIGNED_INT, 0);
 	}
 
@@ -102,9 +102,9 @@ void DebugRenderer::DrawLine(const fVec3& start, const fVec3& end, const fVec3& 
 	DebugDrawData data;
 	data.pos = fVec3(0.0f, 0.0f, 0.0f);
 	data.rot = fQuat::Identity();
-	data.color[0] = color.x;
-	data.color[1] = color.y;
-	data.color[2] = color.z;
+	data.diffuse[0] = color.x;
+	data.diffuse[1] = color.y;
+	data.diffuse[2] = color.z;
 
 	data.nVertices = 2;
 
@@ -129,10 +129,10 @@ void DebugRenderer::DrawCone(const fVec3& tip, const fVec3& base, const float& r
 {
 	DebugDrawData data;
 	data.pos = base;
-	data.color[0] = color.x;
-	data.color[1] = color.y;
-	data.color[2] = color.z;
-	data.shaded = shaded;
+	data.diffuse[0] = color.x;
+	data.diffuse[1] = color.y;
+	data.diffuse[2] = color.z;
+	data.lit = shaded;
 
 	const fVec3 axis = tip - base;
 	const float h = sqrtf(axis.Dot(axis));
@@ -177,10 +177,10 @@ void DebugRenderer::DrawTriangle(const fVec3& A, const fVec3& B, const fVec3& C,
 	DebugDrawData data;
 	data.pos = fVec3(0.0, 0.0, 0.0);
 	data.rot = fQuat::Identity();
-	data.color[0] = color.x;
-	data.color[1] = color.y;
-	data.color[2] = color.z;
-	data.shaded = shaded;
+	data.diffuse[0] = color.x;
+	data.diffuse[1] = color.y;
+	data.diffuse[2] = color.z;
+	data.lit = shaded;
 
 	data.nVertices = 3;
 
@@ -231,10 +231,10 @@ void DebugRenderer::DrawPolygon(const fVec3* verts, int nVerts, const fVec3& pos
 	DebugDrawData data;
 	data.pos = pos;
 	data.rot = rot;
-	data.color[0] = color.x;
-	data.color[1] = color.y;
-	data.color[2] = color.z;
-	data.shaded = shaded;
+	data.diffuse[0] = color.x;
+	data.diffuse[1] = color.y;
+	data.diffuse[2] = color.z;
+	data.lit = shaded;
 
 	data.nVertices = nVerts;
 
@@ -323,9 +323,9 @@ void DebugRenderer::DrawBox(float halfDimX, float halfDimY, float halfDimZ, cons
 		DebugDrawData data;
 		data.pos = pos;
 		data.rot = rot;
-		data.color[0] = color.x;
-		data.color[1] = color.y;
-		data.color[2] = color.z;
+		data.diffuse[0] = color.x;
+		data.diffuse[1] = color.y;
+		data.diffuse[2] = color.z;
 
 		auto iVertex = [](int i, int j, int k)
 		{

@@ -1,10 +1,20 @@
 #version 400
 
-in vec3 ex_color;
+in vec3 ex_vertPosition;
+in vec3 ex_vertNormal;
+in vec3 ex_vertDiffuse;
 
-out vec4 fragColor;
+layout (location = 0) out vec3 out_fragPosition;
+layout (location = 1) out vec3 out_fragNormal;
+layout (location = 2) out vec3 out_fragDiffuse;
+layout (location = 4) out float out_lightingStencil;
+
+uniform int gLit;
 
 void main(void)
 {
-	fragColor = vec4(ex_color, 1.0f);
+	out_fragPosition = ex_vertPosition;
+	out_fragNormal = ex_vertNormal;
+	out_fragDiffuse = ex_vertDiffuse;
+	out_lightingStencil = float(gLit);
 }

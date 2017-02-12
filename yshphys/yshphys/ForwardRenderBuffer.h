@@ -15,18 +15,20 @@ public:
 	void BindSpecularForReading(GLenum textureUnit);
 	void BindNormalForReading(GLenum textureUnit);
 	void BindPositionForReading(GLenum textureUnit);
+	void BindStencilForReading(GLenum textureUnit);
 
 	GLuint m_FBO;
 
-	GLuint m_diffuse;
-	GLuint m_specular;
 	GLuint m_position;
 	GLuint m_normal;
 
+	GLuint m_diffuse;
+	GLuint m_specular;
+
+	GLuint m_stencil; // for determining whether parts of the image should be included in the lighting and shadow computations
+
 	int m_width;
 	int m_height;
-	float m_near;
-	float m_far;
 
 protected:
 

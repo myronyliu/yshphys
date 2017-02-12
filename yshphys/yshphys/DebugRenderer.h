@@ -30,7 +30,7 @@ protected:
 	DebugRenderer();
 	virtual ~DebugRenderer();
 
-	void DrawObjects(const Viewport& viewport) const;
+	void DrawObjectsToGBuffer(const Viewport& viewport) const;
 	void EvictObjects();
 
 	struct DebugDrawData
@@ -45,8 +45,8 @@ protected:
 
 		fVec3 pos = fVec3(0.0f, 0.0f, 0.0f);
 		fQuat rot = fQuat(0.0f, 0.0f, 0.0f, 1.0f);
-		float color[3] = { 1.0f, 1.0f, 1.0f };
-		bool shaded = true;
+		float diffuse[3] = { 1.0f, 1.0f, 1.0f };
+		bool lit = false;
 	};
 
 	std::vector<DebugDrawData> m_objects;
