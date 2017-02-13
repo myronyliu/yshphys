@@ -28,26 +28,31 @@ void main()
 	else
 	{
 		vec3 fragPos = texture(gPositionTex, ex_texCoord).xyz;
+		vec3 N = texture(gNormalTex, ex_texCoord).xyz;
 
 		vec3 vFragToLight = gLightPos - fragPos;
 		float dFragToLight = length(vFragToLight);
+		vec3 L = vFragToLight / dFragToLight;
 
-		vec3 ambient = vec3(0.25f, 0.25f, 0.25f);
+		float cosTheta = dot(L, N);
 
-		vec3 normal = texture(gNormalTex, ex_texCoord).xyz;
-		float cosTheta = dot(vFragToLight / dFragToLight, normal);
-		vec3 kDiffuse = gLightInt * max(0.0f, cosTheta) / dFragToLight;
+		if (cosTheta <= 0.0f)
+		{
+			out_fragColor = texture(gColorTex, ex_texCoord).rgb;
+		}
+		else
+		{
+			vec3 kDiffuse = gLightInt * cosTheta / dFragToLight;
+			vec3 diffuse = texture(gDiffuseTex, ex_texCoord).rgb * kDiffuse;
 
-		vec3 diffuse = texture(gDiffuseTex, ex_texCoord).rgb * kDiffuse;
+			// Blinn Phong
+			float phongExp = 0.8f;
+			vec3 V = normalize(gEyePos - fragPos);
+			vec3 H = normalize(L + V);
+			vec3 kSpecular = gLightInt * pow(max(dot(H, N), 0.0f), phongExp);
+			vec3 specular = texture(gSpecularTex, ex_texCoord).rgb * kSpecular;
 
-		// Blinn Phong
-		float phongExp = 0.8f;
-		vec3 L = normalize(gLightPos - fragPos);
-		vec3 V = normalize(gEyePos - fragPos);
-		vec3 H = normalize(L + V);
-		vec3 kSpecular = gLightInt * pow(max(dot(H, normal), 0.0f), phongExp);
-		vec3 specular = texture(gSpecularTex, ex_texCoord).rgb * kSpecular;
-
-		out_fragColor = texture(gColorTex, ex_texCoord).rgb + diffuse + specular;
+			out_fragColor = texture(gColorTex, ex_texCoord).rgb + diffuse + specular;
+		}
 	}
 }
