@@ -534,3 +534,58 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& diff
 	}
 	GenerateGLBufferObjects();
 }
+
+void RenderMesh::CreateSphere(float radius, const fVec3& diffuse, const fVec3& specular)
+{
+	const int nTheta = 32;
+	const int nPhi = 32;
+	
+	const int nVertices = 2 + (nTheta - 2)*nPhi;
+	const int nTriangles = 2 * (nTheta - 2)*nPhi;
+
+	AllocateMesh(nVertices, nTriangles);
+
+	SetVertex(0, fVec3(0.0f, 0.0f, radius), fVec3(0.0f, 0.0f, 1.0f), diffuse, specular);
+	for (int i = 1; i < nTheta - 1; ++i)
+	{
+		const float theta = fPI * float(i) / float(nTheta - 1);
+		const float sinTheta = sin(theta);
+		const float z = cos(theta);
+		for (int j = 0; j < nPhi; ++j)
+		{
+			const float phi = 2.0f*fPI*float(j) / float(nPhi);
+			const float x = sinTheta*cos(phi);
+			const float y = sinTheta*sin(phi);
+			const fVec3 normal(x, y, z);
+			const fVec3 position = normal.Scale(radius);
+			SetVertex(1 + nPhi*(i - 1) + j, position, normal, diffuse, specular);
+		}
+	}
+	SetVertex(nVertices - 1, fVec3(0.0f, 0.0f, -radius), fVec3(0.0f, 0.0f, -1.0f), diffuse, specular);
+
+	int iTriangle = 0;
+
+	for (int j = 0; j < nPhi; ++j)
+	{
+		SetTriangleIndices(iTriangle++, 0, 1 + j, 1 + (j + 1) % nPhi);
+	}
+	for (int i = 0; i < nTheta - 3; ++i)
+	{
+		for (int j = 0; j < nPhi; ++j)
+		{
+			const int i00 = 1 + nPhi*(i + 0) + (j + 0);
+			const int i10 = 1 + nPhi*(i + 1) + (j + 0);
+			const int i11 = 1 + nPhi*(i + 1) + (j + 1) % nPhi;
+			const int i01 = 1 + nPhi*(i + 0) + (j + 1) % nPhi;
+
+			SetTriangleIndices(iTriangle++, i00, i10, i11);
+			SetTriangleIndices(iTriangle++, i00, i11, i01);
+		}
+	}
+	for (int j = 0; j < nPhi; ++j)
+	{
+		SetTriangleIndices(iTriangle++, nVertices - 1, (nVertices - 2) - j, (nVertices - 2) - (j + 1) % nPhi);
+	}
+
+	GenerateGLBufferObjects();
+}
