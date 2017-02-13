@@ -109,7 +109,7 @@ FreedRenderNode::~FreedRenderNode()
 
 RenderScene::RenderScene() :
 	m_firstNode(nullptr),
-	m_ambient(0.1f, 0.1f, 0.1f)
+	m_ambient(0.25f, 0.25f, 0.25f)
 {
 	m_renderNodes = new RenderNode[MAX_RENDER_NODES];
 
@@ -371,13 +371,16 @@ void RenderScene::FinalizeLighting()
 	glUseProgram(program);
 
 	const GLint uniLoc_colorTex = glGetUniformLocation(program, "gColorTex");
+	const GLint uniLoc_diffuseTex = glGetUniformLocation(program, "gDiffuseTex");
 	const GLint uniLoc_ambient = glGetUniformLocation(program, "gAmbient");
 	const GLint uniLoc_lightingStencil = glGetUniformLocation(program, "gLightingStencil");
 
 	glUniform1i(uniLoc_colorTex, 0);
 	glUniform1i(uniLoc_lightingStencil, 1);
+	glUniform1i(uniLoc_diffuseTex, 2);
 	glUniform3f(uniLoc_ambient, m_ambient.x, m_ambient.y, m_ambient.z);
 
+	m_forwardRender.BindDiffuseForReading(GL_TEXTURE2);
 	m_forwardRender.BindStencilForReading(GL_TEXTURE1);
 	m_finalRender.BindForModification(GL_TEXTURE0);
 	glClear(GL_COLOR_BUFFER_BIT);
