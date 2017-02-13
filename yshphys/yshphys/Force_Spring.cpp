@@ -29,7 +29,7 @@ dVec3 Force_Spring::ComputeForce(const RigidBody::Inertia& inertia, const RigidB
 
 	if (dx_dx > FLT_EPSILON)
 	{
-		Fs = dx.Scale(1.0 - length / sqrt(dx_dx));
+		Fs = dx.Scale(k*(1.0 - length / sqrt(dx_dx)));
 		Fd = -dx.Scale(b*v.Dot(dx) / dx_dx);
 	}
 	else

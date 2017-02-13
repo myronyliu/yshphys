@@ -8,8 +8,7 @@ Picker::Picker() : m_depth(1.0f)
 	m_mappedKeys[PICK] = YSH_INPUT_LMOUSEBUTTON;
 
 	m_springCoeff.k = 8.0f;
-//	m_springCoeff.b = 2.0f * sqrtf(m_springCoeff.k);
-	m_springCoeff.b = 0.0f * sqrtf(m_springCoeff.k);
+	m_springCoeff.b = 2.0f * sqrtf(m_springCoeff.k);
 }
 
 Picker::~Picker()
