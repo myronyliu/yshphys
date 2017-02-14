@@ -19,13 +19,13 @@ dVec3 Point::SupportLocal(const dVec3& v) const
 {
 	return dVec3(0.0, 0.0, 0.0);
 }
-Polygon Point::IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dQuat& planeOrientation) const
+Polygon Point::IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const
 {
 	Polygon poly;
 	poly.AddVertex(dVec2(0.0, 0.0));
 	return poly;
 }
-Polygon Point::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+Polygon Point::IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const
 {
 	Polygon poly;
 	poly.AddVertex(dVec2(0.0, 0.0));

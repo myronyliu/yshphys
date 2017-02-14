@@ -58,17 +58,12 @@ bool Box::RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3
 	}
 }
 
-Polygon Box::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+Polygon Box::IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& z, const dVec3& x, const dVec3& y) const
 {
 	Polygon poly;
 
-	const dMat33 R(planeOrientation);
-	const dVec3 x(R.GetColumn(0));
-	const dVec3 y(R.GetColumn(1));
-	const dVec3 z(R.GetColumn(2));
-
-	const double cx = planeOrigin.Dot(R.GetColumn(0));
-	const double cy = planeOrigin.Dot(R.GetColumn(1));
+	const double cx = planeOrigin.Dot(x);
+	const double cy = planeOrigin.Dot(y);
 
 	for (int i = 0; i < 3; ++i)
 	{

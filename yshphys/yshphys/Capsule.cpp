@@ -37,21 +37,16 @@ dVec3 Capsule::SupportLocal(const dVec3& v) const
 	return support;
 }
 
-Polygon Capsule::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+Polygon Capsule::IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& x, const dVec3& y) const
 {
 	Polygon poly;
 
-	const dMat33 R = dMat33(planeOrientation);
-
-	if (abs(R(2, 2)) > 0.001) // the capsule is tilted by more than ~0.5 degrees
+	if (abs(planeNormal.z) > 0.001) // the capsule is tilted by more than ~0.5 degrees
 	{
 		poly.AddVertex(dVec2(0.0, 0.0));
 	}
 	else
 	{
-		dVec3 x = R.GetColumn(0);
-		dVec3 y = R.GetColumn(1);
-
 		dVec3 A(0.0, 0.0, -m_halfHeight - planeOrigin.z);
 		dVec3 B(0.0, 0.0, m_halfHeight - planeOrigin.z);
 

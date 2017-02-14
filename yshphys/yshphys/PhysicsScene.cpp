@@ -219,7 +219,7 @@ void PhysicsScene::RemovePhysicsObject(RigidBody* physicsObject)
 	}
 }
 
-dQuat CreateCoordinateSystem(dVec3& xAxis, dVec3& yAxis, const dVec3& zAxis)
+void CreateCoordinateSystem(dVec3& xAxis, dVec3& yAxis, const dVec3& zAxis)
 {
 	for (int i = 0; i < 3; ++i)
 	{
@@ -236,15 +236,10 @@ dQuat CreateCoordinateSystem(dVec3& xAxis, dVec3& yAxis, const dVec3& zAxis)
 
 			xAxis = yAxis.Cross(zAxis);
 
-			dMat33 R;
-			R.SetColumn(0, xAxis);
-			R.SetColumn(1, yAxis);
-			R.SetColumn(2, zAxis);
-			return dQuat(R);
+			return;
 		}
 	}
 	assert(false);
-	return dQuat();
 }
 
 void PhysicsScene::ComputeContacts()
@@ -271,8 +266,13 @@ void PhysicsScene::ComputeContacts()
 
 		if (Geometry::Intersect(geom0, pos0, rot0, x0, n0, geom1, pos1, rot1, x1, n1))
 		{
-			const double k = 64.0;
-			const dVec3 d = n0.Scale((x1 - x0).Dot(n0));
+			assert(abs(n0.z) > 0.999);
+
+			const double k = 256.0;
+			double penetration = (x1 - x0).Dot(n1);
+			assert(penetration > 0.0);
+			penetration = std::min(0.05, penetration);
+			const dVec3 d = n1.Scale(penetration);
 
 			Force_Constant* penalty0 = new Force_Constant();
 			Force_Constant* penalty1 = new Force_Constant();
@@ -295,17 +295,16 @@ void PhysicsScene::ComputeContacts()
 
 			dVec3 xHat, yHat;
 
-			dQuat qPlane0 = CreateCoordinateSystem(xHat,yHat,n0);
+			CreateCoordinateSystem(xHat,yHat,n0);
 			dVec3 xPlane = (x0 + x1).Scale(0.5);
 
-			dMat33 RPlane1;
-			RPlane1.SetColumn(0, -xHat);
-			RPlane1.SetColumn(1, yHat);
-			RPlane1.SetColumn(2, -n0);
-			dQuat qPlane1(RPlane1);
+			dMat33 RPlane0;
+			RPlane0.SetColumn(0, xHat);
+			RPlane0.SetColumn(1, yHat);
+			RPlane0.SetColumn(2, n0);
 
-			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, qPlane0);
-			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, qPlane1);
+			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, n0, xHat, yHat);
+			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, -n0, -xHat, yHat);
 			Polygon intersectionPoly;
 			int nVerts0, nVerts1;
 			const fVec2* verts0 = poly0.GetVertices(nVerts0);
@@ -330,9 +329,12 @@ void PhysicsScene::ComputeContacts()
 
 			for (int i = 0; i < nVerts; ++i)
 			{
-				dVec3 x = xPlane + qPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
 				contact.x[0] = x;
 				contact.x[1] = x;
+
+//				contact.x[0] = x0;
+//				contact.x[1] = x1;
 
 				// TODO: The following logic does redundant work, but I don't feel like pulling it out of the loop at the moment for convenience
 
@@ -492,17 +494,16 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 		{
 			dVec3 xHat, yHat;
 
-			dQuat qPlane0 = CreateCoordinateSystem(xHat, yHat, n0);
+			CreateCoordinateSystem(xHat, yHat, n0);
 			dVec3 xPlane = (x0 + x1).Scale(0.5);
 
-			dMat33 RPlane1;
-			RPlane1.SetColumn(0, -xHat);
-			RPlane1.SetColumn(1, yHat);
-			RPlane1.SetColumn(2, -n0);
-			dQuat qPlane1(RPlane1);
+			dMat33 RPlane0;
+			RPlane0.SetColumn(0, xHat);
+			RPlane0.SetColumn(1, yHat);
+			RPlane0.SetColumn(2, n0);
 
-			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, qPlane0);
-			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, qPlane1);
+			Polygon poly0 = geom0->IntersectPlane(pos0, rot0, xPlane, n0, xHat, yHat);
+			Polygon poly1 = geom1->IntersectPlane(pos1, rot1, xPlane, -n0, -xHat, yHat);
 			Polygon intersectionPoly;
 			int nVerts0, nVerts1;
 			const fVec2* verts0 = poly0.GetVertices(nVerts0);
@@ -519,36 +520,36 @@ void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 			{
 				intersectionPoly = poly0.Intersect(poly1.ReflectX());
 			}
-//			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
-			intersectionPoly = intersectionPoly.LimitVertices(3);
+			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+//			intersectionPoly = intersectionPoly.LimitVertices(3);
 
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
 //			assert(nVerts > 0);
 
 			const float k = 0.05f;
-			for (Polygon poly : { intersectionPoly })
-			{
-				verts = poly.GetVertices(nVerts);
-				for (int i = 0; i < nVerts; ++i)
-				{
-					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-					const fVec3 y(xPlane + xHat.Scale((double)verts[(i + 1) % nVerts].x) + yHat.Scale((double)verts[(i + 1) % nVerts].y));
-					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
-					renderer->DrawLine(x, y, fVec3(1.0f, 0.0f, 0.0f));
-				}
-			}
-//			for (Polygon poly : {poly0, poly1.ReflectX()})
+//			for (Polygon poly : { intersectionPoly })
 //			{
 //				verts = poly.GetVertices(nVerts);
 //				for (int i = 0; i < nVerts; ++i)
 //				{
 //					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
 //					const fVec3 y(xPlane + xHat.Scale((double)verts[(i + 1) % nVerts].x) + yHat.Scale((double)verts[(i + 1) % nVerts].y));
-//					renderer->DrawLine(x, y, fVec3(0.0f, 1.0f, 0.0f));
-//					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+//					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
+//					renderer->DrawLine(x, y, fVec3(1.0f, 0.0f, 0.0f));
 //				}
 //			}
+			for (Polygon poly : {poly0, poly1.ReflectX()})
+			{
+				verts = poly.GetVertices(nVerts);
+				for (int i = 0; i < nVerts; ++i)
+				{
+					const fVec3 x(xPlane + xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+					const fVec3 y(xPlane + xHat.Scale((double)verts[(i + 1) % nVerts].x) + yHat.Scale((double)verts[(i + 1) % nVerts].y));
+					renderer->DrawLine(x, y, fVec3(0.0f, 1.0f, 0.0f));
+					renderer->DrawBox(k, k, k, x, dQuat::Identity(), fVec3(0.0f, 1.0f, 0.0f), false, false);
+				}
+			}
 		}
 	}
 

@@ -40,12 +40,21 @@ Material::Type Geometry::GetMaterialLocal(const dVec3& x) const
 	return m_material;
 }
 
-Polygon Geometry::IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dQuat& planeOrientation) const
+Polygon Geometry::IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const
 {
-	return IntersectPlaneLocal((-rot).Transform(planeOrigin - pos), -rot*planeOrientation);
+	dMat33 planeOrientationT;
+	planeOrientationT.SetRow(0, xAxis);
+	planeOrientationT.SetRow(1, yAxis);
+	planeOrientationT.SetRow(2, planeNormal);
+	dMat33 localPlaneOrientationT = planeOrientationT*dMat33(rot);
+	return IntersectPlaneLocal((-rot).Transform(planeOrigin - pos),
+		localPlaneOrientationT.GetRow(2),
+		localPlaneOrientationT.GetRow(0),
+		localPlaneOrientationT.GetRow(1)
+	);
 }
 
-Polygon Geometry::IntersectPlaneLocal(const dVec3& planeOrigin, const dQuat& planeOrientation) const
+Polygon Geometry::IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const
 {
 	return Polygon();
 }
