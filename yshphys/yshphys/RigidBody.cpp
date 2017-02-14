@@ -398,6 +398,17 @@ void RigidBody::ResolveForces(double dt)
 	m_T = dVec3(0.0, 0.0, 0.0);
 }
 
+void RigidBody::Damp(double dt)
+{
+	const double attenuationPerSec_P = 0.2;
+	const double attenuationPerSec_L = 0.2;
+
+	m_state.P = m_state.P.Scale(pow(1.0 - attenuationPerSec_P, dt));
+	m_state.L = m_state.L.Scale(pow(1.0 - attenuationPerSec_L, dt));
+
+	UpdateDependentStateVariables();
+}
+
 void RigidBody::Step(double dt)
 {
 	if (!m_awake)
@@ -406,6 +417,7 @@ void RigidBody::Step(double dt)
 	}
 	ResolveImpulses();
 	ResolveForces(dt);
+	Damp(dt);
 }
 
 

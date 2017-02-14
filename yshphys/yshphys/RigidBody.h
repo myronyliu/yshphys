@@ -139,5 +139,7 @@ protected:
 
 	void ResolveImpulses();
 	void ResolveForces(double dt);
+
+	void Damp(double dt);
 };
 
