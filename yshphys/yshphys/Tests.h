@@ -9,4 +9,5 @@ namespace Tests
 
 	void CreateBVTest(Game* game);
 	void CreateGJKTest(Game* game);
+	void CreateStackTest(Game* game);
 };

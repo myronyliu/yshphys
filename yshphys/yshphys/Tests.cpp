@@ -85,6 +85,25 @@ void Tests::CreateBox(Game* game, const fVec3& halfDim, double m, const dVec3& p
 	game->AddGameObject(gameObject);
 }
 
+void Tests::CreateStackTest(Game* game)
+{
+	CreateBox(game, fVec3(32.0, 32.0, 1.0), 0.0, dVec3(0.0, 0.0, -16.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+
+	CreateBox(game, fVec3(32.0, 1.0, 4.0), 0.0, dVec3(0.0, -33.01, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+	CreateBox(game, fVec3(32.0, 1.0, 4.0), 0.0, dVec3(0.0, 33.01, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+	CreateBox(game, fVec3(1.0, 32.0, 4.0), 0.0, dVec3(-33.01, 0.0, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+	CreateBox(game, fVec3(1.0, 32.0, 4.0), 0.0, dVec3(33.01, 0.0, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -14.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -12.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -10.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -8.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -6.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -4.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -2.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -0.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+}
+
 void Tests::CreateBVTest(Game* game)
 {
 	dVec3 sceneCenter = dVec3(0.0, 0.0, 0.0);
@@ -92,7 +111,7 @@ void Tests::CreateBVTest(Game* game)
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		dVec3 alpha(
 			(double)std::rand() / (double)RAND_MAX,
@@ -102,12 +121,18 @@ void Tests::CreateBVTest(Game* game)
 
 		dVec3 pos = alpha.Times(sceneMin) + (dVec3(1.0, 1.0, 1.0) - alpha).Times(sceneMax);
 
-//		CreateCylinder(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 0.0f, 0.0f));
-//		CreateSphere(game, 1.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 0.0f, 0.0f));
-		CreateBox(game, fVec3(1.0, 1.0, 1.0), 1.0, pos, dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+//		if (i==3)
+//		CreateCylinder(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+		CreateSphere(game, 1.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+//		CreateBox(game, fVec3(1.0, 1.0, 1.0), 1.0, pos, dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 	}
 
 	CreateBox(game, fVec3(32.0, 32.0, 1.0), 0.0, dVec3(0.0, 0.0, -16.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+
+	CreateBox(game, fVec3(32.0, 1.0, 4.0), 0.0, dVec3(0.0, -33.01, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+	CreateBox(game, fVec3(32.0, 1.0, 4.0), 0.0, dVec3(0.0, 33.01, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+	CreateBox(game, fVec3(1.0, 32.0, 4.0), 0.0, dVec3(-33.01, 0.0, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+	CreateBox(game, fVec3(1.0, 32.0, 4.0), 0.0, dVec3(33.01, 0.0, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 }
 
 void Tests::CreateGJKTest(Game* game)
