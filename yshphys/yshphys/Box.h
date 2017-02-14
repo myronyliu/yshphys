@@ -16,6 +16,8 @@ public:
 
 	virtual Polygon IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const;
 
+	virtual EGeomType GetType() const { return EGeomType::BOX; }
+
 protected:
 	dVec3 m_halfDim;
 };

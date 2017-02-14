@@ -9,6 +9,13 @@
 // Well, this is kinda ugly. We are going to store the material with the geometry (as opposed to with the rigidbody)
 // This way, a trimesh geometry can be textured with many different physics materials, and we only need one rigidbody.
 
+enum EGeomType
+{
+	SPHERE = 0,
+	BOX,
+	GENERIC
+};
+
 class Ray;
 
 class Geometry
@@ -44,10 +51,14 @@ public:
 	virtual Polygon IntersectPlane(const dVec3& pos, const dQuat& rot, const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const;
 	virtual Polygon IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& planeNormal, const dVec3& xAxis, const dVec3& yAxis) const;
 
+	virtual EGeomType GetType() const { return EGeomType::GENERIC; }
+
 protected:
 
 	BoundingBox m_localOOBB; // assuming m_pos and m_rot are both zero
 
 	Material::Type m_material;
+
+	static dVec3 QuantizeDirection(const dVec3& v);
 };
 

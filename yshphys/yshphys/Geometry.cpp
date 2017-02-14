@@ -4,6 +4,7 @@
 #include "Point.h"
 #include "Ray.h"
 #include "EPAHull.h"
+#include "Sphere.h"
 
 #define MIN_SUPPORT_SQR 0.0001
 #define GJK_TERMINATION_RATIO 0.01
@@ -21,11 +22,39 @@ BoundingBox Geometry::GetLocalOOBB() const
 	return m_localOOBB;
 }
 
-dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
+dVec3 Geometry::QuantizeDirection(const dVec3& v)
 {
-	assert(abs(v.x) < 100000.0);
-	assert(abs(v.y) < 100000.0);
-	assert(abs(v.z) < 100000.0);
+	const dVec3 r = v.Scale(1.0 / sqrt(v.Dot(v)));
+	const double cosTheta = r.z;
+	const double theta = acos(cosTheta);
+	const double phi = atan2(v.y, v.x);
+	
+	const int nTheta = 256;
+	const int nPhi = 64;
+
+	const double dTheta = dPI / (nTheta - 1);
+	const double dPhi = 2.0*dPI / nPhi;
+
+	double theta_quantized = (double)std::round(theta / dTheta) * dTheta;
+	double phi_quantized = (double)std::round(phi / dPhi) * dPhi;
+
+	assert(0.0 <= theta_quantized && theta_quantized <= dPI);
+	assert(-dPI <= phi_quantized && phi_quantized <= dPI);
+
+	const dVec3 r_quantized(sin(theta_quantized)*cos(phi_quantized), sin(theta_quantized)*sin(phi_quantized), cos(theta_quantized));
+
+	assert(r.Dot(r_quantized) > 0.9);
+
+	return r_quantized;
+}
+
+dVec3 Geometry::Support(const dVec3& x, const dQuat& q, const dVec3& v_) const
+{
+	assert(abs(v_.x) < 100000.0);
+	assert(abs(v_.y) < 100000.0);
+	assert(abs(v_.z) < 100000.0);
+
+	const dVec3 v = QuantizeDirection(v_);
 
 	return x + q.Transform(SupportLocal((-q).Transform(v)));
 }
@@ -204,6 +233,34 @@ bool Geometry::Intersect(
 	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0, dVec3& pt0, dVec3& n0,
 	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1, dVec3& pt1, dVec3& n1)
 {
+	if (geom0->GetType() == EGeomType::SPHERE && geom1->GetType() == EGeomType::SPHERE)
+	{
+		Sphere* sphere0 = (Sphere*)geom0;
+		Sphere* sphere1 = (Sphere*)geom1;
+
+		const dVec3 d = pos1 - pos0;
+		const double dd = d.Dot(d);
+		const double r0 = sphere0->GetRadius();
+		const double r1 = sphere1->GetRadius();
+		const double r = r0 + r1;
+		const double rr = r*r;
+
+		if (dd < rr)
+		{
+			n0 = (pos1 - pos0);
+			n0 = n0.Scale(1.0 / sqrt(n0.Dot(n0)));
+			n1 = -n0;
+			pt0 = pos0 + n0.Scale(r0);
+			pt1 = pos1 + n1.Scale(r1);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
 	GJKSimplex simplex;
 
 	return Geometry::Intersect(

@@ -67,35 +67,41 @@ Polygon Box::IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& z, const
 
 	for (int i = 0; i < 3; ++i)
 	{
-		if (abs(z[i]) > 0.9999)
+		if (abs(z[i]) > 0.999)
 		{
 			const int j = (i + 1) % 3;
 			const int k = (i + 2) % 3;
 
 			const double sgn = MathUtils::sgn(z[i]);
 
-			dVec3 v3[4];
+			dVec3 o[4];
 			dVec2 v2[4];
 
-			v3[0][i] = sgn*m_halfDim[i];
-			v3[1][i] = sgn*m_halfDim[i];
-			v3[2][i] = sgn*m_halfDim[i];
-			v3[3][i] = sgn*m_halfDim[i];
+			o[0][i] = sgn*m_halfDim[i];
+			o[1][i] = sgn*m_halfDim[i];
+			o[2][i] = sgn*m_halfDim[i];
+			o[3][i] = sgn*m_halfDim[i];
 
-			v3[0][j] = -m_halfDim[j];
-			v3[1][j] = m_halfDim[j];
-			v3[2][j] = m_halfDim[j];
-			v3[3][j] = -m_halfDim[j];
+			o[0][j] = -m_halfDim[j];
+			o[1][j] = m_halfDim[j];
+			o[2][j] = m_halfDim[j];
+			o[3][j] = -m_halfDim[j];
 
-			v3[0][k] = -m_halfDim[k];
-			v3[1][k] = -m_halfDim[k];
-			v3[2][k] = m_halfDim[k];
-			v3[3][k] = m_halfDim[k];
+			o[0][k] = -m_halfDim[k];
+			o[1][k] = -m_halfDim[k];
+			o[2][k] = m_halfDim[k];
+			o[3][k] = m_halfDim[k];
+
+			dVec3 d(0.0, 0.0, 0.0);
+			d[i] = -sgn;
 
 			for (int n = 0; n < 4; ++n)
 			{
-				v2[n].x = v3[n].Dot(x) - cx;
-				v2[n].y = v3[n].Dot(y) - cy;
+				// Ray intersection of the box edge against the plane
+				const double t = (o[n] - planeOrigin).Dot(z) / d.Dot(z);
+				const dVec3 v3 = o[n] + d.Scale(t);
+				v2[n].x = v3.Dot(x) - cx;
+				v2[n].y = v3.Dot(y) - cy;
 			}
 
 			if (sgn > 0.0)

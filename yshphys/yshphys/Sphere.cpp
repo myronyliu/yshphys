@@ -12,6 +12,11 @@ Sphere::~Sphere()
 {
 }
 
+double Sphere::GetRadius() const
+{
+	return m_radius;
+}
+
 void Sphere::SetRadius(double radius)
 {
 	m_radius = abs(radius);
@@ -28,8 +33,10 @@ dVec3 Sphere::SupportLocal(const dVec3& v) const
 	return v.Scale(m_radius / sqrt(v.Dot(v)));
 }
 
-dVec3 Sphere::Support(const dVec3& x, const dQuat& q, const dVec3& v) const
+dVec3 Sphere::Support(const dVec3& x, const dQuat& q, const dVec3& v_) const
 {
+	const dVec3 v = Geometry::QuantizeDirection(v_);
+
 	return x + v.Scale(m_radius / sqrt(v.Dot(v)));
 }
 
