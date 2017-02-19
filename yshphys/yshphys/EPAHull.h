@@ -192,5 +192,5 @@ private:
 	}
 
 	void CarveHorizon(const fVec3& eye, Face* visibleFace);
-	void PatchHorizon(const fMinkowskiPoint* eye);
+	bool PatchHorizon(const fMinkowskiPoint* eye);
 };

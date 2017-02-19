@@ -410,7 +410,8 @@ Polygon Polygon::IntersectLineSegment(const fVec2& fA, const fVec2& fB) const
 						const dVec2 AC = C - A;
 						const dVec2 AE = E - A;
 						const double AB_AB = AB.Dot(AB);
-						double t0, t1;
+						double t0(0.0);
+						double t1(0.0);
 
 						assert(Solve2x2(AB_AB, -AB.Dot(CD), CD.Dot(CD), AC.Dot(AB), -AC.Dot(CD), t0, t1));
 						assert(0.0 <= t1 && t1 <= 1.0);
@@ -857,7 +858,8 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 				const double b0 = AC.Dot(ab);
 				const double b1 = -AC.Dot(cd);
 
-				double t0, t1;
+				double t0(0.0);
+				double t1(0.0);
 
 				assert(Solve2x2(1.0, -ab.Dot(cd), 1.0, b0, b1, t0, t1));
 

@@ -19,9 +19,10 @@ bool EPAHull::CompareFacesByDistance(const Face* face0, const Face* face1)
 
 
 EPAHull::EPAHull(
-		const Geometry* geom0, const dVec3& pos0, const dQuat& rot0,
-		const Geometry* geom1, const dVec3& pos1, const dQuat& rot1,
-		const GJKSimplex& tetrahedron)
+	const Geometry* geom0, const dVec3& pos0, const dQuat& rot0,
+	const Geometry* geom1, const dVec3& pos1, const dQuat& rot1,
+	const GJKSimplex& tetrahedron) :
+	m_nHorizonEdges(0)
 {
 	assert(tetrahedron.GetNumPoints() == 4);
 
@@ -337,7 +338,7 @@ void EPAHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 	}
 }
 
-void EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
+bool EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 {
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
@@ -355,7 +356,11 @@ void EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 		const dVec3 A(curr->twin->vert->m_MinkDif);
 		const dVec3 D(eye->m_MinkDif);
 		dVec3 n = (A - D).Cross(B - D);
-		assert(n.Dot(n) > FLT_MIN);
+//		assert(n.Dot(n) > FLT_MIN);
+		if (n.Dot(n) < FLT_MIN)
+		{
+			return false;
+		}
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 		const double d = D.Dot(n);
 		face->normal = n;
@@ -386,6 +391,7 @@ void EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 		m_horizonEdges[i]->next->twin = m_horizonEdges[(i + 1) % m_nHorizonEdges]->prev;
 		m_horizonEdges[i]->prev->twin = m_horizonEdges[(i - 1 + m_nHorizonEdges) % m_nHorizonEdges]->next;
 	}
+	return true;
 }
 
 bool EPAHull::Expand()
@@ -417,7 +423,10 @@ bool EPAHull::Expand()
 			newVert->m_MinkSum = fVec3(pt0 + pt1);
 			m_nVerts++;
 
-			PatchHorizon(newVert);
+			if (!PatchHorizon(newVert))
+			{
+				return false;
+			}
 
 			SanityCheck();
 
