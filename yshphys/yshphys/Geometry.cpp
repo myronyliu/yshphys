@@ -24,6 +24,8 @@ BoundingBox Geometry::GetLocalOOBB() const
 
 dVec3 Geometry::QuantizeDirection(const dVec3& v)
 {
+	return v;
+
 	const dVec3 r = v.Scale(1.0 / sqrt(v.Dot(v)));
 	const double cosTheta = r.z;
 	const double theta = acos(cosTheta);
