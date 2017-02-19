@@ -6,6 +6,7 @@
 #include "Shader_Default.h"
 #include "Cylinder.h"
 #include "Sphere.h"
+#include "Cone.h"
 #include "Box.h"
 
 void Tests::CreateCylinder(Game* game, double r, double h, double m, const dVec3& pos, const dQuat& rot, const fVec3& diffuse, const fVec3& specular)
@@ -33,6 +34,34 @@ void Tests::CreateCylinder(Game* game, double r, double h, double m, const dVec3
 	GameObject* gameObject = new GameObject;
 	gameObject->SetPhysicsObject(body);
 	gameObject->SetRenderObject(renderObj);
+	game->AddGameObject(gameObject);
+}
+void Tests::CreateCone(Game* game, double r, double h, double m, const dVec3& pos, const dQuat& rot, const fVec3& diffuse, const fVec3& specular)
+{
+	Cone* geom = new Cone;
+	geom->SetRadius(r);
+	geom->SetHeight(h);
+	RenderMesh* mesh = new RenderMesh;
+	mesh->CreateCone((float)r, (float)h, diffuse, specular);
+	RenderObject* renderObj = new RenderObject;
+	renderObj->SetRenderMesh(mesh);
+	renderObj->SetShader(nullptr);
+
+	RigidBody* body = new RigidBody;
+	body->SetGeometry(geom, dVec3(0.0, 0.0, -h*0.25), dQuat::Identity());
+	body->SetMass(m);
+	dMat33 I = dMat33::Identity();
+	I(0, 0) = (3.0 / 20.0)*m*(r*r + 4.0*h*h);
+	I(1, 1) = (3.0 / 20.0)*m*(r*r + 4.0*h*h);
+	I(2, 2) = m*r*r / 10.0;
+	body->SetInertia(I);
+	body->SetPosition(pos);
+	body->SetRotation(rot);
+
+	GameObject* gameObject = new GameObject;
+	gameObject->SetPhysicsObject(body);
+	gameObject->SetRenderObject(renderObj);
+	gameObject->m_renderPosOffset = fVec3(0.0f, 0.0f, -h*0.25f);
 	game->AddGameObject(gameObject);
 }
 void Tests::CreateSphere(Game* game, double r, double m, const dVec3& pos, const dQuat& rot, const fVec3& diffuse, const fVec3& specular)
@@ -94,14 +123,14 @@ void Tests::CreateStackTest(Game* game)
 	CreateBox(game, fVec3(1.0, 32.0, 4.0), 0.0, dVec3(-33.01, 0.0, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 	CreateBox(game, fVec3(1.0, 32.0, 4.0), 0.0, dVec3(33.01, 0.0, -11.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -14.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -12.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -10.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -8.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -6.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -4.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -2.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -0.0), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -14.01), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -12.02), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -10.03), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -8.04), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -6.05), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -4.06), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -2.07), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+	CreateSphere(game, 1.0, 1.0, dVec3(0.0, 0.0, -0.08), dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
 }
 
 void Tests::CreateBVTest(Game* game)
@@ -111,7 +140,7 @@ void Tests::CreateBVTest(Game* game)
 	dVec3 sceneMin = sceneCenter - sceneHalfDim;
 	dVec3 sceneMax = sceneCenter + sceneHalfDim;
 
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		dVec3 alpha(
 			(double)std::rand() / (double)RAND_MAX,
@@ -123,7 +152,9 @@ void Tests::CreateBVTest(Game* game)
 
 //		if (i==3)
 //		CreateCylinder(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-		CreateSphere(game, 1.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+		CreateCone(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+//		CreateSphere(game, 1.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+//		CreateCylinder(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
 //		CreateBox(game, fVec3(1.0, 1.0, 1.0), 1.0, pos, dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 	}
 

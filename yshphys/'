@@ -534,63 +534,18 @@ void RenderMesh::CreateCapsule(float radius, float halfHeight, const fVec3& diff
 	}
 	GenerateGLBufferObjects();
 }
-void RenderMesh::CreateCone(float r, float h, const fVec3& diffuse, const fVec3& specular)
+void RenderMesh::CreateCone(float radius, float height, const fVec3& diffuse, const fVec3& specular)
 {
 	const int nPhi = 32;
-	const int nRad = 8;
-	const int nVertices = 2 * nPhi + 1 + nPhi*(nRad - 1);
-	const int nTriangles = nPhi + (nPhi + 2 * nPhi*(nRad - 2));
+	const int nVertices = 2 * nPhi;
+	const int nTriangles = nPhi;
 
 	AllocateMesh(nVertices, nTriangles);
 
 	for (int i = 0; i < nPhi; ++i)
 	{
-		const float phi = 2.0*fPI*float(i) / float(nPhi);
-		fVec3 position(r*cosf(phi), r*sinf(phi), 0.0f);
-		fVec3 normal(h*cosf(phi), h*sinf(phi), r);
-		normal = normal.Scale(1.0f / sqrtf(normal.Dot(normal)));
-		SetVertex(i, position, normal, diffuse, specular);
+
 	}
-	for (int i = 0; i < nPhi; ++i)
-	{
-		const float phi = 2.0*fPI*(float(i) + 0.5f) / float(nPhi);
-		fVec3 position(0.0f, 0.0f, h);
-		fVec3 normal(h*cosf(phi), h*sinf(phi), r);
-		normal = normal.Scale(1.0f / sqrtf(normal.Dot(normal)));
-		SetVertex(nPhi + i, position, normal, diffuse, specular);
-	}
-	SetVertex(2 * nPhi, fVec3(0.0f, 0.0f, 0.0f), fVec3(0.0f, 0.0f, -1.0f), diffuse, specular);
-	for (int i = 0; i < nPhi; ++i)
-	{
-		const float phi = 2.0*fPI*float(i) / float(nPhi);
-		const float cosPhi = cosf(phi);
-		const float sinPhi = sinf(phi);
-		for (int j = 0; j < nRad - 1; ++j)
-		{
-			const float rad = r*float(j + 1) / (float)(nRad - 1);
-			fVec3 position(rad*cosf(phi), rad*sinf(phi), 0.0f);
-			SetVertex(2 * nPhi + 1 + nPhi*j + i, position, fVec3(0.0f, 0.0f, -1.0f), diffuse, specular);
-		}
-	}
-	for (int i = 0; i < nPhi; ++i)
-	{
-		SetTriangleIndices(i, i, (i + 1) % nPhi, nPhi + i);
-	}
-	int iTriangle = nPhi;
-	for (int i = 0; i < nPhi; ++i)
-	{
-		SetTriangleIndices(iTriangle++, 2 * nPhi, 2 * nPhi + 1 + (i + 1) % nPhi, 2 * nPhi + 1 + i);
-		for (int j = 0; j < nRad - 2; ++j)
-		{
-			int i00 = 2 * nPhi + 1 + (i + 0) + nPhi*(j + 0);
-			int i01 = 2 * nPhi + 1 + (i + 0) + nPhi*(j + 1);
-			int i10 = 2 * nPhi + 1 + (i + 1) % nPhi + nPhi*(j + 0);
-			int i11 = 2 * nPhi + 1 + (i + 1) % nPhi + nPhi*(j + 1);
-			SetTriangleIndices(iTriangle++, i00, i11, i01);
-			SetTriangleIndices(iTriangle++, i00, i10, i11);
-		}
-	}
-	GenerateGLBufferObjects();
 }
 
 void RenderMesh::CreateSphere(float radius, const fVec3& diffuse, const fVec3& specular)

@@ -279,6 +279,9 @@
     <ClInclude Include="Shader_FinalizeLighting.h">
       <Filter>Rendering\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Cone.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -484,6 +487,9 @@
     </ClCompile>
     <ClCompile Include="Shader_FinalizeLighting.cpp">
       <Filter>Rendering\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Cone.cpp">
+      <Filter>Physics\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

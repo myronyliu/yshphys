@@ -163,6 +163,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraPickerToggle.h" />
     <ClInclude Include="Capsule.h" />
+    <ClInclude Include="Cone.h" />
     <ClInclude Include="FinalRenderBuffer.h" />
     <ClInclude Include="ForwardRenderBuffer.h" />
     <ClInclude Include="Contact.h" />
@@ -235,6 +236,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraPickerToggle.cpp" />
     <ClCompile Include="Capsule.cpp" />
+    <ClCompile Include="Cone.cpp" />
     <ClCompile Include="FinalRenderBuffer.cpp" />
     <ClCompile Include="ForwardRenderBuffer.cpp" />
     <ClCompile Include="Contact.cpp" />

@@ -36,23 +36,26 @@ void main()
 
 		float cosTheta = dot(L, N);
 
-		if (cosTheta <= 0.0f)
-		{
-			out_fragColor = texture(gColorTex, ex_texCoord).rgb;
-		}
-		else
+		out_fragColor = texture(gColorTex, ex_texCoord).rgb;
+
+		if (cosTheta > 0.0f)
 		{
 			vec3 kDiffuse = gLightInt * cosTheta / dFragToLight;
 			vec3 diffuse = texture(gDiffuseTex, ex_texCoord).rgb * kDiffuse;
+			out_fragColor += diffuse;
+		}
 
-			// Blinn Phong
-			float phongExp = 0.8f;
-			vec3 V = normalize(gEyePos - fragPos);
-			vec3 H = normalize(L + V);
+		// Blinn Phong
+		float phongExp = 4.0f;
+		vec3 V = normalize(gEyePos - fragPos);
+		vec3 H = normalize(L + V);
+		float HN = dot(H, N);
+
+		if (HN > 0.0f)
+		{
 			vec3 kSpecular = gLightInt * pow(max(dot(H, N), 0.0f), phongExp);
 			vec3 specular = texture(gSpecularTex, ex_texCoord).rgb * kSpecular;
-
-			out_fragColor = texture(gColorTex, ex_texCoord).rgb + diffuse + specular;
+			out_fragColor += specular;
 		}
 	}
 }
