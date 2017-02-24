@@ -18,6 +18,24 @@ namespace MathUtils
 	}
 
 	template <typename T>
+	Vec3_t<T> RandomDirection3()
+	{
+		const double u = (double)rand() / (double)RAND_MAX;
+		const double v = (double)rand() / (double)RAND_MAX;
+
+		const double phi = 2.0*dPI*u;
+		const double theta = acos(2.0*v - 1.0);
+
+		const double sinTheta = sin(theta);
+
+		return Vec3_t<T>(
+			T(sinTheta*cos(phi)),
+			T(sinTheta*sin(phi)),
+			T(cos(theta))
+			);
+	}
+
+	template <typename T>
 	T Determinant(const T* const A, int n)
 	{
 		assert(n > 1);
