@@ -190,6 +190,7 @@
     <ClInclude Include="Picker.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
+    <ClInclude Include="QuickHull.h" />
     <ClInclude Include="Shader_DeferredPointLight.h" />
     <ClInclude Include="Shader_DeferredPointLightShadow.h" />
     <ClInclude Include="Shader_DepthPerspective.h" />
@@ -268,6 +269,7 @@
     <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
+    <ClCompile Include="QuickHull.cpp" />
     <ClCompile Include="Shader_DeferredPointLight.cpp" />
     <ClCompile Include="Shader_DeferredPointLightShadow.cpp" />
     <ClCompile Include="Shader_DepthPerspective.cpp" />

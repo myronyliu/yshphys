@@ -282,6 +282,9 @@
     <ClInclude Include="Cone.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="QuickHull.h">
+      <Filter>Physics\Collision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -490,6 +493,9 @@
     </ClCompile>
     <ClCompile Include="Cone.cpp">
       <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="QuickHull.cpp">
+      <Filter>Physics\Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
