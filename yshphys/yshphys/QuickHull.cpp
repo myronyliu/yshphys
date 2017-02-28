@@ -23,6 +23,7 @@ void QuickHull::FaceFIFO::Push(QuickHull::Face* face)
 				m_queue[m_iEnd].face = face;
 				m_queue[m_iEnd].valid = true;
 				m_iEnd = (m_iEnd + 1) % QUICKHULL_FACEFIFO_MAXSIZE;
+				break;
 			}
 			else
 			{
@@ -58,11 +59,14 @@ int QuickHull::FaceFIFO::Size()
 	return (m_iStart - m_iEnd + QUICKHULL_FACEFIFO_MAXSIZE) % QUICKHULL_FACEFIFO_MAXSIZE;
 }
 
-QuickHull::QuickHull(const fVec3* verts, int nVerts) :
+QuickHull::QuickHull(const fVec3* verts, int nVerts, double dSlack) :
 	m_verts(verts),
 	m_nVerts(nVerts),
-	m_nHorizonEdges(0)
+	m_nHorizonEdges(0),
+	m_entryEdge(nullptr),
+	m_dSlack(dSlack)
 {
+	InitTetrahedron();
 }
 
 QuickHull::~QuickHull()
@@ -77,7 +81,7 @@ QuickHull::~QuickHull()
 	}
 }
 
-void QuickHull::InitTetrahedron(double dSlack)
+void QuickHull::InitTetrahedron()
 {
 	float min[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
 	float max[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
@@ -153,6 +157,8 @@ void QuickHull::InitTetrahedron(double dSlack)
 		}
 	}
 
+	m_entryEdge = edges[0][1];
+
 	Face* tetraFaces[4] = { nullptr, nullptr, nullptr, nullptr };
 
 	for (int f = 0; f < 4; ++f)
@@ -215,7 +221,7 @@ void QuickHull::InitTetrahedron(double dSlack)
 		for (Face* face : tetraFaces)
 		{
 			const double d = (*v - *face->edge->vert).Dot(face->normal);
-			if (d > dSlack)
+			if (d > m_dSlack)
 			{
 				face->vertSet.push_back(v);
 				break;
@@ -379,8 +385,13 @@ void QuickHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 }
 
 
-bool QuickHull::PatchHorizon(const fVec3* eye, double dSlack)
+bool QuickHull::PatchHorizon(const fVec3* eye)
 {
+	if (m_nHorizonEdges > 0)
+	{
+		m_entryEdge = m_horizonEdges[0];
+	}
+
 	for (int i = 0; i < m_nHorizonEdges; ++i)
 	{
 		HalfEdge* curr = m_horizonEdges[i];
@@ -432,6 +443,11 @@ bool QuickHull::PatchHorizon(const fVec3* eye, double dSlack)
 		m_horizonEdges[i]->prev->twin = m_horizonEdges[(i - 1 + m_nHorizonEdges) % m_nHorizonEdges]->next;
 	}
 
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		Face* f = m_horizonEdges[i]->face;
+		assert(f->vertSet.empty());
+	}
 	for (const fVec3* vert : m_orphanedVerts)
 	{
 		for (int i = 0; i < m_nHorizonEdges; ++i)
@@ -439,7 +455,7 @@ bool QuickHull::PatchHorizon(const fVec3* eye, double dSlack)
 			Face* f = m_horizonEdges[i]->face;
 			dVec3 n = f->normal;
 
-			if (n.Dot(dVec3(*vert)) > dSlack)
+			if (n.Dot(dVec3(*eye) - dVec3(*vert)) > m_dSlack)
 			{
 				f->vertSet.push_back(vert);
 				break;
@@ -449,10 +465,8 @@ bool QuickHull::PatchHorizon(const fVec3* eye, double dSlack)
 	return true;
 }
 
-bool QuickHull::Expand(double dSlack)
+bool QuickHull::Expand()
 {
-	InitTetrahedron(dSlack);
-
 	while (m_faceFIFO.Size() > 0)
 	{
 		Face* f = m_faceFIFO.Pop();
@@ -474,18 +488,270 @@ bool QuickHull::Expand(double dSlack)
 			}
 			assert(vFarthest != nullptr);
 
-			CarveHorizon(*vFarthest, f);
+			if (vFarthest != nullptr)
+			{
+				CarveHorizon(*vFarthest, f);
 
-			if (!PatchHorizon(vFarthest, dSlack))
+				if (!PatchHorizon(vFarthest))
+				{
+					return false;
+				}
+
+				//			SanityCheck();
+
+				return true;
+			}
+			else
 			{
 				return false;
 			}
-
-//			SanityCheck();
-
-			return true;
 		}
 	}
 	assert(false);
 	return false;
+}
+
+void QuickHull::DebugDraw(DebugRenderer* renderer) const
+{
+	const float k = 0.02f;
+	for (int i = 0; i < m_nVerts; ++i)
+	{
+		renderer->DrawBox(k, k, k, m_verts[i], fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
+	}
+
+	if (m_entryEdge != nullptr)
+	{
+		Face* entryFace = m_entryEdge->face;
+
+		struct EdgeStack
+		{
+		public:
+			void Push(HalfEdge* edge) { e[n++] = edge; }
+			HalfEdge* Pop() { return e[--n]; }
+			bool Empty() const { return n == 0; }
+		private:
+			HalfEdge* e[1024];
+			int n = 0;
+		}
+		edgeStack;
+
+		std::vector<Face*> visitedFaces;
+		auto MarkFaceAsVisited = [&](Face* face)
+		{
+			visitedFaces.push_back(face);
+			face->visited = true;
+		};
+
+		for (HalfEdge* e : { entryFace->edge, entryFace->edge->prev, entryFace->edge->next })
+		{
+			edgeStack.Push(e);
+			MarkFaceAsVisited(e->twin->face);
+		}
+		MarkFaceAsVisited(entryFace);
+		HalfEdge* es[3];
+		es[0] = entryFace->edge;
+		es[1] = entryFace->edge->next;
+		es[2] = entryFace->edge->prev;
+
+		fVec3 ABC[3];
+		ABC[0] = *es[0]->vert;
+		ABC[1] = *es[1]->vert;
+		ABC[2] = *es[2]->vert;
+
+		renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false, true);
+		fVec3 v = entryFace->normal;
+		float vLen = sqrtf(v.Dot(v));
+		fVec3 n = v.Scale(1.0f / vLen);
+		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
+		float sin = sqrtf(cross.Dot(cross));
+		float cos = n.z;
+
+		fQuat rot = fQuat::Identity();
+		if (sin > 0.00001f)
+		{
+			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
+		}
+
+		auto FaceArea = [](const Face* face)
+		{
+			const fVec3 A = *face->edge->vert;
+			const fVec3 B = *face->edge->next->vert;
+			const fVec3 C = *face->edge->prev->vert;
+			const fVec3 cross = (B - A).Cross(C - A);
+			return sqrtf(cross.Dot(cross));
+		};
+
+		const float edgeWidth = sqrtf(FaceArea(entryFace)) * 0.01f;
+		const float len = 0.2f;
+		renderer->DrawBox(edgeWidth, edgeWidth, len, (ABC[0] + ABC[1] + ABC[2]).Scale(1.0f / 3.0f) + v.Scale(len), rot, fVec3(1.0f, 1.0f, 1.0f), false, true);
+
+		while (!edgeStack.Empty())
+		{
+			HalfEdge* edge = edgeStack.Pop();
+			HalfEdge* twin = edge->twin;
+
+			Face* opposingFace = twin->face;
+
+			es[0] = opposingFace->edge;
+			es[1] = opposingFace->edge->next;
+			es[2] = opposingFace->edge->prev;
+
+			fVec3 ABC[3];
+			ABC[0] = *es[0]->vert;
+			ABC[1] = *es[1]->vert;
+			ABC[2] = *es[2]->vert;
+
+			renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false, true);
+			fVec3 v = opposingFace->normal;
+			float vLen = sqrtf(v.Dot(v));
+			fVec3 n = v.Scale(1.0f / vLen);
+			fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
+			float sin = sqrtf(cross.Dot(cross));
+			float cos = n.z;
+
+			fQuat rot = fQuat::Identity();
+			if (sin > 0.00001f)
+			{
+				rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
+			}
+
+			auto FaceArea = [](const Face* face)
+			{
+				const fVec3 A = *face->edge->vert;
+				const fVec3 B = *face->edge->next->vert;
+				const fVec3 C = *face->edge->prev->vert;
+				const fVec3 cross = (B - A).Cross(C - A);
+				return sqrtf(cross.Dot(cross));
+			};
+
+			const float edgeWidth = sqrtf(FaceArea(edge->face)) * 0.01f;
+			const float len = 0.2f;
+			renderer->DrawBox(edgeWidth, edgeWidth, len, (ABC[0] + ABC[1] + ABC[2]).Scale(1.0f / 3.0f) + v.Scale(len), rot, fVec3(1.0f, 1.0f, 1.0f), false, true);
+
+
+			const dVec3 x(*edge->vert);
+
+			if (!twin->prev->twin->face->visited)
+			{
+				edgeStack.Push(twin->prev);
+				MarkFaceAsVisited(twin->prev->twin->face);
+			}
+			if (!twin->next->twin->face->visited)
+			{
+				edgeStack.Push(twin->next);
+				MarkFaceAsVisited(twin->next->twin->face);
+			}
+		}
+		for (Face* face : visitedFaces)
+		{
+			face->visited = false;
+		}
+	}
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		const HalfEdge* edge = m_horizonEdges[i];
+		fVec3 color(0.0f, 0.0f, 0.0f);
+		float kWidth = 0.01f;
+
+		color = fVec3(0.0f, 1.0f, 0.0f);
+		kWidth *= 2.0f;
+
+		const fVec3 A = *edge->vert;
+		const fVec3 B = *edge->twin->vert;
+
+		fVec3 v = B - A;
+		float vLen = sqrtf(v.Dot(v));
+		fVec3 n = v.Scale(1.0f / vLen);
+		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
+		float sin = sqrtf(cross.Dot(cross));
+		float cos = n.z;
+
+		fQuat rot = fQuat::Identity();
+		if (sin > 0.00001f)
+		{
+			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
+		}
+
+		auto FaceArea = [](const Face* face)
+		{
+			const fVec3 A = *face->edge->vert;
+			const fVec3 B = *face->edge->next->vert;
+			const fVec3 C = *face->edge->prev->vert;
+			const fVec3 cross = (B - A).Cross(C - A);
+			return sqrtf(cross.Dot(cross));
+		};
+
+		const float edgeWidth = sqrtf(std::min(FaceArea(edge->face), FaceArea(edge->twin->face)))* kWidth;
+
+		renderer->DrawBox(edgeWidth, edgeWidth, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
+	}
+
+//	std::set<const HalfEdge*> edges;
+
+//	for (int i = 0; i < m_nFacesInHeap; ++i)
+//	{
+//		Face* face = m_faceHeap[i];
+//		if (FaceIsActive(face))
+//		{
+//			HalfEdge* es[3];
+//			es[0] = face->edge;
+//			es[1] = face->edge->next;
+//			es[2] = face->edge->prev;
+
+//			fVec3 ABC[3];
+//			ABC[0] = *es[0]->vert;
+//			ABC[1] = *es[1]->vert;
+//			ABC[2] = *es[2]->vert;
+
+//			renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false);
+
+//			for (const HalfEdge* e : es)
+//			{
+//				if (edges.find(e->twin) == edges.end())
+//				{
+//					edges.insert(e);
+//				}
+//			}
+//		}
+//	}
+
+//	for (const HalfEdge* edge : edges)
+//	{
+//		fVec3 color(0.0f, 0.0f, 0.0f);
+//		float kWidth = 0.01f;
+//		if (edge->isHorizon || edge->twin->isHorizon)
+//		{
+//			color = fVec3(0.0f, 1.0f, 0.0f);
+//			kWidth *= 2.0f;
+//		}
+
+//		const fVec3& A = edge->vert->m_MinkDif;
+//		const fVec3& B = edge->twin->vert->m_MinkDif;
+
+//		fVec3 v = B - A;
+//		float vLen = sqrtf(v.Dot(v));
+//		fVec3 n = v.Scale(1.0f / vLen);
+//		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
+//		float sin = sqrtf(cross.Dot(cross));
+//		float cos = n.z;
+
+//		fQuat rot = fQuat::Identity();
+//		if (sin > 0.00001f)
+//		{
+//			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
+//		}
+
+//		auto FaceArea = [](const Face* face)
+//		{
+//			const fVec3& A = face->edge->vert->m_MinkDif;
+//			const fVec3& B =face->edge->next->vert->m_MinkDif;
+//			const fVec3& C = face->edge->prev->vert->m_MinkDif;
+//			const fVec3 cross = (B - A).Cross(C - A);
+//			return sqrtf(cross.Dot(cross));
+//		};
+
+//		const float edgeWidth = sqrtf(std::min(FaceArea(edge->face), FaceArea(edge->twin->face)))* kWidth;
+
+//		renderer->DrawBox(edgeWidth, edgeWidth, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
+//	}
 }

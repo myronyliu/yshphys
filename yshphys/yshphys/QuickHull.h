@@ -1,5 +1,6 @@
 #pragma once
 #include "YshMath.h"
+#include "DebugRenderer.h"
 
 #define QUICKHULL_MAXHORIZONEDGES 16
 #define QUICKHULL_MAXINTERNALEDGES 64
@@ -18,10 +19,12 @@
 class QuickHull
 {
 public:
-	QuickHull(const fVec3* verts, int nVerts);
+	QuickHull(const fVec3* verts, int nVerts, double dSlack);
 	virtual ~QuickHull();
 
-	bool Expand(double dSlack);
+	bool Expand();
+
+	void DebugDraw(DebugRenderer* renderer) const;
 
 private:
 	struct HalfEdge;
@@ -84,6 +87,8 @@ private:
 
 	FaceFIFO m_faceFIFO;
 
+	HalfEdge* m_entryEdge; // a entrypoint into the mesh
+
 //	Face* m_internalFaces[QUICKHULL_MAXINTERNALFACES];
 //	int m_nInternalFaces;
 
@@ -101,9 +106,11 @@ private:
 
 	std::vector<const fVec3*> m_orphanedVerts;
 
-	void InitTetrahedron(double dSlack);
+	double m_dSlack;
+
+	void InitTetrahedron();
 
 	void CarveHorizon(const fVec3& eye, Face* visibleFace);
-	bool PatchHorizon(const fVec3* eye, double dSlack);
+	bool PatchHorizon(const fVec3* eye);
 };
 
