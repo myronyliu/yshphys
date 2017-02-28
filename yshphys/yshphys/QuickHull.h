@@ -101,6 +101,8 @@ private:
 
 	std::vector<const fVec3*> m_orphanedVerts;
 
+	void InitTetrahedron(double dSlack);
+
 	void CarveHorizon(const fVec3& eye, Face* visibleFace);
 	bool PatchHorizon(const fVec3* eye, double dSlack);
 };

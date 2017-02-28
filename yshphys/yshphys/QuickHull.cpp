@@ -77,6 +77,174 @@ QuickHull::~QuickHull()
 	}
 }
 
+void QuickHull::InitTetrahedron(double dSlack)
+{
+	float min[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
+	float max[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+	const fVec3* v[6];
+	const fVec3** const vMin = v + 0;
+	const fVec3** const vMax = v + 3;
+
+	for (int i = 0; i < m_nVerts; ++i)
+	{
+		for (int dim = 0; dim < 3; ++dim)
+		{
+			if (m_verts[i][dim] < min[dim])
+			{
+				vMin[dim] = &m_verts[i];
+				min[dim] = m_verts[i][dim];
+			}
+			if (m_verts[i][dim] > max[dim])
+			{
+				vMax[dim] = &m_verts[i];
+				max[dim] = m_verts[i][dim];
+			}
+		}
+	}
+
+	float maxVolume = 0.0f;
+	const fVec3* vOptimal[4] = { nullptr, nullptr, nullptr, nullptr };
+
+	for (int iA = 0; iA < 6; ++iA)
+	{
+		for (int iB = iA + 1; iB < 6; ++iB)
+		{
+			for (int iC = iB + 1; iC < 6; ++iC)
+			{
+				for (int iD = iC + 1; iD < 6; ++iD)
+				{
+					const fVec3* A = v[iA];
+					const fVec3* B = v[iB];
+					const fVec3* C = v[iC];
+					const fVec3* D = v[iD];
+
+					float volume = fabs((*B - *A).Cross(*C - *A).Dot(*D - *A));
+					if (volume > maxVolume)
+					{
+						maxVolume = volume;
+						vOptimal[0] = A;
+						vOptimal[1] = B;
+						vOptimal[2] = C;
+						vOptimal[3] = D;
+					}
+				}
+			}
+		}
+	}
+
+	HalfEdge* edges[4][4];
+
+	for (int i = 0; i < 4; ++i)
+	{
+		for (int j = 0; j < i; ++j)
+		{
+			edges[i][j] = new HalfEdge;
+			edges[i][j]->vert = vOptimal[j];
+
+			edges[j][i] = new HalfEdge;
+			edges[j][i]->vert = vOptimal[i];
+
+			edges[i][j]->twin = edges[j][i];
+			edges[j][i]->twin = edges[i][j];
+
+			m_allocatedEdges.push_back(edges[i][j]);
+			m_allocatedEdges.push_back(edges[j][i]);
+		}
+	}
+
+	Face* tetraFaces[4] = { nullptr, nullptr, nullptr, nullptr };
+
+	for (int f = 0; f < 4; ++f)
+	{
+		const int iA = (f + 0) % 4;
+		const int iB = (f + 1) % 4;
+		const int iC = (f + 2) % 4;
+		const int iD = (f + 3) % 4;
+		const fVec3* A = vOptimal[iA];
+		const fVec3* B = vOptimal[iB];
+		const fVec3* C = vOptimal[iC];
+		const fVec3* D = vOptimal[iD];
+
+		dVec3 n = (*C - *B).Cross(*D - *B);
+		assert(n.Dot(n) > FLT_MIN);
+		n = n.Scale(1.0 / sqrt(n.Dot(n)));
+
+		Face* face = new Face;
+		tetraFaces[f] = face;
+		m_faceFIFO.Push(face);
+
+		HalfEdge* e[3];
+
+		if (n.Dot(*B - *A) < 0.0)
+		{
+			e[0] = edges[iC][iB];
+			e[1] = edges[iB][iD];
+			e[2] = edges[iD][iC];
+
+			n = -n;
+		}
+		else
+		{
+			e[0] = edges[iB][iC];
+			e[1] = edges[iC][iD];
+			e[2] = edges[iD][iB];
+		}
+
+		for (int i = 0; i < 3; ++i)
+		{
+			e[i]->next = e[(i + 1) % 3];
+			e[i]->prev = e[(i + 2) % 3];
+			e[i]->face = face;
+		}
+		face->edge = e[0];
+		face->normal = n;
+	}
+
+	int iOptimal[4] =
+	{
+		(vOptimal[0] - m_verts) / (int)sizeof(fVec3*),
+		(vOptimal[1] - m_verts) / (int)sizeof(fVec3*),
+		(vOptimal[2] - m_verts) / (int)sizeof(fVec3*),
+		(vOptimal[3] - m_verts) / (int)sizeof(fVec3*)
+	};
+	std::sort(iOptimal, iOptimal + 4);
+
+	auto AssignVertToFace = [&](const fVec3* v)
+	{
+		for (Face* face : tetraFaces)
+		{
+			const double d = (*v - *face->edge->vert).Dot(face->normal);
+			if (d > dSlack)
+			{
+				face->vertSet.push_back(v);
+				break;
+			}
+		}
+	};
+
+	for (int i = 0; i < iOptimal[0]; ++i)
+	{
+		AssignVertToFace(&m_verts[i]);
+	}
+	for (int i = iOptimal[0]; i < iOptimal[1]; ++i)
+	{
+		AssignVertToFace(&m_verts[i]);
+	}
+	for (int i = iOptimal[1]; i < iOptimal[2]; ++i)
+	{
+		AssignVertToFace(&m_verts[i]);
+	}
+	for (int i = iOptimal[2]; i < iOptimal[3]; ++i)
+	{
+		AssignVertToFace(&m_verts[i]);
+	}
+	for (int i = iOptimal[3]; i < m_nVerts; ++i)
+	{
+		AssignVertToFace(&m_verts[i]);
+	}
+}
+
 void QuickHull::CarveHorizon(const fVec3& fEye, Face* visibleFace)
 {
 	const dVec3 dEye(fEye);
@@ -283,6 +451,8 @@ bool QuickHull::PatchHorizon(const fVec3* eye, double dSlack)
 
 bool QuickHull::Expand(double dSlack)
 {
+	InitTetrahedron(dSlack);
+
 	while (m_faceFIFO.Size() > 0)
 	{
 		Face* f = m_faceFIFO.Pop();
