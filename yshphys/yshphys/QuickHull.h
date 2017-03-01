@@ -23,6 +23,7 @@ public:
 	virtual ~QuickHull();
 
 	bool Expand();
+	void BuildHull();
 
 	void DebugDraw(DebugRenderer* renderer) const;
 
@@ -87,13 +88,7 @@ private:
 
 	FaceFIFO m_faceFIFO;
 
-	HalfEdge* m_entryEdge; // a entrypoint into the mesh
-
-//	Face* m_internalFaces[QUICKHULL_MAXINTERNALFACES];
-//	int m_nInternalFaces;
-
-//	HalfEdge* m_internalEdges[QUICKHULL_MAXINTERNALEDGES];
-//	int m_nInternalEdges;
+	HalfEdge* m_entryEdge; // an entrypoint into the mesh
 
 	HalfEdge* m_horizonEdges[QUICKHULL_MAXHORIZONEDGES];
 	int m_nHorizonEdges;

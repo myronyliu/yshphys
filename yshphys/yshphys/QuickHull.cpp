@@ -209,10 +209,10 @@ void QuickHull::InitTetrahedron()
 
 	int iOptimal[4] =
 	{
-		(vOptimal[0] - m_verts) / (int)sizeof(fVec3*),
-		(vOptimal[1] - m_verts) / (int)sizeof(fVec3*),
-		(vOptimal[2] - m_verts) / (int)sizeof(fVec3*),
-		(vOptimal[3] - m_verts) / (int)sizeof(fVec3*)
+		(int)(vOptimal[0] - m_verts) / (int)sizeof(fVec3*),
+		(int)(vOptimal[1] - m_verts) / (int)sizeof(fVec3*),
+		(int)(vOptimal[2] - m_verts) / (int)sizeof(fVec3*),
+		(int)(vOptimal[3] - m_verts) / (int)sizeof(fVec3*)
 	};
 	std::sort(iOptimal, iOptimal + 4);
 
@@ -551,6 +551,7 @@ bool QuickHull::Expand()
 
 				if (!PatchHorizon(vFarthest))
 				{
+					assert(false);
 					return false;
 				}
 
@@ -560,21 +561,24 @@ bool QuickHull::Expand()
 			}
 			else
 			{
+				assert(false);
 				return false;
 			}
 		}
 	}
-//	assert(false);
 	return false;
+}
+
+void QuickHull::BuildHull()
+{
+	while (Expand())
+	{
+	}
 }
 
 void QuickHull::DebugDraw(DebugRenderer* renderer) const
 {
 	const float k = 0.02f;
-	for (int i = 0; i < m_nVerts; ++i)
-	{
-		renderer->DrawBox(k, k, k, m_verts[i], fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
-	}
 
 	if (m_entryEdge != nullptr)
 	{
@@ -635,7 +639,8 @@ void QuickHull::DebugDraw(DebugRenderer* renderer) const
 
 			for (const fVec3* vert : face->vertSet)
 			{
-				renderer->DrawLine(*vert, faceCenter, fVec3(1.0f, 0.0f, 0.0f));
+//				renderer->DrawLine(*vert, faceCenter, fVec3(1.0f, 0.0f, 0.0f));
+				renderer->DrawBox(k, k, k, *vert, fQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), false, false);
 			}
 
 			for (HalfEdge* edge : es)
