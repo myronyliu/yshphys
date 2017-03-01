@@ -285,6 +285,9 @@
     <ClInclude Include="QuickHull.h">
       <Filter>Physics\Collision</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Physics\Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -496,6 +499,9 @@
     </ClCompile>
     <ClCompile Include="QuickHull.cpp">
       <Filter>Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Physics\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

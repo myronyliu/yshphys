@@ -185,6 +185,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="Mat22.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="PhysicsNode.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="Picker.h" />
@@ -263,6 +264,7 @@
     <ClCompile Include="Mat44.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MathUtils.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="PhysicsNode.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
