@@ -523,18 +523,7 @@ void QuickHull::DebugDraw(DebugRenderer* renderer) const
 	{
 		Face* entryFace = m_entryEdge->face;
 
-		struct EdgeStack
-		{
-		public:
-			void Push(HalfEdge* edge) { e[n++] = edge; }
-			HalfEdge* Pop() { return e[--n]; }
-			bool Empty() const { return n == 0; }
-		private:
-			HalfEdge* e[1024];
-			int n = 0;
-		}
-		edgeStack;
-
+		std::stack<Face*> faceStack;
 		std::vector<Face*> visitedFaces;
 		auto MarkFaceAsVisited = [&](Face* face)
 		{
@@ -542,59 +531,19 @@ void QuickHull::DebugDraw(DebugRenderer* renderer) const
 			face->visited = true;
 		};
 
-		for (HalfEdge* e : { entryFace->edge, entryFace->edge->prev, entryFace->edge->next })
-		{
-			edgeStack.Push(e);
-			MarkFaceAsVisited(e->twin->face);
-		}
+		faceStack.push(entryFace);
 		MarkFaceAsVisited(entryFace);
-		HalfEdge* es[3];
-		es[0] = entryFace->edge;
-		es[1] = entryFace->edge->next;
-		es[2] = entryFace->edge->prev;
 
-		fVec3 ABC[3];
-		ABC[0] = *es[0]->vert;
-		ABC[1] = *es[1]->vert;
-		ABC[2] = *es[2]->vert;
-
-		renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false, true);
-		fVec3 v = entryFace->normal;
-		float vLen = sqrtf(v.Dot(v));
-		fVec3 n = v.Scale(1.0f / vLen);
-		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
-		float sin = sqrtf(cross.Dot(cross));
-		float cos = n.z;
-
-		fQuat rot = fQuat::Identity();
-		if (sin > 0.00001f)
+		while (!faceStack.empty())
 		{
-			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
-		}
+			Face* face= faceStack.top();
+			faceStack.pop();
 
-		auto FaceArea = [](const Face* face)
-		{
-			const fVec3 A = *face->edge->vert;
-			const fVec3 B = *face->edge->next->vert;
-			const fVec3 C = *face->edge->prev->vert;
-			const fVec3 cross = (B - A).Cross(C - A);
-			return sqrtf(cross.Dot(cross));
-		};
+			HalfEdge* es[3];
 
-		const float edgeWidth = sqrtf(FaceArea(entryFace)) * 0.01f;
-		const float len = 0.2f;
-		renderer->DrawBox(edgeWidth, edgeWidth, len, (ABC[0] + ABC[1] + ABC[2]).Scale(1.0f / 3.0f) + v.Scale(len), rot, fVec3(1.0f, 1.0f, 1.0f), false, true);
-
-		while (!edgeStack.Empty())
-		{
-			HalfEdge* edge = edgeStack.Pop();
-			HalfEdge* twin = edge->twin;
-
-			Face* opposingFace = twin->face;
-
-			es[0] = opposingFace->edge;
-			es[1] = opposingFace->edge->next;
-			es[2] = opposingFace->edge->prev;
+			es[0] = face->edge;
+			es[1] = face->edge->next;
+			es[2] = face->edge->prev;
 
 			fVec3 ABC[3];
 			ABC[0] = *es[0]->vert;
@@ -602,9 +551,7 @@ void QuickHull::DebugDraw(DebugRenderer* renderer) const
 			ABC[2] = *es[2]->vert;
 
 			renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false, true);
-			fVec3 v = opposingFace->normal;
-			float vLen = sqrtf(v.Dot(v));
-			fVec3 n = v.Scale(1.0f / vLen);
+			fVec3 n = face->normal;
 			fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
 			float sin = sqrtf(cross.Dot(cross));
 			float cos = n.z;
@@ -624,22 +571,17 @@ void QuickHull::DebugDraw(DebugRenderer* renderer) const
 				return sqrtf(cross.Dot(cross));
 			};
 
-			const float edgeWidth = sqrtf(FaceArea(edge->face)) * 0.01f;
+			const float edgeWidth = sqrtf(FaceArea(face)) * 0.01f;
 			const float len = 0.2f;
-			renderer->DrawBox(edgeWidth, edgeWidth, len, (ABC[0] + ABC[1] + ABC[2]).Scale(1.0f / 3.0f) + v.Scale(len), rot, fVec3(1.0f, 1.0f, 1.0f), false, true);
+			renderer->DrawBox(edgeWidth, edgeWidth, len, (ABC[0] + ABC[1] + ABC[2]).Scale(1.0f / 3.0f) + n.Scale(len), rot, fVec3(1.0f, 1.0f, 1.0f), false, true);
 
-
-			const dVec3 x(*edge->vert);
-
-			if (!twin->prev->twin->face->visited)
+			for (HalfEdge* edge : es)
 			{
-				edgeStack.Push(twin->prev);
-				MarkFaceAsVisited(twin->prev->twin->face);
-			}
-			if (!twin->next->twin->face->visited)
-			{
-				edgeStack.Push(twin->next);
-				MarkFaceAsVisited(twin->next->twin->face);
+				if (!edge->twin->face->visited)
+				{
+					faceStack.push(edge->twin->face);
+					MarkFaceAsVisited(edge->twin->face);
+				}
 			}
 		}
 		for (Face* face : visitedFaces)
