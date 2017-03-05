@@ -1,9 +1,12 @@
 #pragma once
 #include "Geometry.h"
 
+class QuickHull;
+
 class Mesh :
 	public Geometry
 {
+	friend class QuickHull;
 public:
 	struct HalfEdge;
 	struct Face;

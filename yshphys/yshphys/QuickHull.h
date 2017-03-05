@@ -1,6 +1,7 @@
 #pragma once
 #include "YshMath.h"
 #include "DebugRenderer.h"
+#include "Mesh.h"
 
 #define QUICKHULL_MAXHORIZONEDGES 16
 #define QUICKHULL_MAXINTERNALEDGES 64
@@ -24,6 +25,8 @@ public:
 
 	bool Expand();
 	void BuildHull();
+
+	Mesh* ExportConvexMesh() const;
 
 	void DebugDraw(DebugRenderer* renderer) const;
 

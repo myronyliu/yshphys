@@ -576,6 +576,105 @@ void QuickHull::BuildHull()
 	}
 }
 
+Mesh* QuickHull::ExportConvexMesh() const
+{
+	Mesh* mesh = new Mesh;
+
+	if (m_entryEdge == nullptr)
+	{
+		return nullptr;
+	}
+
+	std::stack<Face*> faceStack;
+	std::vector<Face*> visitedFaces;
+
+	auto MarkFaceAsVisited = [&](Face* face)
+	{
+		visitedFaces.push_back(face);
+		face->visited = true;
+	};
+
+	Face* entryFace = m_entryEdge->face;
+	faceStack.push(entryFace);
+	MarkFaceAsVisited(entryFace);
+
+	std::map<const Face*, int> f_i;
+	std::map<int, const Face*> i_f;
+
+	std::map<const HalfEdge*, int> e_i;
+	std::map<int, const HalfEdge*> i_e;
+
+	std::map<const fVec3*, int> v_i;
+	std::map<int, const fVec3*> i_v;
+
+	int nFaces = 0;
+	int nEdges = 0;
+	int nVerts = 0;
+
+	while (!faceStack.empty())
+	{
+		Face* face = faceStack.top();
+		faceStack.pop();
+
+		f_i[face] = nFaces;
+		i_f[nFaces] = face;
+		nFaces++;
+
+		HalfEdge* e = face->edge;
+		HalfEdge* e0 = e;
+		do
+		{
+			e_i[e] = nEdges;
+			i_e[nEdges] = e;
+			nEdges++;
+			std::map<const fVec3*, int>::const_iterator it = v_i.find(e->vert);
+			if (it == v_i.end())
+			{
+				v_i[e->vert] = nVerts;
+				i_v[nVerts] = e->vert;
+				nVerts++;
+			}
+			if (!e->twin->face->visited)
+			{
+				faceStack.push(e->twin->face);
+				MarkFaceAsVisited(e->twin->face);
+			}
+			e = e->next;
+
+		} while (e != e0);
+	}
+	for (Face* face : visitedFaces)
+	{
+		face->visited = false;
+	}
+
+	assert(nEdges % 2 == 0);
+
+	mesh->AllocateMesh(nEdges / 2, nFaces, nVerts);
+
+	for (int i = 0; i < nEdges; ++i)
+	{
+		Mesh::HalfEdge& e_out = mesh->m_halfEdges[i];
+		const HalfEdge* e = i_e[i];
+		e_out.iFace = f_i[e->face];
+		e_out.iNext = e_i[e->next];
+		e_out.iPrev = e_i[e->prev];
+		e_out.iTwin = e_i[e->twin];
+		e_out.iVert = v_i[e->vert];
+	}
+	for (int i = 0; i < nFaces; ++i)
+	{
+		Mesh::Face& f_out = mesh->m_faces[i];
+		const Face* f = i_f[i];
+		f_out.iEdge = e_i[f->edge];
+		f_out.normal = f->normal;
+	}
+	for (int i = 0; i < nVerts; ++i)
+	{
+		mesh->m_verts[i] = *i_v[i];
+	}
+}
+
 void QuickHull::DebugDraw(DebugRenderer* renderer) const
 {
 	const float k = 0.02f;
