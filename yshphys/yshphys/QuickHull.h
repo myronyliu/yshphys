@@ -26,7 +26,7 @@ public:
 	bool Expand();
 	void BuildHull();
 
-	Mesh* ExportConvexMesh() const;
+	void ExportConvexMesh(Mesh& mesh) const;
 
 	void DebugDraw(DebugRenderer* renderer) const;
 

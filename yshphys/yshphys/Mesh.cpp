@@ -111,4 +111,10 @@ void Mesh::InitCardinalEdges()
 	m_iCardinalEdges[2][1] = ISupportEdgeLocal(dVec3(0.0, 0.0, 1.0), m_iCardinalEdges[0][0]);
 
 	m_iCardinalEdges[0][1] = ISupportEdgeLocal(dVec3(1.0, 0.0, 0.0), m_iCardinalEdges[2][1]);
+
+	for (int dim = 0; dim < 3; ++dim)
+	{
+		m_localOOBB.min[dim] = m_verts[m_halfEdges[m_iCardinalEdges[dim][0]].iVert][dim];
+		m_localOOBB.max[dim] = m_verts[m_halfEdges[m_iCardinalEdges[dim][1]].iVert][dim];
+	}
 }

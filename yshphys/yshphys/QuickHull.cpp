@@ -576,13 +576,11 @@ void QuickHull::BuildHull()
 	}
 }
 
-Mesh* QuickHull::ExportConvexMesh() const
+void QuickHull::ExportConvexMesh(Mesh& mesh) const
 {
-	Mesh* mesh = new Mesh;
-
 	if (m_entryEdge == nullptr)
 	{
-		return nullptr;
+		mesh.AllocateMesh(0, 0, 0);
 	}
 
 	std::stack<Face*> faceStack;
@@ -650,11 +648,11 @@ Mesh* QuickHull::ExportConvexMesh() const
 
 	assert(nEdges % 2 == 0);
 
-	mesh->AllocateMesh(nEdges / 2, nFaces, nVerts);
+	mesh.AllocateMesh(nEdges / 2, nFaces, nVerts);
 
 	for (int i = 0; i < nEdges; ++i)
 	{
-		Mesh::HalfEdge& e_out = mesh->m_halfEdges[i];
+		Mesh::HalfEdge& e_out = mesh.m_halfEdges[i];
 		const HalfEdge* e = i_e[i];
 		e_out.iFace = f_i[e->face];
 		e_out.iNext = e_i[e->next];
@@ -664,15 +662,17 @@ Mesh* QuickHull::ExportConvexMesh() const
 	}
 	for (int i = 0; i < nFaces; ++i)
 	{
-		Mesh::Face& f_out = mesh->m_faces[i];
+		Mesh::Face& f_out = mesh.m_faces[i];
 		const Face* f = i_f[i];
 		f_out.iEdge = e_i[f->edge];
 		f_out.normal = f->normal;
 	}
 	for (int i = 0; i < nVerts; ++i)
 	{
-		mesh->m_verts[i] = *i_v[i];
+		mesh.m_verts[i] = *i_v[i];
 	}
+
+	mesh.InitCardinalEdges();
 }
 
 void QuickHull::DebugDraw(DebugRenderer* renderer) const
