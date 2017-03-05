@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Mesh.h"
+#include "QuickHull.h"
 
 Mesh::Mesh() :
 	m_halfEdges(nullptr),
@@ -9,6 +10,13 @@ Mesh::Mesh() :
 	m_nFaces(0),
 	m_nVerts(0)
 {
+}
+
+Mesh::Mesh(const fVec3* const pointCloud, int nPoints) : Mesh()
+{
+	QuickHull qh(pointCloud, nPoints, 0.001);
+	qh.BuildHull();
+	qh.ExportConvexMesh(*this);
 }
 
 Mesh::~Mesh()
@@ -33,17 +41,74 @@ void Mesh::AllocateMesh(int nEdges, int nFaces, int nVerts)
 	m_verts = new fVec3[m_nVerts];
 }
 
+void Mesh::FaceList::AddFace(const fVec3* verts, const int nVerts, const dVec3& normal)
+{
+	FacePartition fp;
+	fp.iFirstVert = m_verts.size();
+	fp.normal = normal;
+	m_verts.insert(m_verts.end(), verts, verts + nVerts);
+	m_faces.push_back(fp);
+}
+
+int Mesh::FaceList::GetNumFaces() const
+{
+	return m_faces.size();
+}
+
+Mesh::FaceList::Face Mesh::FaceList::GetFace(int iFace) const
+{
+	Mesh::FaceList::Face f;
+	if (iFace > (int)m_faces.size() - 1)
+	{
+		return f;
+	}
+	else
+	{
+		int jMax = (iFace == (int)m_faces.size() - 1) ? m_verts.size() : m_faces[iFace + 1].iFirstVert;
+		for (int j = m_faces[iFace].iFirstVert; j < jMax; ++j)
+		{
+			f.verts.push_back(m_verts[j]);
+		}
+		f.normal = m_faces[iFace].normal;
+		return f;
+	}
+}
+
+Mesh::FaceList Mesh::GetFaces() const
+{
+	Mesh::FaceList fl;
+
+	for (int i = 0; i < m_nFaces; ++i)
+	{
+		const Face& f = m_faces[i];
+		std::vector<fVec3> faceVerts;
+		int e_i = f.iEdge;
+		int e_i_0 = e_i;
+		do
+		{
+			const HalfEdge& e = m_halfEdges[e_i];
+			faceVerts.push_back(m_verts[e.iVert]);
+			e_i = e.iNext;
+
+		} while (e_i != e_i_0);
+
+		fl.AddFace(&faceVerts[0], faceVerts.size(), f.normal);
+	}
+	return fl;
+}
+
 int Mesh::ISupportEdgeLocal(const dVec3& v, int i_) const
 {
 	int i = i_;
 	while (true)
 	{
 		const HalfEdge* e = &m_halfEdges[i];
+		const int t = e->iTwin;
 		int i1 = e->iNext;
 		int i1_best = -1;
 		double d_best = (double)FLT_MIN;
 
-		while (i1 != i)
+		while (i1 != t)
 		{
 			HalfEdge* e1 = &m_halfEdges[i1];
 

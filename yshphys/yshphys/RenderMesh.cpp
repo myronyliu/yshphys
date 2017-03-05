@@ -647,3 +647,63 @@ void RenderMesh::CreateSphere(float radius, const fVec3& diffuse, const fVec3& s
 
 	GenerateGLBufferObjects();
 }
+
+void RenderMesh::CreateMesh(const Mesh& mesh, const fVec3& diffuse, const fVec3& specular)
+{
+	Mesh::FaceList faceList = mesh.GetFaces();
+	int nFaces = faceList.GetNumFaces();
+
+	int nVertices = 0;
+	int nTriangles = 0;
+	for (int i = 0; i < nFaces; ++i)
+	{
+		Mesh::FaceList::Face face = faceList.GetFace(i);
+		std::vector<fVec3>& verts = face.verts;
+		int nVerts = verts.size();
+
+		nVertices += nVerts;
+		nTriangles += nVerts - 2;
+	}
+	AllocateMesh(nVertices, nTriangles);
+
+	int iTriangle = 0;
+	int iVertex = 0;
+
+	for (int i = 0; i < nFaces; ++i)
+	{
+		Mesh::FaceList::Face face = faceList.GetFace(i);
+		std::vector<fVec3>& verts = face.verts;
+		int nVerts = verts.size();
+
+		int k = iVertex;
+
+		for (const fVec3& vert : verts)
+		{
+			SetVertex(iVertex++, vert, face.normal, diffuse, specular);
+		}
+
+		assert(nVerts > 2);
+
+		int iA = 0;
+		int iB = 1;
+		int iC = nVerts - 1;
+		int iD = nVerts - 2;
+
+		while (iB < iD)
+		{
+			SetTriangleIndices(iTriangle++, k + iA, k + iB, k + iC);
+			SetTriangleIndices(iTriangle++, k + iD, k + iC, k + iB);
+
+			iA++;
+			iB++;
+			iC--;
+			iD--;
+		}
+		if (iB == iD)
+		{
+			SetTriangleIndices(iTriangle++, k + iA, k + iB, k + iC);
+		}
+	}
+
+	GenerateGLBufferObjects();
+}

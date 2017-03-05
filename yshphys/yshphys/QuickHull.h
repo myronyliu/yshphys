@@ -61,7 +61,8 @@ private:
 		mutable bool	visible;
 
 		Face() : normal(0.0, 0.0, 0.0), vertSet(), edge(nullptr), visited(false), visible(false), iFIFO(-1) {}
-		~Face() { FIFO->InvalidateElement(iFIFO); }
+		~Face() {}
+//		~Face() { FIFO->InvalidateElement(iFIFO); }
 		void Reset() { normal.x = 0.0; normal.y = 0.0; normal.z = 0.0; vertSet.clear(); edge = nullptr; visited = false; visible = false; }
 	};
 	struct FaceFIFO

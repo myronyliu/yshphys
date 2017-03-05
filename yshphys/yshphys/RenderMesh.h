@@ -4,6 +4,7 @@
 #include "Quat.h"
 #include "glew.h"
 #include "Shader.h"
+#include "Mesh.h"
 
 class RenderMesh
 {
@@ -36,6 +37,7 @@ public:
 	void CreateCapsule(float radius, float halfHeight, const fVec3& diffuse, const fVec3& specular);
 	void CreateCone(float radius, float height, const fVec3& diffuse, const fVec3& specular);
 	void CreateSphere(float radius, const fVec3& diffuse, const fVec3& specular);
+	void CreateMesh(const Mesh& mesh, const fVec3& diffuse, const fVec3& specular);
 
 private:
 

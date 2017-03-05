@@ -40,11 +40,44 @@ public:
 	};
 
 	Mesh();
+	Mesh(const fVec3* const pointCloud, int nPoints);
 	virtual ~Mesh();
 
 	void AllocateMesh(int nEdges, int nFaces, int nVerts);
 
 	virtual dVec3 SupportLocal(const dVec3& v) const;
+
+	struct FaceList
+	{
+		friend class Mesh;
+	public:
+		struct Face
+		{
+			std::vector<fVec3> verts;
+			dVec3 normal;
+		};
+
+		int GetNumFaces() const;
+		FaceList::Face GetFace(int i) const;
+
+		void AddFace(const fVec3* verts, int nVerts, const dVec3& normal);
+
+	private:
+		struct FacePartition
+		{
+			int iFirstVert;
+			dVec3 normal;
+		};
+		std::vector<fVec3> m_verts;
+		std::vector<FacePartition> m_faces;
+	};
+	struct PolygonalFace
+	{
+		std::vector<fVec3> verts;
+		dVec3 normal;
+	};
+
+	FaceList GetFaces() const;
 
 protected:
 
