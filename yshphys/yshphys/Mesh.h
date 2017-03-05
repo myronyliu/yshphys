@@ -1,5 +1,6 @@
 #pragma once
 #include "Geometry.h"
+
 class Mesh :
 	public Geometry
 {
@@ -7,26 +8,32 @@ public:
 	struct HalfEdge;
 	struct Face;
 
+	// For meshes, we use indices rather than pointers for the HalfEdge data structure. This is because meshes are static (unchanging),
+	// so naturally, all of our vertices, halfedges, and faces will be allocated contiguously as flat arrays. For EPA and Quickhull
+	// halfEdges and faces are constantly added and removed, so it is more natural to use pointers, as the memory becomes fragmented.
+
 	struct HalfEdge
 	{
-		const fVec3*	vert; // Our Convention: the vertex at the TIP of the HalfEdge (as opposed to at the TAIL)
-		HalfEdge*		next;
-		HalfEdge*		prev;
-		HalfEdge*		twin;
-		Face*			face;
+		int				iVert; // Our Convention: the vertex at the TIP of the HalfEdge (as opposed to at the TAIL)
+
+		int				iNext;
+		int				iPrev;
+		int				iTwin;
+
+		int				iFace;
 
 		mutable bool visited;
 
-		HalfEdge() : vert(nullptr), next(nullptr), prev(nullptr), twin(nullptr), face(nullptr), visited(false) {}
+		HalfEdge() : iVert(-1), iNext(-1), iPrev(-1), iTwin(-1), iFace(-1), visited(false) {}
 	};
 	struct Face
 	{
-		dVec3						normal;
-		HalfEdge*					edge;
+		dVec3			normal;
+		int				iEdge;
 
 		mutable bool visited;
 
-		Face() : normal(0.0, 0.0, 0.0), edge(nullptr), visited(false) {}
+		Face() : normal(0.0, 0.0, 0.0), iEdge(-1), visited(false) {}
 	};
 
 	Mesh();
@@ -40,7 +47,7 @@ protected:
 
 	// entryEdge is the starting point of our steepest descent search.
 	// The returned HalfEdge's vert is the support point.
-	HalfEdge* SupportLocal(const dVec3& v, HalfEdge* entryEdge) const;
+	int ISupportEdgeLocal(const dVec3& v, int iEntryEdge) const;
 	void InitCardinalEdges();
 
 	HalfEdge*	m_halfEdges;
@@ -50,13 +57,13 @@ protected:
 	fVec3*		m_verts;
 	int			m_nVerts;
 
-	// m_cardinalEdge[i][0] corresponds to the edge pointing to the vertex that is minimal in the ith-direction
-	// m_cardinalEdge[i][1] corresponds to the edge pointing to the vertex that is maximal in the ith-direction
+	// m_iCardinalEdge[i][0] corresponds to the edge pointing to the vertex that is minimal in the ith-direction
+	// m_iCardinalEdge[i][1] corresponds to the edge pointing to the vertex that is maximal in the ith-direction
 	// i=0 corresponds to the x direction
 	// i=1 corresponds to the y direction
 	// i=2 corresponds to the z direction
 	// (This is to slightly accelerate the Support function)
 
-	HalfEdge*	m_cardinalEdges[3][2];
+	int			m_iCardinalEdges[3][2];
 };
 
