@@ -47,10 +47,11 @@ public:
 
 	virtual dVec3 SupportLocal(const dVec3& v) const;
 
-	dVec3 CenterOfMassLocal_Solid() const;
-	dVec3 CenterOfMassLocal_Hollow() const;
+	dVec3 CenterOfMassLocal_Solid(double& volume) const;
 
-	dMat33 InertiaLocal_Solid() const;
+	dMat33 InertiaLocal_Solid(double kilogramPerCubicMeter, double& mass) const;
+
+	void ShiftToCenterOfMass_Solid();
 
 	struct FaceList
 	{

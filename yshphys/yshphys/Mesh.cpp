@@ -184,7 +184,7 @@ void Mesh::InitCardinalEdges()
 	}
 }
 
-dVec3 Mesh::CenterOfMassLocal_Solid() const
+dVec3 Mesh::CenterOfMassLocal_Solid(double& VOLUME) const
 {
 	dVec3 o(0.0, 0.0, 0.0);
 	for (int i = 0; i < m_nVerts; ++i)
@@ -193,7 +193,7 @@ dVec3 Mesh::CenterOfMassLocal_Solid() const
 	}
 	o = o.Scale(m_nVerts);
 
-	double VOLUME = 0.0;
+	VOLUME = 0.0;
 	dVec3 COM(0.0, 0.0, 0.0);
 
 	for (int i = 0; i < m_nFaces; ++i)
@@ -260,11 +260,8 @@ dVec3 Mesh::CenterOfMassLocal_Solid() const
 		VOLUME += volume;
 		COM = COM.Scale(VOLUME0 / VOLUME) + com.Scale(volume / VOLUME);
 	}
+	VOLUME /= 6.0f;
 	return COM;
-}
-dVec3 Mesh::CenterOfMassLocal_Hollow() const
-{
-	return dVec3(0.0, 0.0, 0.0);
 }
 
 // http://docsdrive.com/pdfs/sciencepublications/jmssp/2005/8-11.pdf
@@ -335,9 +332,11 @@ dMat33 TetrahedronInertia(const dVec3& v1, const dVec3& v2, const dVec3& v3, con
 	return I;
 }
 
-dMat33 Mesh::InertiaLocal_Solid() const
+dMat33 Mesh::InertiaLocal_Solid(double density, double& mass) const
 {
-	dVec3 o = CenterOfMassLocal_Solid();
+	double volume;
+	dVec3 o = CenterOfMassLocal_Solid(volume);
+	mass = density*volume;
 
 	dMat33 I;
 	I(0, 0) = 0.0;
@@ -396,5 +395,18 @@ dMat33 Mesh::InertiaLocal_Solid() const
 			I = I + TetrahedronInertia(A, B, C, o);
 		}
 	}
-	return I;
+	return I.Scale(density);
+}
+
+void Mesh::ShiftToCenterOfMass_Solid()
+{
+	double v;
+	const dVec3 com = CenterOfMassLocal_Solid(v);
+	for (int i = 0; i < m_nVerts; ++i)
+	{
+		m_verts[i] = m_verts[i] - com;
+	}
+
+	const dVec3 c = CenterOfMassLocal_Solid(v);
+	assert(c.Dot(c) < 0.0001);
 }
