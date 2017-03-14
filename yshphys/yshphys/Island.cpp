@@ -37,7 +37,7 @@ void Island::PrependTo(Island* island)
 	m_next->m_prev = this;
 }
 
-void Island::Merge(Island* island)
+Island* Island::Merge(Island* island)
 {
 	m_contacts.reserve(m_contacts.size() + island->m_contacts.size());
 	for (Contact contact : island->m_contacts)
@@ -49,6 +49,8 @@ void Island::Merge(Island* island)
 	assert(island->m_next != nullptr);
 	island->m_next->m_prev = island->m_prev;
 	delete island;
+
+	return this;
 }
 
 void Island::ResolveContacts() const
