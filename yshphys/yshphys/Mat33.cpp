@@ -199,7 +199,21 @@ T& Mat33_t<T>::operator () (unsigned int i, unsigned int j)
 }
 
 template <class T>
-Mat33_t<T> Mat33_t<T>::operator * (const Mat33_t& B) const
+Mat33_t<T> Mat33_t<T>::operator + (const Mat33_t<T>& B) const
+{
+	Mat33_t<T> sum;
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			sum.M_ij[i][j] = M_ij[i][j] + B.M_ij[i][j];
+		}
+	}
+	return sum;
+}
+
+template <class T>
+Mat33_t<T> Mat33_t<T>::operator * (const Mat33_t<T>& B) const
 {
 	Mat33_t<T> product;
 	for (int i = 0; i < 3; ++i)
@@ -218,7 +232,7 @@ Mat33_t<T> Mat33_t<T>::operator * (const Mat33_t& B) const
 }
 
 template <class T>
-bool Mat33_t<T>::operator == (const Mat33_t& M) const
+bool Mat33_t<T>::operator == (const Mat33_t<T>& M) const
 {
 	return
 		M_ij[0][0] == M.M_ij[0][0] &&

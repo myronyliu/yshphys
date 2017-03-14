@@ -31,8 +31,9 @@ public:
 	T operator () (unsigned int i, unsigned int j) const;
 	T& operator () (unsigned int i, unsigned int j);
 
-	Mat33_t<T> operator * (const Mat33_t& M) const;
-	bool operator == (const Mat33_t& M) const;
+	Mat33_t<T> operator + (const Mat33_t<T>& M) const;
+	Mat33_t<T> operator * (const Mat33_t<T>& M) const;
+	bool operator == (const Mat33_t<T>& M) const;
 
 private:
 	T M_ij[3][3];

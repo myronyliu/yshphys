@@ -25,8 +25,9 @@ public:
 	T operator () (unsigned int i, unsigned int j) const;
 	T& operator () (unsigned int i, unsigned int j);
 
-	Mat44_t<T> operator * (const Mat44_t& M) const;
-	bool operator == (const Mat44_t& M) const;
+	Mat44_t<T> operator + (const Mat44_t<T>& M) const;
+	Mat44_t<T> operator * (const Mat44_t<T>& M) const;
+	bool operator == (const Mat44_t<T>& M) const;
 
 private:
 	T M_ij[4][4];
