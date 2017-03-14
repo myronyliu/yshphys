@@ -774,7 +774,7 @@ Polygon Polygon::DoIntersect(const Polygon& poly) const
 	}
 
 	Vertex* vInit = verts;
-	Vertex* vIntersection = nullptr;
+	Vertex* vIntersection = verts;
 
 	for (int i = 0; i < n0; ++i)
 	{
