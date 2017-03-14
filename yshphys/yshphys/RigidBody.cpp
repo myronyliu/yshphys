@@ -69,6 +69,12 @@ dMat33 RigidBody::GetInverseInertia() const
 	return m_Iinv;
 }
 
+bool RigidBody::IsStatic() const
+{
+	const dMat33& I = m_inertia.Ibodyinv;
+	return m_inertia.minv + I(0, 0) + I(1, 1) + I(2, 2) == 0.0;
+}
+
 dVec3 RigidBody::GetPosition() const
 {
 	return m_state.x;

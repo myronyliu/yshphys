@@ -51,6 +51,8 @@ public:
 	double GetInverseMass() const;
 	dMat33 GetInverseInertia() const;
 
+	bool IsStatic() const;
+
 	dVec3 GetPosition() const;
 	dQuat GetRotation() const;
 	dVec3 GetLinearVelocity() const;
@@ -132,6 +134,7 @@ protected:
 	Force* m_forces[64];
 	int m_nForces;
 
+	// m_island should be null for static objects, since static objects should be able to appear in multiple islands
 	Island* m_island;
 
 	void Compute_xDot(const dVec3& P, dVec3& xDot) const;
