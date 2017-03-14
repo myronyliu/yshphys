@@ -50,6 +50,8 @@ public:
 	dVec3 CenterOfMassLocal_Solid() const;
 	dVec3 CenterOfMassLocal_Hollow() const;
 
+	dMat33 InertiaLocal_Solid() const;
+
 	struct FaceList
 	{
 		friend class Mesh;

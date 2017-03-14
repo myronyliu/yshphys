@@ -266,3 +266,135 @@ dVec3 Mesh::CenterOfMassLocal_Hollow() const
 {
 	return dVec3(0.0, 0.0, 0.0);
 }
+
+// http://docsdrive.com/pdfs/sciencepublications/jmssp/2005/8-11.pdf
+dMat33 TetrahedronInertia(const dVec3& v1, const dVec3& v2, const dVec3& v3, const dVec3& v4)
+{
+	const double& x1 = v1.x;
+	const double& x2 = v2.x;
+	const double& x3 = v3.x;
+	const double& x4 = v4.x;
+
+	const double& y1 = v1.y;
+	const double& y2 = v2.y;
+	const double& y3 = v3.y;
+	const double& y4 = v4.y;
+
+	const double& z1 = v1.z;
+	const double& z2 = v2.z;
+	const double& z3 = v3.z;
+	const double& z4 = v4.z;
+
+	const double det = abs((v2 - v1).Cross(v3 - v1).Dot(v4 - v1));
+
+	const double a = (det / 60.0)*(
+		y1*y1 + y1*y2 + y2*y2 + y1*y3 + y2*y3 + y3*y3 + y1*y4 + y2*y4 + y3*y4 + y4*y4 +
+		z1*z1 + z1*z2 + z2*z2 + z1*z3 + z2*z3 + z3*z3 + z1*z4 + z2*z4 + z3*z4 + z4*z4
+		);
+	const double b = (det / 60.0)*(
+		x1*x1 + x1*x2 + x2*x2 + x1*x3 + x2*x3 + x3*x3 + x1*x4 + x2*x4 + x3*x4 + x4*x4 +
+		z1*z1 + z1*z2 + z2*z2 + z1*z3 + z2*z3 + z3*z3 + z1*z4 + z2*z4 + z3*z4 + z4*z4
+		);
+	const double c = (det / 60.0)*(
+		x1*x1 + x1*x2 + x2*x2 + x1*x3 + x2*x3 + x3*x3 + x1*x4 + x2*x4 + x3*x4 + x4*x4 +
+		y1*y1 + y1*y2 + y2*y2 + y1*y3 + y2*y3 + y3*y3 + y1*y4 + y2*y4 + y3*y4 + y4*y4
+		);
+	const double aPrime = (det / 120.0)*(
+		2.0*y1*z1 + y2*z1 + y3*z1 + y4*z1 + y1*z2 +
+		2.0*y2*z2 + y3*z2 + y4*z2 + y1*z3 + y2*z3 +
+		2.0*y3*z3 + y4*z3 + y1*z4 + y2*z4 + y3*z4 +
+		2.0*y4*z4
+		);
+	const double bPrime = (det / 120.0)*(
+		2.0*x1*z1 + x2*z1 + x3*z1 + x4*z1 + x1*z2 +
+		2.0*x2*z2 + x3*z2 + x4*z2 + x1*z3 + x2*z3 +
+		2.0*x3*z3 + x4*z3 + x1*z4 + x2*z4 + x3*z4 +
+		2.0*x4*z4
+		);
+	const double cPrime = (det / 120.0)*(
+		2.0*x1*y1 + x2*y1 + x3*y1 + x4*y1 + x1*y2 +
+		2.0*x2*y2 + x3*y2 + x4*y2 + x1*y3 + x2*y3 +
+		2.0*x3*y3 + x4*y3 + x1*y4 + x2*y4 + x3*y4 +
+		2.0*x4*y4
+		);
+
+	dMat33 I;
+
+	I(0, 0) = a;
+	I(0, 1) = -bPrime;
+	I(0, 2) = -cPrime;
+
+	I(1, 0) = -bPrime;
+	I(1, 1) = b;
+	I(1, 2) = -aPrime;
+
+	I(2, 0) = -cPrime;
+	I(2, 1) = -aPrime;
+	I(2, 2) = c;
+
+	return I;
+}
+
+dMat33 Mesh::InertiaLocal_Solid() const
+{
+	dVec3 o = CenterOfMassLocal_Solid();
+
+	dMat33 I;
+	I(0, 0) = 0.0;
+	I(0, 1) = 0.0;
+	I(0, 2) = 0.0;
+	I(1, 0) = 0.0;
+	I(1, 1) = 0.0;
+	I(1, 2) = 0.0;
+	I(2, 0) = 0.0;
+	I(2, 1) = 0.0;
+	I(2, 2) = 0.0;
+
+	for (int i = 0; i < m_nFaces; ++i)
+	{
+		dVec3 v[64];
+		int n = 0;
+
+		const Face& f = m_faces[i];
+
+		int iEdge = f.iEdge;
+		int iEdge0 = iEdge;
+		do
+		{
+			const HalfEdge& edge = m_halfEdges[iEdge];
+			int iVert = edge.iVert;
+			v[n++] = dVec3(m_verts[iVert]);
+			iEdge = edge.iNext;
+
+		} while (iEdge != iEdge0);
+
+		int iA = 0;
+		int iB = 1;
+		int iC = n - 1;
+		int iD = n - 2;
+
+		while (iB < iD)
+		{
+			const dVec3& A = v[iA];
+			const dVec3& B = v[iB];
+			const dVec3& C = v[iC];
+			const dVec3& D = v[iD];
+
+			I = I + TetrahedronInertia(A, B, C, o) + TetrahedronInertia(D, C, B, o);
+
+			iA++;
+			iB++;
+			iC--;
+			iD--;
+		}
+		if (iB == iD)
+		{
+			const dVec3& A = v[iA];
+			const dVec3& B = v[iB];
+			const dVec3& C = v[iC];
+
+			I = I + TetrahedronInertia(A, B, C, o);
+		}
+	}
+	return I;
+}
