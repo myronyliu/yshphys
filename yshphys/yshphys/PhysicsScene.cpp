@@ -331,116 +331,99 @@ void PhysicsScene::ComputeContacts()
 			{
 				intersectionPoly = poly0.Intersect(poly1.ReflectX());
 			}
-//			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
-			intersectionPoly = intersectionPoly.LimitVertices(3);
+			intersectionPoly = intersectionPoly.PruneColinearVertices(COLINEAR_ANGLE_THRESH);
+//			intersectionPoly = intersectionPoly.LimitVertices(3);
 
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
 
-//			for (int i = 0; i < nVerts; ++i)
+			Island* island[2];
+			island[0] = contact.body[0]->GetIsland();
+			island[1] = contact.body[1]->GetIsland();
+
+			auto CreateNewIsland = [&]()
 			{
-//				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-//				contact.x[0] = x;
-//				contact.x[1] = x;
-
-				contact.x[0] = x0;
-				contact.x[1] = x1;
-
-				// TODO: The following logic does redundant work, but I don't feel like pulling it out of the loop at the moment for convenience
-
-				Island* island[2];
-				island[0] = contact.body[0]->GetIsland();
-				island[1] = contact.body[1]->GetIsland();
-
-				auto CreateNewIsland = [&](const Contact& contact)
+				Island* newIsland = new Island();
+				if (m_firstIsland == nullptr)
 				{
-					Island* newIsland = new Island();
-					newIsland->AddContact(contact);
-
-					if (m_firstIsland == nullptr)
-					{
-						m_firstIsland = newIsland;
-					}
-					// Add the new island to the end of the "ring"
-					newIsland->PrependTo(m_firstIsland);
-				};
-
-				if (body[0]->IsStatic())
-				{
-					if (island[1] == nullptr)
-					{
-						CreateNewIsland(contact);
-					}
-					else
-					{
-						island[1]->AddContact(contact);
-					}
+					m_firstIsland = newIsland;
 				}
-				else if (body[1]->IsStatic())
+				// Add the new island to the end of the "ring"
+				newIsland->PrependTo(m_firstIsland);
+				return newIsland;
+			};
+
+			Island* isl = nullptr;
+
+			if (body[0]->IsStatic())
+			{
+				isl = (island[1] == nullptr) ? CreateNewIsland() : island[1];
+			}
+			else if (body[1]->IsStatic())
+			{
+				isl = (island[0] == nullptr) ? CreateNewIsland() : island[0];
+			}
+			else // both bodies are nonstatic
+			{
+				if (island[0] == nullptr && island[1] == nullptr)
 				{
-					if (island[0] == nullptr)
-					{
-						CreateNewIsland(contact);
-					}
-					else
-					{
-						island[0]->AddContact(contact);
-					}
+					isl = CreateNewIsland();
 				}
-				else
+				else if (island[0] == nullptr)
 				{
-					if (island[0] == nullptr && island[1] == nullptr)
-					{
-						CreateNewIsland(contact);
-					}
-					else if (island[0] == nullptr)
-					{
-						island[1]->AddContact(contact);
-					}
-					else if (island[1] == nullptr)
-					{
-						island[0]->AddContact(contact);
-					}
-					else if (island[0] == island[1])
-					{
-						island[0]->AddContact(contact);
-					}
-					else // both bodies are already associated with different islands. Then we must merge the islands
-					{
-						if (m_firstIsland == island[1])
-						{
-							assert(island[1]->m_next != island[1]);
-							m_firstIsland = island[1]->m_next;
-						}
-						island[0]->Merge(island[1]);
-					}
+					isl = island[1];
 				}
-
-				if (m_firstIsland != nullptr)
+				else if (island[1] == nullptr)
 				{
-					int n0 = 0;
-					int n1 = 0;
-
-					Island* is = m_firstIsland;
-					do
-					{
-						is = is->m_next;
-						n0++;
-					} while (is != m_firstIsland);
-
-					is = m_firstIsland;
-					do
-					{
-						is = is->m_prev;
-						n1++;
-					} while (is != m_firstIsland);
-
-					assert(n0 == n1);
+					isl = island[0];
 				}
+				else if (island[0] == island[1])
+				{
+					isl = island[0];
+				}
+				else // both bodies are already associated with different islands. Then we must merge the islands
+				{
+					if (m_firstIsland == island[1])
+					{
+						assert(island[1]->m_next != island[1]);
+						m_firstIsland = island[1]->m_next;
+					}
+					isl = island[0]->Merge(island[1]);
+				}
+			}
+
+			if (m_firstIsland != nullptr)
+			{
+				int n0 = 0;
+				int n1 = 0;
+
+				Island* is = m_firstIsland;
+				do
+				{
+					is = is->m_next;
+					n0++;
+				} while (is != m_firstIsland);
+
+				is = m_firstIsland;
+				do
+				{
+					is = is->m_prev;
+					n1++;
+				} while (is != m_firstIsland);
+
+				assert(n0 == n1);
+			}
+
+			for (int i = 0; i < nVerts; ++i)
+			{
+				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+				contact.x[0] = x;
+				contact.x[1] = x;
+
+				isl->AddContact(contact);
 			}
 		}
 	}
-
 }
 
 void PhysicsScene::ResolveContacts() const
@@ -510,7 +493,7 @@ void PhysicsScene::Step(double dt)
 
 void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 {
-	return;
+//	return;
 #if 1 
 	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair : intersectingLeaves)
