@@ -44,7 +44,7 @@ void Mesh::AllocateMesh(int nEdges, int nFaces, int nVerts)
 void Mesh::FaceList::AddFace(const fVec3* verts, const int nVerts, const dVec3& normal)
 {
 	FacePartition fp;
-	fp.iFirstVert = m_verts.size();
+	fp.iFirstVert = (int)m_verts.size();
 	fp.normal = normal;
 	m_verts.insert(m_verts.end(), verts, verts + nVerts);
 	m_faces.push_back(fp);
@@ -52,7 +52,7 @@ void Mesh::FaceList::AddFace(const fVec3* verts, const int nVerts, const dVec3& 
 
 int Mesh::FaceList::GetNumFaces() const
 {
-	return m_faces.size();
+	return (int)m_faces.size();
 }
 
 Mesh::FaceList::Face Mesh::FaceList::GetFace(int iFace) const
@@ -64,7 +64,7 @@ Mesh::FaceList::Face Mesh::FaceList::GetFace(int iFace) const
 	}
 	else
 	{
-		int jMax = (iFace == (int)m_faces.size() - 1) ? m_verts.size() : m_faces[iFace + 1].iFirstVert;
+		int jMax = (iFace == (int)m_faces.size() - 1) ? (int)m_verts.size() : m_faces[iFace + 1].iFirstVert;
 		for (int j = m_faces[iFace].iFirstVert; j < jMax; ++j)
 		{
 			f.verts.push_back(m_verts[j]);
@@ -92,7 +92,7 @@ Mesh::FaceList Mesh::GetFaces() const
 
 		} while (e_i != e_i_0);
 
-		fl.AddFace(&faceVerts[0], faceVerts.size(), f.normal);
+		fl.AddFace(&faceVerts[0], (int)faceVerts.size(), f.normal);
 	}
 	return fl;
 }
@@ -182,4 +182,87 @@ void Mesh::InitCardinalEdges()
 		m_localOOBB.min[dim] = m_verts[m_halfEdges[m_iCardinalEdges[dim][0]].iVert][dim];
 		m_localOOBB.max[dim] = m_verts[m_halfEdges[m_iCardinalEdges[dim][1]].iVert][dim];
 	}
+}
+
+dVec3 Mesh::CenterOfMassLocal_Solid() const
+{
+	dVec3 o(0.0, 0.0, 0.0);
+	for (int i = 0; i < m_nVerts; ++i)
+	{
+		o = o + dVec3(m_verts[i]);
+	}
+	o = o.Scale(m_nVerts);
+
+	double VOLUME = 0.0;
+	dVec3 COM(0.0, 0.0, 0.0);
+
+	for (int i = 0; i < m_nFaces; ++i)
+	{
+		dVec3 v[64];
+		int n = 0;
+
+		const Face& f = m_faces[i];
+
+		int iEdge = f.iEdge;
+		int iEdge0 = iEdge;
+		do
+		{
+			const HalfEdge& edge = m_halfEdges[iEdge];
+			int iVert = edge.iVert;
+			v[n++] = dVec3(m_verts[iVert]);
+			iEdge = edge.iNext;
+
+		} while (iEdge != iEdge0);
+
+		int iA = 0;
+		int iB = 1;
+		int iC = n - 1;
+		int iD = n - 2;
+
+		double volume = 0.0;
+		dVec3 com(0.0, 0.0, 0.0);
+
+		while (iB < iD)
+		{
+			const dVec3& A = v[iA];
+			const dVec3& B = v[iB];
+			const dVec3& C = v[iC];
+			const dVec3& D = v[iD];
+
+			double volume0 = volume;
+			double dVolume = (B - A).Cross(C - A).Dot(A - o);
+			volume += dVolume;
+			com = com.Scale(volume0 / volume) + (A + B + C + o).Scale(dVolume*0.25 / volume);
+
+			volume0 = volume;
+			dVolume = (C - D).Cross(B - D).Dot(D - o);
+			volume += dVolume;
+			com = com.Scale(volume0 / volume) + (D + C + B + o).Scale(dVolume*0.25 / volume);
+
+			iA++;
+			iB++;
+			iC--;
+			iD--;
+		}
+		if (iB == iD)
+		{
+			const dVec3& A = v[iA];
+			const dVec3& B = v[iB];
+			const dVec3& C = v[iC];
+
+			double volume0 = volume;
+			double dVolume = (B - A).Cross(C - A).Dot(A - o);
+			volume += dVolume;
+			com = com.Scale(volume0 / volume) + (A + B + C + o).Scale(dVolume*0.25 / volume);
+		}
+
+		double VOLUME0 = VOLUME;
+		VOLUME += volume;
+		COM = COM.Scale(VOLUME0 / VOLUME) + com.Scale(volume / VOLUME);
+	}
+	return COM;
+}
+dVec3 Mesh::CenterOfMassLocal_Hollow() const
+{
+	return dVec3(0.0, 0.0, 0.0);
 }

@@ -47,6 +47,9 @@ public:
 
 	virtual dVec3 SupportLocal(const dVec3& v) const;
 
+	dVec3 CenterOfMassLocal_Solid() const;
+	dVec3 CenterOfMassLocal_Hollow() const;
+
 	struct FaceList
 	{
 		friend class Mesh;

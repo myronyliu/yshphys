@@ -24,6 +24,7 @@ public:
 	Geometry();
 	virtual ~Geometry();
 
+	virtual void UpdateLocalOOBB();
 	BoundingBox GetLocalOOBB() const;
 
 	virtual bool RayIntersect(const dVec3& pos, const dQuat& rot, const Ray& ray, dVec3& hitPt) const;

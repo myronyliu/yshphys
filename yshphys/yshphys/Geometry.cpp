@@ -17,6 +17,17 @@ Geometry::~Geometry()
 {
 }
 
+void Geometry::UpdateLocalOOBB()
+{
+	m_localOOBB.min.x = SupportLocal(dVec3(-1.0, 0.0, 0.0)).x;
+	m_localOOBB.min.y = SupportLocal(dVec3(0.0, -1.0, 0.0)).y;
+	m_localOOBB.min.z = SupportLocal(dVec3(0.0, 0.0, -1.0)).z;
+
+	m_localOOBB.max.x = SupportLocal(dVec3(1.0, 0.0, 0.0)).x;
+	m_localOOBB.max.y = SupportLocal(dVec3(0.0, 1.0, 0.0)).y;
+	m_localOOBB.max.z = SupportLocal(dVec3(0.0, 0.0, 1.0)).z;
+}
+
 BoundingBox Geometry::GetLocalOOBB() const
 {
 	return m_localOOBB;
