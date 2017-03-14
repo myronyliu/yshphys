@@ -250,8 +250,18 @@ void PhysicsScene::ComputeContacts()
 	{
 		Contact contact;
 
-		contact.body[0] = (RigidBody*)pair.nodes[0]->GetContent();
-		contact.body[1] = (RigidBody*)pair.nodes[1]->GetContent();
+		RigidBody* body[2];
+
+		body[0] = (RigidBody*)pair.nodes[0]->GetContent();
+		body[1] = (RigidBody*)pair.nodes[1]->GetContent();
+
+		if (body[0]->IsStatic() && body[1]->IsStatic())
+		{
+			continue;
+		}
+
+		contact.body[0] = body[0];
+		contact.body[1] = body[1];
 
 		Geometry* geom0 = contact.body[0]->GetGeometry();
 		Geometry* geom1 = contact.body[1]->GetGeometry();
@@ -266,7 +276,7 @@ void PhysicsScene::ComputeContacts()
 
 		if (Geometry::Intersect(geom0, pos0, rot0, x0, n0, geom1, pos1, rot1, x1, n1))
 		{
-			assert(abs(n0.z) > 0.999);
+//			assert(abs(n0.z) > 0.999);
 
 			const double k = 256.0;
 			double penetration = (x1 - x0).Dot(n1);
@@ -283,12 +293,12 @@ void PhysicsScene::ComputeContacts()
 			contact.body[0]->ApplyBruteForce(penalty0);
 			contact.body[1]->ApplyBruteForce(penalty1);
 
-			assert(abs(penalty0->F.x) < 10000.0f);
-			assert(abs(penalty0->F.y) < 10000.0f);
-			assert(abs(penalty0->F.z) < 10000.0f);
-			assert(abs(penalty1->F.x) < 10000.0f);
-			assert(abs(penalty1->F.y) < 10000.0f);
-			assert(abs(penalty1->F.z) < 10000.0f);
+			assert(abs(penalty0->F.x) < 1000000.0f);
+			assert(abs(penalty0->F.y) < 1000000.0f);
+			assert(abs(penalty0->F.z) < 1000000.0f);
+			assert(abs(penalty1->F.x) < 1000000.0f);
+			assert(abs(penalty1->F.y) < 1000000.0f);
+			assert(abs(penalty1->F.z) < 1000000.0f);
 
 			contact.n[0] = -n0;
 			contact.n[1] = -n1;
@@ -327,14 +337,14 @@ void PhysicsScene::ComputeContacts()
 			int nVerts;
 			const fVec2* verts = intersectionPoly.GetVertices(nVerts);
 
-			for (int i = 0; i < nVerts; ++i)
+//			for (int i = 0; i < nVerts; ++i)
 			{
-				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-				contact.x[0] = x;
-				contact.x[1] = x;
+//				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
+//				contact.x[0] = x;
+//				contact.x[1] = x;
 
-//				contact.x[0] = x0;
-//				contact.x[1] = x1;
+				contact.x[0] = x0;
+				contact.x[1] = x1;
 
 				// TODO: The following logic does redundant work, but I don't feel like pulling it out of the loop at the moment for convenience
 
@@ -342,7 +352,7 @@ void PhysicsScene::ComputeContacts()
 				island[0] = contact.body[0]->GetIsland();
 				island[1] = contact.body[1]->GetIsland();
 
-				if (island[0] == nullptr && island[1] == nullptr)
+				auto CreateNewIsland = [&](const Contact& contact)
 				{
 					Island* newIsland = new Island();
 					newIsland->AddContact(contact);
@@ -351,31 +361,59 @@ void PhysicsScene::ComputeContacts()
 					{
 						m_firstIsland = newIsland;
 					}
-
 					// Add the new island to the end of the "ring"
-
 					newIsland->PrependTo(m_firstIsland);
-				}
-				else if (island[0] == nullptr)
+				};
+
+				if (body[0]->IsStatic())
 				{
-					island[1]->AddContact(contact);
-				}
-				else if (island[1] == nullptr)
-				{
-					island[0]->AddContact(contact);
-				}
-				else if (island[0] == island[1])
-				{
-					island[0]->AddContact(contact);
-				}
-				else // both bodies are already associated with islands. Then we must merge the islands
-				{
-					if (m_firstIsland == island[1])
+					if (island[1] == nullptr)
 					{
-						assert(island[1]->m_next != island[1]);
-						m_firstIsland = island[1]->m_next;
+						CreateNewIsland(contact);
 					}
-					island[0]->Merge(island[1]);
+					else
+					{
+						island[1]->AddContact(contact);
+					}
+				}
+				else if (body[1]->IsStatic())
+				{
+					if (island[0] == nullptr)
+					{
+						CreateNewIsland(contact);
+					}
+					else
+					{
+						island[0]->AddContact(contact);
+					}
+				}
+				else
+				{
+					if (island[0] == nullptr && island[1] == nullptr)
+					{
+						CreateNewIsland(contact);
+					}
+					else if (island[0] == nullptr)
+					{
+						island[1]->AddContact(contact);
+					}
+					else if (island[1] == nullptr)
+					{
+						island[0]->AddContact(contact);
+					}
+					else if (island[0] == island[1])
+					{
+						island[0]->AddContact(contact);
+					}
+					else // both bodies are already associated with different islands. Then we must merge the islands
+					{
+						if (m_firstIsland == island[1])
+						{
+							assert(island[1]->m_next != island[1]);
+							m_firstIsland = island[1]->m_next;
+						}
+						island[0]->Merge(island[1]);
+					}
 				}
 
 				if (m_firstIsland != nullptr)
@@ -472,6 +510,7 @@ void PhysicsScene::Step(double dt)
 
 void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 {
+	return;
 #if 1 
 	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair : intersectingLeaves)

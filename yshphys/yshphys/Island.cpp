@@ -17,8 +17,15 @@ Island::~Island()
 void Island::AddContact(const Contact& contact)
 {
 	m_contacts.push_back(contact);
-	contact.body[0]->SetIsland(this);
-	contact.body[1]->SetIsland(this);
+
+	if (!contact.body[0]->IsStatic())
+	{
+		contact.body[0]->SetIsland(this);
+	}
+	if (!contact.body[1]->IsStatic())
+	{
+		contact.body[1]->SetIsland(this);
+	}
 }
 
 void Island::PrependTo(Island* island)
