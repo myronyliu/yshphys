@@ -27,17 +27,15 @@ void Heap_t<T>::Push(const T& element)
 		m_elements = newElements;
 		m_capacity = newCapacity;
 	}
-	int i = m_nElements++;
-	m_elements[i] = element;
-
-	HeapifyUp(i);
+	m_elements[m_nElements] = element;
+	HeapifyUp(m_nElements++);
 }
 
 template <class T>
 void Heap_t<T>::HeapifyUp(unsigned int index)
 {
-	int i = index;
-	int j = (i + 1) / 2 - 1; // index of i's parent
+	unsigned int i = index;
+	unsigned int j = (i + 1) / 2 - 1; // index of i's parent
 
 	while (m_lessThan(i, j) && i > 0)
 	{
@@ -52,7 +50,7 @@ void Heap_t<T>::HeapifyUp(unsigned int index)
 template <class T>
 void Heap_t<T>::HeapifyDown(unsigned int index)
 {
-	int i = index;
+	unsigned int i = index;
 
 	while (true)
 	{
@@ -64,7 +62,7 @@ void Heap_t<T>::HeapifyDown(unsigned int index)
 		}
 		else
 		{
-			int j;
+			unsigned int j;
 			if (iRight == m_nElements)
 			{
 				j = iLeft;
