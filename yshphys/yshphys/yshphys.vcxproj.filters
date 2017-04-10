@@ -64,6 +64,9 @@
     <Filter Include="Rendering\Shaders\GLSL">
       <UniqueIdentifier>{d0206498-469e-4344-8226-101433ad7e52}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DataStructures">
+      <UniqueIdentifier>{70cca3f9-e51c-442d-99be-678b10ea15f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -288,6 +291,9 @@
     <ClInclude Include="Mesh.h">
       <Filter>Physics\Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="Heap.h">
+      <Filter>DataStructures</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -502,6 +508,9 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Heap.cpp">
+      <Filter>DataStructures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -179,6 +179,7 @@
     <ClInclude Include="GameNode.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Heap.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="KeyButtonRenamings.h" />
@@ -254,6 +255,7 @@
     <ClCompile Include="GameNode.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="Heap.cpp" />
     <ClCompile Include="HomogeneousTransformation.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputHandler.cpp" />
