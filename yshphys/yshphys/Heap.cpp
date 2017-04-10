@@ -30,7 +30,14 @@ void Heap_t<T>::Push(const T& element)
 	int i = m_nElements++;
 	m_elements[i] = element;
 
-	int j = (i + 1) / 2 - 1; // index of the tentative parent of the added element 
+	HeapifyUp(i);
+}
+
+template <class T>
+void Heap_t<T>::HeapifyUp(unsigned int index)
+{
+	int i = index;
+	int j = (i + 1) / 2 - 1; // index of i's parent
 
 	while (m_lessThan(i, j) && i > 0)
 	{
@@ -43,24 +50,8 @@ void Heap_t<T>::Push(const T& element)
 }
 
 template <class T>
-T Heap_t<T>::Pop()
+void Heap_t<T>::HeapifyDown(unsigned int index)
 {
-	T top = m_elements[0];
-	DeleteElement(0);
-	return top;
-}
-
-template <class T>
-T Heap_t<T>::Top() const
-{
-	return m_elements[0];
-}
-
-template <class T>
-void Heap_t<T>::DeleteElement(unsigned int index)
-{
-	m_elements[index] = m_elements[--m_nElements];
-
 	int i = index;
 
 	while (true)
@@ -98,4 +89,26 @@ void Heap_t<T>::DeleteElement(unsigned int index)
 		}
 	}
 }
+
+template <class T>
+T Heap_t<T>::Pop()
+{
+	T top = m_elements[0];
+	DeleteElement(0);
+	return top;
+}
+
+template <class T>
+T Heap_t<T>::Top() const
+{
+	return m_elements[0];
+}
+
+template <class T>
+void Heap_t<T>::DeleteElement(unsigned int index)
+{
+	m_elements[index] = m_elements[--m_nElements];
+	HeapifyDown(index);
+}
+
 template class Heap_t<int>;

@@ -15,7 +15,9 @@ protected:
 	unsigned int m_nElements;
 	unsigned int m_capacity;
 	bool(*m_lessThan)(const T&, const T&);
-
+	
+	void HeapifyUp(unsigned int i);
+	void HeapifyDown(unsigned int i);
 	void DeleteElement(unsigned int i);
 };
 
