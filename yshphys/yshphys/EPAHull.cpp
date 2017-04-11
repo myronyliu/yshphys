@@ -12,8 +12,8 @@ void EPAHull::FaceHeap::HeapifyUp(int index)
 		m_faces[i] = m_faces[j];
 		m_faces[j] = swp;
 
-		m_faces[i]->iHeap = j;
-		m_faces[j]->iHeap = i;
+		m_faces[i]->iHeap = i;
+		m_faces[j]->iHeap = j;
 
 		i = j;
 		j = (i + 1) / 2 - 1;
@@ -49,8 +49,8 @@ void EPAHull::FaceHeap::HeapifyDown(int index)
 				m_faces[i] = m_faces[j];
 				m_faces[j] = swp;
 
-				m_faces[i]->iHeap = j;
-				m_faces[j]->iHeap = i;
+				m_faces[i]->iHeap = i;
+				m_faces[j]->iHeap = j;
 
 				i = j;
 			}
@@ -68,6 +68,7 @@ void EPAHull::FaceHeap::RemoveFaceFromHeap(Face* face)
 }
 void EPAHull::FaceHeap::RemoveFaceFromHeap(int i)
 {
+	m_faces[i]->iHeap = -1;
 	m_faces[i] = m_faces[--m_nFaces];
 	m_faces[i]->iHeap = i;
 	HeapifyDown(i);
@@ -150,8 +151,6 @@ EPAHull::EPAHull(
 		assert(n.Dot(n) > FLT_MIN);
 		n = n.Scale(1.0 / sqrt(n.Dot(n)));
 
-		m_faceHeap.Push(&m_faces[f]);
-
 		HalfEdge * e[3];
 
 		if (n.Dot(B - A) < 0.0)
@@ -181,6 +180,8 @@ EPAHull::EPAHull(
 
 		m_faces[f].normal = n;
 		m_faces[f].distance = d;
+
+		m_faceHeap.Push(&m_faces[f]);
 	}
 
 	for (int i = 0; i < EPAHULL_MAXFACES - 4; ++i)
@@ -379,7 +380,7 @@ bool EPAHull::PatchHorizon(const fMinkowskiPoint* eye)
 
 bool EPAHull::Expand()
 {
-	while (!m_faceHeap.Empty())
+	if (!m_faceHeap.Empty())
 	{
 		Face* closestFace = m_faceHeap.Top();
 
@@ -392,11 +393,9 @@ bool EPAHull::Expand()
 
 		if (deltaDist < 0.0001 || (closestFace->distance > FLT_EPSILON && deltaDist / closestFace->distance < 0.01))
 		{
-			// The new point is so close to the face, that it doesnt warrant adding. So leave the face in the heap.
+			// The new point is so close to the face, that it doesnt warrant adding. So leave the heap unmodified
 			return false;
 		}
-
-		m_faceHeap.Pop();
 
 		const fVec3 fEye(dEye);
 		CarveHorizon(fEye, closestFace);
@@ -562,74 +561,72 @@ bool EPAHull::ComputeIntersection(dVec3& pt0, dVec3& n0, dVec3& pt1, dVec3& n1)
 //	}
 //}
 
-//void EPAHull::DebugDraw(DebugRenderer* renderer) const
-//{
-//	std::set<const HalfEdge*> edges;
+void EPAHull::DebugDraw(DebugRenderer* renderer) const
+{
+	std::set<const HalfEdge*> edges;
 
-//	for (int i = 0; i < m_nFacesInHeap; ++i)
-//	{
-//		Face* face = m_faceHeap[i];
-//		if (FaceIsActive(face))
-//		{
-//			HalfEdge* es[3];
-//			es[0] = face->edge;
-//			es[1] = face->edge->next;
-//			es[2] = face->edge->prev;
+	std::vector<Face*> faces = m_faceHeap.GetFaces();
 
-//			fVec3 ABC[3];
-//			ABC[0] = es[0]->vert->m_MinkDif;
-//			ABC[1] = es[1]->vert->m_MinkDif;
-//			ABC[2] = es[2]->vert->m_MinkDif;
+	for (Face* face : faces)
+	{
+		HalfEdge* es[3];
+		es[0] = face->edge;
+		es[1] = face->edge->next;
+		es[2] = face->edge->prev;
 
-//			renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false);
+		fVec3 ABC[3];
+		ABC[0] = es[0]->vert->m_MinkDif;
+		ABC[1] = es[1]->vert->m_MinkDif;
+		ABC[2] = es[2]->vert->m_MinkDif;
 
-//			for (const HalfEdge* e : es)
-//			{
-//				if (edges.find(e->twin) == edges.end())
-//				{
-//					edges.insert(e);
-//				}
-//			}
-//		}
-//	}
+		renderer->DrawPolygon(ABC, 3, fVec3(1.0f, 1.0f, 1.0f), false, false);
 
-//	for (const HalfEdge* edge : edges)
-//	{
-//		fVec3 color(0.0f, 0.0f, 0.0f);
-//		float kWidth = 0.01f;
-//		if (edge->isHorizon || edge->twin->isHorizon)
-//		{
-//			color = fVec3(0.0f, 1.0f, 0.0f);
-//			kWidth *= 2.0f;
-//		}
+		for (const HalfEdge* e : es)
+		{
+			if (edges.find(e->twin) == edges.end())
+			{
+				edges.insert(e);
+			}
+		}
+	}
 
-//		const fVec3& A = edge->vert->m_MinkDif;
-//		const fVec3& B = edge->twin->vert->m_MinkDif;
+	for (const HalfEdge* edge : edges)
+	{
+		fVec3 color(0.0f, 0.0f, 0.0f);
+		float kWidth = 0.01f;
+		if (edge->isHorizon || edge->twin->isHorizon)
+		{
+			color = fVec3(0.0f, 1.0f, 0.0f);
+			kWidth *= 2.0f;
+		}
 
-//		fVec3 v = B - A;
-//		float vLen = sqrtf(v.Dot(v));
-//		fVec3 n = v.Scale(1.0f / vLen);
-//		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
-//		float sin = sqrtf(cross.Dot(cross));
-//		float cos = n.z;
+		const fVec3& A = edge->vert->m_MinkDif;
+		const fVec3& B = edge->twin->vert->m_MinkDif;
 
-//		fQuat rot = fQuat::Identity();
-//		if (sin > 0.00001f)
-//		{
-//			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
-//		}
+		fVec3 v = B - A;
+		float vLen = sqrtf(v.Dot(v));
+		fVec3 n = v.Scale(1.0f / vLen);
+		fVec3 cross = fVec3(0.0f, 0.0f, 1.0f).Cross(n);
+		float sin = sqrtf(cross.Dot(cross));
+		float cos = n.z;
 
-//		auto FaceArea = [](const Face* face)
-//		{
-//			const fVec3& A = face->edge->vert->m_MinkDif;
-//			const fVec3& B =face->edge->next->vert->m_MinkDif;
-//			const fVec3& C = face->edge->prev->vert->m_MinkDif;
-//			const fVec3 cross = (B - A).Cross(C - A);
-//			return sqrtf(cross.Dot(cross));
-//		};
+		fQuat rot = fQuat::Identity();
+		if (sin > 0.00001f)
+		{
+			rot = fQuat(cross.Scale(1.0f / sin), std::atan2f(sin, cos));
+		}
 
-//		const float edgeWidth = sqrtf(std::min(FaceArea(edge->face), FaceArea(edge->twin->face)))* kWidth;
+		auto FaceArea = [](const Face* face)
+		{
+			const fVec3& A = face->edge->vert->m_MinkDif;
+			const fVec3& B =face->edge->next->vert->m_MinkDif;
+			const fVec3& C = face->edge->prev->vert->m_MinkDif;
+			const fVec3 cross = (B - A).Cross(C - A);
+			return sqrtf(cross.Dot(cross));
+		};
 
-//		renderer->DrawBox(edgeWidth, edgeWidth, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
-//	}
-//}
+		const float edgeWidth = sqrtf(std::min(FaceArea(edge->face), FaceArea(edge->twin->face)))* kWidth;
+
+		renderer->DrawBox(edgeWidth, edgeWidth, vLen*0.5f, (A + B).Scale(0.5f), rot, color, false, false);
+	}
+}

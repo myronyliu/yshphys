@@ -89,6 +89,7 @@ private:
 		void Pop();
 		Face* Top() const;
 		bool Empty() const { return m_nFaces <= 0; }
+		std::vector<Face*> GetFaces() const { return std::vector<Face*>(m_faces, m_faces + m_nFaces); }
 	private:
 		Face* m_faces[EPAHULL_MAXFACES];
 		int m_nFaces = 0;
