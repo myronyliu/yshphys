@@ -410,7 +410,7 @@ bool EPAHull::Expand()
 			return false;
 		}
 
-//		SanityCheck();
+		SanityCheck();
 
 		return true;
 	}
@@ -461,105 +461,96 @@ bool EPAHull::ComputeIntersection(dVec3& pt0, dVec3& n0, dVec3& pt1, dVec3& n1)
 	return UpdateIntersection();
 }
 
-//void EPAHull::SanityCheck() const
-//{
-//	// Verify that the horizon forms a cycle and that the horizon has no "coinciding" edges
-//	for (int i = 0; i < m_nHorizonEdges; ++i)
-//	{
-//		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
-//		assert(std::find(m_horizonEdges, m_horizonEdges + m_nHorizonEdges, m_horizonEdges[i]->twin) == m_horizonEdges + m_nHorizonEdges);
-//	}
+void EPAHull::SanityCheck() const
+{
+	// Verify that the horizon forms a cycle and that the horizon has no "coinciding" edges
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		assert(m_horizonEdges[(i + 1) % m_nHorizonEdges]->twin->vert == m_horizonEdges[i]->vert);
+		assert(std::find(m_horizonEdges, m_horizonEdges + m_nHorizonEdges, m_horizonEdges[i]->twin) == m_horizonEdges + m_nHorizonEdges);
+	}
 
-//	int nF = 0;
-//	int nHE = 0;
+	int nF = 0;
+	int nHE = 0;
 
-//	std::vector<const HalfEdge*> edges;
-//	std::set<const fMinkowskiPoint*> verts;
+	std::vector<const HalfEdge*> edges;
+	std::set<const fMinkowskiPoint*> verts;
 
-//	for (int i = 0; i < m_nFacesInHeap; ++i)
-//	{
-//		Face* f = m_faceHeap[i];
+	std::vector<Face*> faces = m_faceHeap.GetFaces();
 
-//		if (FaceIsActive(f))
-//		{
-//			HalfEdge* e[3];
-//			e[0] = f->edge;
-//			e[1] = f->edge->next;
-//			e[2] = f->edge->prev;
+	for (Face* f : faces)
+	{
+		HalfEdge* e[3];
+		e[0] = f->edge;
+		e[1] = f->edge->next;
+		e[2] = f->edge->prev;
 
-//			// Verify that the face is a triangle
-//			assert(e[0]->next->next->next == e[0]);
-//			assert(e[0]->prev->prev->prev == e[0]);
+		// Verify that the face is a triangle
+		assert(e[0]->next->next->next == e[0]);
+		assert(e[0]->prev->prev->prev == e[0]);
 
-//			// Verify the two endpoints of each edge
-//			assert(e[0]->vert == e[1]->twin->vert);
-//			assert(e[1]->vert == e[2]->twin->vert);
-//			assert(e[2]->vert == e[0]->twin->vert);
+		// Verify the two endpoints of each edge
+		assert(e[0]->vert == e[1]->twin->vert);
+		assert(e[1]->vert == e[2]->twin->vert);
+		assert(e[2]->vert == e[0]->twin->vert);
 
-//			edges.push_back(e[0]);
-//			edges.push_back(e[1]);
-//			edges.push_back(e[2]);
+		edges.push_back(e[0]);
+		edges.push_back(e[1]);
+		edges.push_back(e[2]);
 
-//			nF++;
-//			nHE += 3;
-//		}
-//	}
+		nF++;
+		nHE += 3;
+	}
 
-//	// Verify that there are an even number of triangles
-//	assert(nF % 2 == 0);
+	// Verify that there are an even number of triangles
+	assert(nF % 2 == 0);
 
-//	for (const HalfEdge* e : edges)
-//	{
-//		verts.insert(e->vert);
-//	}
-//	const int nV = (int)verts.size();
+	for (const HalfEdge* e : edges)
+	{
+		verts.insert(e->vert);
+	}
+	const int nV = (int)verts.size();
 
-//	// Verify that each point we added in the expansion ended up on the hull
-//	assert(nV == m_nVerts);
+	// Verify that each point we added in the expansion ended up on the hull
+	assert(nV == m_nVerts);
 
-//	const int nE = nHE / 2;
+	const int nE = nHE / 2;
 
-//	// Verify EULER'S CHARACTERISTIC
-//	assert(nV - nE + nF == 2);
+	// Verify EULER'S CHARACTERISTIC
+	assert(nV - nE + nF == 2);
 
-//	// Verify that all the new edges and the horizon are convex
-//	for (int i = 0; i < m_nHorizonEdges; ++i)
-//	{
-//		const dVec3& n0 = m_horizonEdges[i]->face->normal;
-//		for (HalfEdge* e : { m_horizonEdges[i], m_horizonEdges[i]->next, m_horizonEdges[i]->prev })
-//		{
-//			const dVec3& n1 = e->twin->face->normal;
+	// Verify that all the new edges and the horizon are convex
+	for (int i = 0; i < m_nHorizonEdges; ++i)
+	{
+		const dVec3& n0 = m_horizonEdges[i]->face->normal;
+		for (HalfEdge* e : { m_horizonEdges[i], m_horizonEdges[i]->next, m_horizonEdges[i]->prev })
+		{
+			const dVec3& n1 = e->twin->face->normal;
 
-//			const dVec3 AB(e->vert->m_MinkDif - e->twin->vert->m_MinkDif);
+			const dVec3 AB(e->vert->m_MinkDif - e->twin->vert->m_MinkDif);
 
-//			const double AB_AB = AB.Dot(AB);
+			const double AB_AB = AB.Dot(AB);
 
-//			assert((float)AB_AB > FLT_MIN);
+			assert((float)AB_AB > FLT_MIN);
 
-//			const dVec3 v = AB.Scale(1.0 / sqrt(AB_AB));
+			const dVec3 v = AB.Scale(1.0 / sqrt(AB_AB));
 
-////			assert((float)n0.Cross(n1).Dot(v) >= 0.0f);
-//		}
-//	}
+//			assert((float)n0.Cross(n1).Dot(v) >= 0.0f);
+		}
+	}
 
-//	// Verify the heap data structure
-//	for (int i = 0; i < m_nFreeFaces; ++i)
-//	{
-//		assert(!m_faceStatuses[m_freeFaces[i]].active);
-//		assert(!m_faceStatuses[m_freeFaces[i]].inHeap);
-//	}
 
-//	// Verify the freelists
-//	assert(nHE + m_nFreeEdges == EPAHULL_MAXEDGES);
-//	assert(m_nFacesInHeap + m_nFreeFaces == EPAHULL_MAXFACES);
+	// Verify the freelists
+	assert(nHE + m_nFreeEdges == EPAHULL_MAXEDGES);
+	assert((int)faces.size() + m_nFreeFaces == EPAHULL_MAXFACES);
 
-//	// Verify that all mutable face attributes are reset for the next pass
-//	for (const Face face : m_faces)
-//	{
-//		assert(!face.visited);
-//		assert(!face.visible);
-//	}
-//}
+	// Verify that all mutable face attributes are reset for the next pass
+	for (const Face face : m_faces)
+	{
+		assert(!face.visited);
+		assert(!face.visible);
+	}
+}
 
 void EPAHull::DebugDraw(DebugRenderer* renderer) const
 {
