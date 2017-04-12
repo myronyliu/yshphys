@@ -233,13 +233,20 @@ void RigidBody::ApplyImpulse(const dVec3& impulse, const dVec3& worldPos)
 
 void RigidBody::ApplyLinImpulse_Immediate(const dVec3& linImpulse)
 {
-	m_state.P = m_state.P + linImpulse;
-	m_v = m_state.P.Scale(m_inertia.minv);
+	if (m_inertia.minv > 0.0)
+	{
+		m_state.P = m_state.P + linImpulse;
+		m_v = m_state.P.Scale(m_inertia.minv);
+	}
 }
 void RigidBody::ApplyAngImpulse_Immediate(const dVec3& angImpulse)
 {
-	m_state.L = m_state.L + angImpulse;
-	m_w = m_Iinv.Transform(m_state.L);
+	const dMat33& I = m_inertia.Ibodyinv;
+	if (I(0, 0) + I(1, 1) + I(2, 2) > 0)
+	{
+		m_state.L = m_state.L + angImpulse;
+		m_w = m_Iinv.Transform(m_state.L);
+	}
 }
 
 void RigidBody::UpdateAABB()
