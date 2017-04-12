@@ -188,8 +188,10 @@ void Island::ResolveContacts() const
 		assert(abs(impulse[i]) < 100000.0);
 
 		const Contact& contact = m_contacts[i];
-		contact.body[0]->ApplyImpulse(contact.n[0].Scale(impulse[i]), contact.x[0]);
-		contact.body[1]->ApplyImpulse(contact.n[1].Scale(impulse[i]), contact.x[1]);
+		contact.body[0]->ApplyLinImpulse(J[i].n0.Scale(impulse[i]));
+		contact.body[1]->ApplyLinImpulse(J[i].n1.Scale(impulse[i]));
+		contact.body[0]->ApplyAngImpulse(J[i].r0xn0.Scale(impulse[i]));
+		contact.body[1]->ApplyAngImpulse(J[i].r1xn1.Scale(impulse[i]));
 	}
 
 	double* const minForce = minImpulse;

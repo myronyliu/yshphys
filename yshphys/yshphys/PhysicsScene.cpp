@@ -278,7 +278,7 @@ void PhysicsScene::ComputeContacts()
 		{
 //			assert(abs(n0.z) > 0.999);
 
-			const double k = 64.0;
+			const double k = 256.0;
 			double penetration = (x1 - x0).Dot(n1);
 			assert(penetration > 0.0);
 			penetration = std::min(0.05, penetration);
