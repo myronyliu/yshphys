@@ -598,15 +598,20 @@ void RenderScene::DrawScene(Window* window)
 		m_debugRenderer.DrawBox(0.25f, 0.25f, 0.25f, pointLight.position, fQuat::Identity(), fVec3(1.0f, 1.0f, 0.0f), false, false);
 	}
 
+#if 1
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	RenderDepthFromLights();
 	RenderDepthFromEye(window);
 	ForwardPass();
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	InitFinalRender();
 	LightingPass();
 	FinalizeLighting();
 	ShadowPass();
-//	RenderPass(window);
 	FinalizeRender(window);
-
+#else
+	RenderPass(window);
+#endif
+	
 	m_debugRenderer.EvictObjects();
 }

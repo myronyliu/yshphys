@@ -54,7 +54,7 @@ Polygon Cylinder::IntersectPlaneLocal(const dVec3& planeOrigin, const dVec3& pla
 		const double cx = planeOrigin.Dot(x);
 		const double cy = planeOrigin.Dot(y);
 
-		const int nPts = 32;
+		const int nPts = 8;
 
 		for (int i = 0; i < nPts; ++i)
 		{

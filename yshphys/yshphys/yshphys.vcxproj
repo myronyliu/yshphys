@@ -201,7 +201,6 @@
     <ClInclude Include="Shader_FinalizeLighting.h" />
     <ClInclude Include="Shader_ForwardPass.h" />
     <ClInclude Include="Shader_FullScreenQuad.h" />
-    <ClInclude Include="Trimesh.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Shader.h" />
@@ -282,7 +281,6 @@
     <ClCompile Include="Shader_FinalizeLighting.cpp" />
     <ClCompile Include="Shader_ForwardPass.cpp" />
     <ClCompile Include="Shader_FullScreenQuad.cpp" />
-    <ClCompile Include="Trimesh.cpp" />
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderScene.cpp" />

@@ -278,7 +278,7 @@ void PhysicsScene::ComputeContacts()
 		{
 //			assert(abs(n0.z) > 0.999);
 
-			const double k = 256.0;
+			const double k = 64.0;
 			double penetration = (x1 - x0).Dot(n1);
 			assert(penetration > 0.0);
 			penetration = std::min(0.05, penetration);
@@ -419,11 +419,24 @@ void PhysicsScene::ComputeContacts()
 				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
 				contact.x[0] = x;
 				contact.x[1] = x;
+//				contact.x[0] = x0;
+//				contact.x[1] = x1;
 
 				isl->AddContact(contact);
 			}
 		}
 	}
+//	if (m_firstIsland != nullptr)
+//	{
+//		int n0 = 0;
+//		Island* is = m_firstIsland;
+//		do
+//		{
+//			is = is->m_next;
+//			n0++;
+//		} while (is != m_firstIsland);
+//		printf("number of islands:  %d\n", n0);
+//	}
 }
 
 void PhysicsScene::ResolveContacts() const
@@ -493,7 +506,6 @@ void PhysicsScene::Step(double dt)
 
 void PhysicsScene::DebugDraw(DebugRenderer* renderer) const
 {
-//	return;
 #if 1 
 	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair : intersectingLeaves)

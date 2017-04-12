@@ -67,6 +67,12 @@
     <Filter Include="DataStructures">
       <UniqueIdentifier>{70cca3f9-e51c-442d-99be-678b10ea15f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Constraints">
+      <UniqueIdentifier>{7838aa59-7046-4200-bcf6-a8ff53ed7dae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Constraints\Position">
+      <UniqueIdentifier>{bbf855d3-a843-4a39-b14b-9351ccf34919}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -212,9 +218,6 @@
     </ClInclude>
     <ClInclude Include="Vec2.h">
       <Filter>Math\Vec</Filter>
-    </ClInclude>
-    <ClInclude Include="Trimesh.h">
-      <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="EPAHull.h">
       <Filter>Physics\Collision</Filter>
@@ -427,9 +430,6 @@
     </ClCompile>
     <ClCompile Include="Vec2.cpp">
       <Filter>Math\Vec</Filter>
-    </ClCompile>
-    <ClCompile Include="Trimesh.cpp">
-      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="EPAHull.cpp">
       <Filter>Physics\Collision</Filter>

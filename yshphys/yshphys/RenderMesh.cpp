@@ -545,7 +545,7 @@ void RenderMesh::CreateCone(float r, float h, const fVec3& diffuse, const fVec3&
 
 	for (int i = 0; i < nPhi; ++i)
 	{
-		const float phi = 2.0*fPI*float(i) / float(nPhi);
+		const float phi = 2.0f*fPI*float(i) / float(nPhi);
 		fVec3 position(r*cosf(phi), r*sinf(phi), 0.0f);
 		fVec3 normal(h*cosf(phi), h*sinf(phi), r);
 		normal = normal.Scale(1.0f / sqrtf(normal.Dot(normal)));
@@ -553,7 +553,7 @@ void RenderMesh::CreateCone(float r, float h, const fVec3& diffuse, const fVec3&
 	}
 	for (int i = 0; i < nPhi; ++i)
 	{
-		const float phi = 2.0*fPI*(float(i) + 0.5f) / float(nPhi);
+		const float phi = 2.0f*fPI*(float(i) + 0.5f) / float(nPhi);
 		fVec3 position(0.0f, 0.0f, h);
 		fVec3 normal(h*cosf(phi), h*sinf(phi), r);
 		normal = normal.Scale(1.0f / sqrtf(normal.Dot(normal)));
@@ -562,7 +562,7 @@ void RenderMesh::CreateCone(float r, float h, const fVec3& diffuse, const fVec3&
 	SetVertex(2 * nPhi, fVec3(0.0f, 0.0f, 0.0f), fVec3(0.0f, 0.0f, -1.0f), diffuse, specular);
 	for (int i = 0; i < nPhi; ++i)
 	{
-		const float phi = 2.0*fPI*float(i) / float(nPhi);
+		const float phi = 2.0f*fPI*float(i) / float(nPhi);
 		const float cosPhi = cosf(phi);
 		const float sinPhi = sinf(phi);
 		for (int j = 0; j < nRad - 1; ++j)
@@ -659,7 +659,7 @@ void RenderMesh::CreateMesh(const Mesh& mesh, const fVec3& diffuse, const fVec3&
 	{
 		Mesh::FaceList::Face face = faceList.GetFace(i);
 		std::vector<fVec3>& verts = face.verts;
-		int nVerts = verts.size();
+		int nVerts = (int)verts.size();
 
 		nVertices += nVerts;
 		nTriangles += nVerts - 2;
@@ -673,7 +673,7 @@ void RenderMesh::CreateMesh(const Mesh& mesh, const fVec3& diffuse, const fVec3&
 	{
 		Mesh::FaceList::Face face = faceList.GetFace(i);
 		std::vector<fVec3>& verts = face.verts;
-		int nVerts = verts.size();
+		int nVerts = (int)verts.size();
 
 		int k = iVertex;
 

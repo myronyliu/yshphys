@@ -117,20 +117,22 @@ void Game::Run()
 //			m_renderScene.DebugDrawSystem().DrawBVTree(m_physicsScene.GetBVTree(), fVec3(1.0f, 1.0f, 1.0f));
 			m_renderScene.DebugDrawSystem().DrawPicker(*m_renderScene.DebugDrawSystem().m_picker, fVec3(0.0f, 1.0f, 0.0f));
 
-//			if (rb[0] != nullptr && rb[1] != nullptr)
-//			{
-//				dVec3 x0, x1;
-//				const double sep = Geometry::ComputeSeparation(
-//					rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(), x0,
-//					rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), x1);
-
-//				fVec3 color = (sep > 0.0) ? fVec3(1.0f, 0.0f, 0.0f) : fVec3(0.0f, 1.0f, 0.0f);
-
-//				m_renderScene.DebugDrawSystem().DrawLine(x0, x1, fVec3(0.0f, 0.0f, 1.0f));
-//				m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x0, fQuat::Identity(), color, false, false);
-//				m_renderScene.DebugDrawSystem().DrawBox(0.1f, 0.1f, 0.1f, x1, fQuat::Identity(), color, false, false);
-//			}
-			
+			if (rb[0] != nullptr && rb[1] != nullptr)
+			{
+				GJKSimplex simp;
+				if (Geometry::Intersect(
+					rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(), dVec3(), dVec3(),
+					rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(), dVec3(), dVec3(),
+					simp))
+				{
+					EPAHull hull(
+						rb[0]->GetGeometry(), rb[0]->GetPosition(), rb[0]->GetRotation(),
+						rb[1]->GetGeometry(), rb[1]->GetPosition(), rb[1]->GetRotation(),
+						simp);
+					hull.ComputeIntersection(dVec3(), dVec3(), dVec3(), dVec3());
+					hull.DebugDraw(&m_renderScene.DebugDrawSystem());
+				}
+			}
 //			epa->DebugDraw(&m_renderScene.DebugDrawSystem());
 
 			const float axesLength = 16.0f;

@@ -119,7 +119,7 @@ void Tests::CreateBox(Game* game, const fVec3& halfDim, double m, const dVec3& p
 	Box* geom = new Box;
 	geom->SetDimensions(halfDim.x, halfDim.y, halfDim.z);
 	RenderMesh* mesh = new RenderMesh;
-	mesh->CreateBox(halfDim.x, halfDim.y, halfDim.z, 16, 16, 16, diffuse, specular);
+	mesh->CreateBox(halfDim.x, halfDim.y, halfDim.z, 2, 2, 2, diffuse, specular);
 	RenderObject* renderObj = new RenderObject;
 	renderObj->SetRenderMesh(mesh);
 	renderObj->SetShader(nullptr);
@@ -174,16 +174,59 @@ void Tests::CreateBVTest(Game* game)
 			(double)std::rand() / (double)RAND_MAX,
 			(double)std::rand() / (double)RAND_MAX
 		);
-
 		dVec3 pos = alpha.Times(sceneMin) + (dVec3(1.0, 1.0, 1.0) - alpha).Times(sceneMax);
+
+#if 0
+
+		const int nPts = 32;
+		fVec3* pts = new fVec3[nPts];
+
+		for (int j = 0; j < nPts; ++j)
+		{
+			float u = (float)std::rand() / (float)RAND_MAX;
+			float v = (float)std::rand() / (float)RAND_MAX;
+			float w = (float)std::rand() / (float)RAND_MAX;
+
+			pts[j].x = 2.0f*u - 1.0f;
+			pts[j].y = 2.0f*v - 1.0f;
+			pts[j].z = 2.0f*w - 1.0f;
+		}
+
+		Mesh* geom = new Mesh(pts, nPts);
+		delete[] pts;
+
+		geom->ShiftToCenterOfMass_Solid();
+
+		RenderMesh* renderMesh = new RenderMesh;
+		renderMesh->CreateMesh(*geom, fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+		RenderObject* renderObj = new RenderObject;
+		renderObj->SetRenderMesh(renderMesh);
+		renderObj->SetShader(nullptr);
+
+		RigidBody* body = new RigidBody;
+		body->SetGeometry(geom, dVec3(0.0, 0.0, 0.0), dQuat::Identity());
+		double m;
+		dMat33 I = geom->InertiaLocal_Solid(10.0, m);
+		body->SetMass(m);
+		body->SetInertia(I);
+
+		body->SetPosition(pos);
+		body->SetRotation(dQuat::Identity());
+
+		GameObject* gameObject = new GameObject;
+		gameObject->SetPhysicsObject(body);
+		gameObject->SetRenderObject(renderObj);
+		game->AddGameObject(gameObject);
+
+#else
 
 		switch (i % 4)
 		{
 		case 0:
-			CreateCylinder(game, 1.5, 1.0, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+			CreateCylinder(game, 1.5, 1.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
 			break;
 		case 1:
-			CreateCapsule(game, 1.0, 1.5, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+			CreateCapsule(game, 1.0, 1.5, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
 			break;
 		case 2:
 			CreateSphere(game, 1.5, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
@@ -195,9 +238,9 @@ void Tests::CreateBVTest(Game* game)
 			CreateCone(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
 			break;
 		}
-//		CreateSphere(game, 1.0, 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-//		CreateCylinder(game, 1.0, 2.0, 1.0, pos, dQuat::Identity(), fVec3(0.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
-//		CreateBox(game, fVec3(1.0, 1.0, 1.0), 1.0, pos, dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+//		CreateBox(game, fVec3(1.0, 1.0, 1.0).Scale(1.25), 1.0, pos, dQuat::Identity(), fVec3(1.0f, 0.0f, 0.0f), fVec3(1.0f, 0.0f, 0.0f));
+
+#endif
 	}
 
 	CreateBox(game, fVec3(16.0, 16.0, 1.0), 0.0, dVec3(0.0, 0.0, -16.0), dQuat::Identity(), fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
@@ -211,15 +254,15 @@ void Tests::CreateBVTest(Game* game)
 void Tests::CreateGJKTest(Game* game)
 {
 	Shader_Default* shader = new Shader_Default;
-	Cylinder* geometry = new Cylinder;
+	Capsule* geometry = new Capsule;
 	geometry->SetRadius(1.0);
-	geometry->SetHalfHeight(2.0);
+	geometry->SetHalfHeight(1.0);
 //	Box* geometry = new Box;
 //	geometry->SetDimensions(1.0, 1.0, 1.0);
 
 //	dVec3 pos[2] = { dVec3(-0.9,1.0,0.0),dVec3(0.9,1.0,0.2) };
 //	dVec3 pos[2] = { dVec3(0.0,2.0,-1.9),dVec3(0.5,2.5,1.9) };
-	dVec3 pos[2] = { dVec3(0.0,0.0,-1.9),dVec3(0.0,0.0,1.9) };
+	dVec3 pos[2] = { dVec3(0.0,10.0,-1.9),dVec3(0.0,10.0,1.9) };
 
 //	dQuat rot[2] = { dQuat::Identity(), dQuat(dVec3(1.0,0.0,0.0), dPI*0.0) };
 	dQuat rot[2] = { dQuat::Identity(), dQuat::Identity() };
@@ -227,11 +270,11 @@ void Tests::CreateGJKTest(Game* game)
 	for (int i = 0; i < 2; ++i)
 	{
 		RenderMesh* mesh = new RenderMesh;
-		mesh->CreateCylinder(1.0f, 2.0f, fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
+		mesh->CreateCapsule(1.0f, 1.0f, fVec3(1.0f, 1.0f, 1.0f), fVec3(1.0f, 1.0f, 1.0f));
 //		mesh->CreateBox(1.0f, 1.0f, 1.0f, 0, 0, 0, fVec3(1.0f, 1.0f, 1.0f));
 		RenderObject* renderObj = new RenderObject;
 		renderObj->SetRenderMesh(mesh);
-		renderObj->SetShader(shader);
+		renderObj->SetShader(nullptr);
 
 		RigidBody* rigidBody = new RigidBody;
 		rigidBody->SetGeometry(geometry, dVec3(0.0,0.0,0.0), dQuat::Identity());
@@ -245,8 +288,19 @@ void Tests::CreateGJKTest(Game* game)
 
 		GameObject* gameObject = new GameObject;
 		gameObject->SetPhysicsObject(rigidBody);
-//		gameObject->SetRenderObject(renderObj);
+		gameObject->SetRenderObject(renderObj);
 
 		game->AddGameObject(gameObject);
 	}
+//	GJKSimplex simp;
+//	Geometry::Intersect(
+//		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(), dVec3(), dVec3(),
+//		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(), dVec3(), dVec3(),
+//		simp
+//	);
+//	game->epa = new EPAHull(
+//		game->rb[0]->GetGeometry(), game->rb[0]->GetPosition(), game->rb[0]->GetRotation(),
+//		game->rb[1]->GetGeometry(), game->rb[1]->GetPosition(), game->rb[1]->GetRotation(),
+//		simp
+//	);
 }
