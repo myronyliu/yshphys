@@ -15,7 +15,7 @@ FrictionCoefficients Material::Friction(Material::Type type0, Material::Type typ
 
 void Material::InitializeTables()
 {
-	g_RestitutionTable[Material::Type::WOOD][Material::Type::WOOD] = 0.0;
+	g_RestitutionTable[Material::Type::WOOD][Material::Type::WOOD] = 0.5;
 
 	g_FrictionTable[Material::Type::WOOD][Material::Type::WOOD].uKinetic = 0.25;
 	g_FrictionTable[Material::Type::WOOD][Material::Type::WOOD].uStatic = 0.5;

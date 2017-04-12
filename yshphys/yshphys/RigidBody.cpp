@@ -231,6 +231,17 @@ void RigidBody::ApplyImpulse(const dVec3& impulse, const dVec3& worldPos)
 	assert(abs(m_dL.z) < 100000.0);
 }
 
+void RigidBody::ApplyLinImpulse_Immediate(const dVec3& linImpulse)
+{
+	m_state.P = m_state.P + linImpulse;
+	m_v = m_state.P.Scale(m_inertia.minv);
+}
+void RigidBody::ApplyAngImpulse_Immediate(const dVec3& angImpulse)
+{
+	m_state.L = m_state.L + angImpulse;
+	m_w = m_Iinv.Transform(m_state.L);
+}
+
 void RigidBody::UpdateAABB()
 {
 	const dVec3 x = m_state.x;

@@ -166,7 +166,6 @@
     <ClInclude Include="Cone.h" />
     <ClInclude Include="FinalRenderBuffer.h" />
     <ClInclude Include="ForwardRenderBuffer.h" />
-    <ClInclude Include="Contact.h" />
     <ClInclude Include="ContactBuffer.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DebugRenderer.h" />

@@ -1,6 +1,8 @@
 #pragma once
 #include "RigidBody.h"
 
+#define USE_SEQUENTIAL_IMPULSE_SOLVER 1
+
 class PhysicsScene;
 
 class Island
@@ -19,6 +21,10 @@ private:
 
 	void PrependTo(Island* island);
 	Island* Merge(Island* island);
+#if USE_SEQUENTIAL_IMPULSE_SOLVER
+	void ResolveContacts();
+#else
 	void ResolveContacts() const;
+#endif
 };
 

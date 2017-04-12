@@ -4,6 +4,7 @@
 #include "Material.h"
 
 #define COLINEAR_ANGLE_THRESH (dPI*0.25)
+const dVec3 GRAVITY(0.0, 0.0, -9.8);
 
 PhysicsScene::PhysicsScene() : m_firstNode(nullptr), m_firstIsland(nullptr)
 {
@@ -487,7 +488,7 @@ void PhysicsScene::Step(double dt)
 	while (node != nullptr)
 	{
 		RigidBody* body = ((RigidBody*)node->GetPhysicsObject());
-		body->ApplyForceAtCOM(dVec3(0.0, 0.0, -9.8).Scale(body->GetMass()));
+		body->ApplyForceAtCOM(GRAVITY.Scale(body->GetMass()));
 		node = node->GetNext();
 	}
 

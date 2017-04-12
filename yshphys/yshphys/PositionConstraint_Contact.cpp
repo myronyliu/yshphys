@@ -64,14 +64,20 @@ void PositionConstraint_Contact::Resolve()
 
 	const double Jvb = Jv + b;
 
-	const double dLambda = Jvb / m_JMJ;
+	const double dLambda = -Jvb / m_JMJ;
 	const double lambda_clamped = std::min(std::max(0.0, m_lambda + dLambda), DBL_MAX);
 	const double dLambda_clamped = lambda_clamped - m_lambda;
 	m_lambda = lambda_clamped;
 
-	body[0]->ApplyLinImpulse_Immediate(m_J[0].J_v.Scale(dLambda_clamped));
-	body[1]->ApplyLinImpulse_Immediate(m_J[1].J_v.Scale(dLambda_clamped));
+	if (!body[0]->IsStatic())
+	{
+		body[0]->ApplyLinImpulse_Immediate(m_J[0].J_v.Scale(dLambda_clamped));
+		body[0]->ApplyAngImpulse_Immediate(m_J[0].J_w.Scale(dLambda_clamped));
+	}
 
-	body[0]->ApplyAngImpulse_Immediate(m_J[0].J_w.Scale(dLambda_clamped));
-	body[1]->ApplyAngImpulse_Immediate(m_J[1].J_w.Scale(dLambda_clamped));
+	if (!body[1]->IsStatic())
+	{
+		body[1]->ApplyLinImpulse_Immediate(m_J[1].J_v.Scale(dLambda_clamped));
+		body[1]->ApplyAngImpulse_Immediate(m_J[1].J_w.Scale(dLambda_clamped));
+	}
 }

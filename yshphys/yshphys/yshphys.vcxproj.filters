@@ -237,9 +237,6 @@
     <ClInclude Include="ContactBuffer.h">
       <Filter>Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Contact.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Island.h">
       <Filter>Physics</Filter>
     </ClInclude>

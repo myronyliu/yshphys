@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Island.h"
 
-#define MAX_CONTACTS 64 
+#define MAX_CONTACTS 64
 
 Island::Island() :
 	m_prev(this),
@@ -52,6 +52,29 @@ Island* Island::Merge(Island* island)
 
 	return this;
 }
+
+#if USE_SEQUENTIAL_IMPULSE_SOLVER
+
+void Island::ResolveContacts()
+{
+	const int nContacts = (int)m_contacts.size();
+	for (int i = 0; i < nContacts; ++i)
+	{
+		PositionConstraint_Contact& contact = m_contacts[i];
+		contact.BuildFixedTerms();
+	}
+
+	for (int iters = 0; iters < 16; ++iters)
+	{
+		for (int i = 0; i < nContacts; ++i)
+		{
+			PositionConstraint_Contact& contact = m_contacts[i];
+			contact.Resolve();
+		}
+	}
+}
+
+#else
 
 void Island::ResolveContacts() const
 {
@@ -238,3 +261,5 @@ void Island::ResolveContacts() const
 		contact.body[1]->ApplyForce(F[1], contact.x[1]);
 	}
 }
+
+#endif
