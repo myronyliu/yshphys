@@ -18,8 +18,18 @@
 #include "Picker.h"
 #include "CameraPickerToggle.h"
 
+#include "Heap.h"
+
 int main(int argc, char *args[])
 {
+
+	bool(*qwer)(const int& a, const int& b) = [](const int& a, const int& b)
+	{
+		return true;
+	};
+
+	Heap_t<int> asdf(qwer);
+
 	Window window;
 	window.CreateWindow(88, 88, 1200, 900);
 
@@ -47,6 +57,7 @@ int main(int argc, char *args[])
 	game.m_renderScene.DebugDrawSystem().m_picker = &picker;
 
 	Tests::CreateBVTest(&game);
+//	Tests::CreateGJKTest(&game);
 
 	game.Run();
 

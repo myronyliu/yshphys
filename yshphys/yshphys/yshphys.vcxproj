@@ -192,6 +192,8 @@
     <ClInclude Include="Picker.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Island.h" />
+    <ClInclude Include="PositionConstraint.h" />
+    <ClInclude Include="PositionConstraint_Contact.h" />
     <ClInclude Include="QuickHull.h" />
     <ClInclude Include="Shader_DeferredPointLight.h" />
     <ClInclude Include="Shader_DeferredPointLightShadow.h" />
@@ -241,7 +243,6 @@
     <ClCompile Include="Cone.cpp" />
     <ClCompile Include="FinalRenderBuffer.cpp" />
     <ClCompile Include="ForwardRenderBuffer.cpp" />
-    <ClCompile Include="Contact.cpp" />
     <ClCompile Include="ContactBuffer.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
@@ -272,6 +273,8 @@
     <ClCompile Include="Picker.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Island.cpp" />
+    <ClCompile Include="PositionConstraint.cpp" />
+    <ClCompile Include="PositionConstraint_Contact.cpp" />
     <ClCompile Include="QuickHull.cpp" />
     <ClCompile Include="Shader_DeferredPointLight.cpp" />
     <ClCompile Include="Shader_DeferredPointLightShadow.cpp" />

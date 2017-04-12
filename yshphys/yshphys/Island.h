@@ -10,9 +10,9 @@ private:
 	Island();
 	~Island();
 
-	void AddContact(const Contact& contact);
+	void AddContact(const PositionConstraint_Contact& contact);
 
-	std::vector<Contact> m_contacts;
+	std::vector<PositionConstraint_Contact> m_contacts;
 
 	Island* m_prev;
 	Island* m_next;

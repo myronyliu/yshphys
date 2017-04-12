@@ -2,7 +2,7 @@
 #include "YshMath.h"
 #include "Geometry.h"
 #include "PhysicsObject.h"
-#include "Contact.h"
+#include "PositionConstraint_Contact.h"
 
 class Force;
 class Island;
@@ -77,6 +77,9 @@ public:
 
 	void ApplyLinImpulse(const dVec3& linImpulse) { m_dP = m_dP + linImpulse; }
 	void ApplyAngImpulse(const dVec3& angImpulse) { m_dL = m_dL + angImpulse; }
+
+	void ApplyLinImpulse_Immediate(const dVec3& linImpulse) { m_state.P = m_state.P + linImpulse; }
+	void ApplyAngImpulse_Immediate(const dVec3& angImpulse) { m_state.L = m_state.L + angImpulse; }
 
 	void ApplyForceAtCOM(const dVec3& force) { m_F = m_F + force; }
 	void ApplyImpulseAtCOM(const dVec3& impulse) { m_dP = m_dP + impulse; }

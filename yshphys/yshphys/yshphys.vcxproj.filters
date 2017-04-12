@@ -297,6 +297,12 @@
     <ClInclude Include="Heap.h">
       <Filter>DataStructures</Filter>
     </ClInclude>
+    <ClInclude Include="PositionConstraint.h">
+      <Filter>Physics\Constraints\Position</Filter>
+    </ClInclude>
+    <ClInclude Include="PositionConstraint_Contact.h">
+      <Filter>Physics\Constraints\Position</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="yshphys.cpp">
@@ -449,9 +455,6 @@
     <ClCompile Include="ContactBuffer.cpp">
       <Filter>Physics\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Contact.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Island.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
@@ -511,6 +514,12 @@
     </ClCompile>
     <ClCompile Include="Heap.cpp">
       <Filter>DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionConstraint.cpp">
+      <Filter>Physics\Constraints\Position</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionConstraint_Contact.cpp">
+      <Filter>Physics\Constraints\Position</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

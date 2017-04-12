@@ -248,7 +248,7 @@ void PhysicsScene::ComputeContacts()
 	std::vector<BVNodePair> intersectingLeaves = m_bvTree.Root()->FindIntersectingLeaves();
 	for (BVNodePair pair : intersectingLeaves)
 	{
-		Contact contact;
+		PositionConstraint_Contact contact;
 
 		RigidBody* body[2];
 

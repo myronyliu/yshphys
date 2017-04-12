@@ -14,7 +14,7 @@ Island::~Island()
 {
 }
 
-void Island::AddContact(const Contact& contact)
+void Island::AddContact(const PositionConstraint_Contact& contact)
 {
 	m_contacts.push_back(contact);
 
@@ -40,7 +40,7 @@ void Island::PrependTo(Island* island)
 Island* Island::Merge(Island* island)
 {
 	m_contacts.reserve(m_contacts.size() + island->m_contacts.size());
-	for (Contact contact : island->m_contacts)
+	for (PositionConstraint_Contact contact : island->m_contacts)
 	{
 		AddContact(contact);
 	}
@@ -85,7 +85,7 @@ void Island::ResolveContacts() const
 
 	for (int i = 0; i < nContacts; ++i)
 	{
-		const Contact& contact = m_contacts[i];
+		const PositionConstraint_Contact& contact = m_contacts[i];
 
 		const dVec3 pos[2] = { contact.body[0]->GetPosition(), contact.body[1]->GetPosition() };
 
@@ -187,7 +187,7 @@ void Island::ResolveContacts() const
 	{
 		assert(abs(impulse[i]) < 100000.0);
 
-		const Contact& contact = m_contacts[i];
+		const PositionConstraint_Contact& contact = m_contacts[i];
 		contact.body[0]->ApplyLinImpulse(J[i].n0.Scale(impulse[i]));
 		contact.body[1]->ApplyLinImpulse(J[i].n1.Scale(impulse[i]));
 		contact.body[0]->ApplyAngImpulse(J[i].r0xn0.Scale(impulse[i]));
@@ -200,7 +200,7 @@ void Island::ResolveContacts() const
 
 	for (int i = 0; i < nContacts; ++i)
 	{
-		const Contact& contact = m_contacts[i];
+		const PositionConstraint_Contact& contact = m_contacts[i];
 
 		b[i] = -(
 			JMinv[i].n0.Dot(contact.body[0]->GetForce()) +
@@ -215,7 +215,7 @@ void Island::ResolveContacts() const
 
 	for (int i = 0; i < nContacts; ++i)
 	{
-		const Contact& contact = m_contacts[i];
+		const PositionConstraint_Contact& contact = m_contacts[i];
 
 		dVec3 F[2] =
 		{
