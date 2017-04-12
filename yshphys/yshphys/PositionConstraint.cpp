@@ -11,8 +11,9 @@ PositionConstraint::~PositionConstraint()
 {
 }
 
-void PositionConstraint::BuildFixedTerms()
+void PositionConstraint::BuildFixedTerms(double dt)
 {
 	EvaluateC();
 	EvaluateJMJ();
+	EvaluateBiasFactor(dt);
 }

@@ -37,19 +37,21 @@ void PositionConstraint_Contact::EvaluateJMJ()
 		m_JM[1].J_w.Dot(m_J[1].J_w);
 }
 
-void PositionConstraint_Contact::BuildFixedTerms()
+void PositionConstraint_Contact::EvaluateBiasFactor(double dt)
 {
-	PositionConstraint::BuildFixedTerms();
-
-	m_bRestitution =
+	double bRestitution =
 		m_J[0].J_v.Dot(body[0]->GetLinearVelocity()) +
 		m_J[0].J_w.Dot(body[0]->GetAngularVelocity()) +
 		m_J[1].J_v.Dot(body[1]->GetLinearVelocity()) +
 		m_J[1].J_w.Dot(body[1]->GetAngularVelocity());
-
-	m_bRestitution *= Material::Restitution(
+	bRestitution *= Material::Restitution(
 		body[0]->GetMaterial(x[0]),
 		body[1]->GetMaterial(x[1]));
+
+	assert(m_C < 0.0);
+	const double bBaumgarte = (m_C / dt)*0.1;
+
+	m_b = bRestitution + bBaumgarte;
 }
 
 void PositionConstraint_Contact::Resolve()
@@ -60,9 +62,7 @@ void PositionConstraint_Contact::Resolve()
 		m_J[1].J_v.Dot(body[1]->GetLinearVelocity()) +
 		m_J[1].J_w.Dot(body[1]->GetAngularVelocity());
 
-	const double b = m_bRestitution;
-
-	const double Jvb = Jv + b;
+	const double Jvb = Jv + m_b;
 
 	const double dLambda = -Jvb / m_JMJ;
 	const double lambda_clamped = std::min(std::max(0.0, m_lambda + dLambda), DBL_MAX);

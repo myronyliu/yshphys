@@ -34,7 +34,7 @@ public:
 
 protected:
 	void ComputeContacts();
-	void ResolveContacts() const;
+	void ResolveContacts(double dt) const;
 	void ClearIslands();
 
 	std::stack<FreedPhysicsNode> m_freedNodeStack;

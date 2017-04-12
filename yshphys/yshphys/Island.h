@@ -22,9 +22,9 @@ private:
 	void PrependTo(Island* island);
 	Island* Merge(Island* island);
 #if USE_SEQUENTIAL_IMPULSE_SOLVER
-	void ResolveContacts();
+	void ResolveContacts(double dt);
 #else
-	void ResolveContacts() const;
+	void ResolveContacts(double dt) const;
 #endif
 };
 

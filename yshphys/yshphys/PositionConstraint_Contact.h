@@ -12,13 +12,13 @@ public:
 	PositionConstraint_Contact();
 	virtual ~PositionConstraint_Contact();
 
-	virtual void BuildFixedTerms();
 	virtual void Resolve();
 
 protected:
 
 	virtual void EvaluateC();
 	virtual void EvaluateJMJ();
+	virtual void EvaluateBiasFactor(double dt);
 
 	J_1x6 m_J[2];
 	J_1x6 m_JM[2];
@@ -26,6 +26,6 @@ protected:
 	double m_C;
 	double m_lambda;
 
-	double m_bRestitution; // Evaluated BEFORE we apply any impulses
+	double m_b;
 };
 

@@ -18,8 +18,9 @@ public:
 	PositionConstraint();
 	virtual ~PositionConstraint();
 
-	virtual void BuildFixedTerms();
+	virtual void BuildFixedTerms(double dt);
 	// Evaluates Jv + b, where v = [v_0, w_0, ..., v_n, w_n] and b is the bias term (e.g. resitution, Baumgarte stabilization)
+	// Subsequently solves for the delta Impulse to be applied, clamping the accumulated impulse if necessary.
 	virtual void Resolve() = 0;
 
 protected:
@@ -33,5 +34,6 @@ protected:
 	// 3.  JMJ = J MJ
 	virtual void EvaluateJMJ() = 0;
 
+	virtual void EvaluateBiasFactor(double dt) = 0;
 };
 

@@ -279,27 +279,27 @@ void PhysicsScene::ComputeContacts()
 		{
 //			assert(abs(n0.z) > 0.999);
 
-			const double k = 256.0;
-			double penetration = (x1 - x0).Dot(n1);
-			assert(penetration > 0.0);
-			penetration = std::min(0.05, penetration);
-			const dVec3 d = n1.Scale(penetration);
+//			const double k = 256.0;
+//			double penetration = (x1 - x0).Dot(n1);
+//			assert(penetration > 0.0);
+//			penetration = std::min(0.05, penetration);
+//			const dVec3 d = n1.Scale(penetration);
 
-			Force_Constant* penalty0 = new Force_Constant();
-			Force_Constant* penalty1 = new Force_Constant();
-			penalty0->offset = dVec3(0.0, 0.0, 0.0);
-			penalty1->offset = dVec3(0.0, 0.0, 0.0);
-			penalty0->F = d.Scale(contact.body[0]->GetMass()*k);
-			penalty1->F = -d.Scale(contact.body[1]->GetMass()*k);
-			contact.body[0]->ApplyBruteForce(penalty0);
-			contact.body[1]->ApplyBruteForce(penalty1);
+//			Force_Constant* penalty0 = new Force_Constant();
+//			Force_Constant* penalty1 = new Force_Constant();
+//			penalty0->offset = dVec3(0.0, 0.0, 0.0);
+//			penalty1->offset = dVec3(0.0, 0.0, 0.0);
+//			penalty0->F = d.Scale(contact.body[0]->GetMass()*k);
+//			penalty1->F = -d.Scale(contact.body[1]->GetMass()*k);
+//			contact.body[0]->ApplyBruteForce(penalty0);
+//			contact.body[1]->ApplyBruteForce(penalty1);
 
-			assert(abs(penalty0->F.x) < 1000000.0f);
-			assert(abs(penalty0->F.y) < 1000000.0f);
-			assert(abs(penalty0->F.z) < 1000000.0f);
-			assert(abs(penalty1->F.x) < 1000000.0f);
-			assert(abs(penalty1->F.y) < 1000000.0f);
-			assert(abs(penalty1->F.z) < 1000000.0f);
+//			assert(abs(penalty0->F.x) < 1000000.0f);
+//			assert(abs(penalty0->F.y) < 1000000.0f);
+//			assert(abs(penalty0->F.z) < 1000000.0f);
+//			assert(abs(penalty1->F.x) < 1000000.0f);
+//			assert(abs(penalty1->F.y) < 1000000.0f);
+//			assert(abs(penalty1->F.z) < 1000000.0f);
 
 			contact.n[0] = -n0;
 			contact.n[1] = -n1;
@@ -415,11 +415,13 @@ void PhysicsScene::ComputeContacts()
 				assert(n0 == n1);
 			}
 
+			const dVec3 dx = n0.Scale(0.5*n0.Dot(x1 - x0));
+
 			for (int i = 0; i < nVerts; ++i)
 			{
 				dVec3 x = xPlane + RPlane0.Transform(xHat.Scale((double)verts[i].x) + yHat.Scale((double)verts[i].y));
-				contact.x[0] = x;
-				contact.x[1] = x;
+				contact.x[0] = x - dx;
+				contact.x[1] = x + dx;
 //				contact.x[0] = x0;
 //				contact.x[1] = x1;
 
@@ -440,14 +442,14 @@ void PhysicsScene::ComputeContacts()
 //	}
 }
 
-void PhysicsScene::ResolveContacts() const
+void PhysicsScene::ResolveContacts(double dt) const
 {
 	if (m_firstIsland != nullptr)
 	{
 		Island* island = m_firstIsland;
 		do
 		{
-			island->ResolveContacts();
+			island->ResolveContacts(dt);
 			island = island->m_next;
 
 		} while (island != m_firstIsland);
@@ -493,7 +495,7 @@ void PhysicsScene::Step(double dt)
 	}
 
 	ComputeContacts();
-	ResolveContacts();
+	ResolveContacts(dt);
 	ClearIslands();
 
 	node = m_firstNode;

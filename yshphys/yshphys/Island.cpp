@@ -55,13 +55,13 @@ Island* Island::Merge(Island* island)
 
 #if USE_SEQUENTIAL_IMPULSE_SOLVER
 
-void Island::ResolveContacts()
+void Island::ResolveContacts(double dt)
 {
 	const int nContacts = (int)m_contacts.size();
 	for (int i = 0; i < nContacts; ++i)
 	{
 		PositionConstraint_Contact& contact = m_contacts[i];
-		contact.BuildFixedTerms();
+		contact.BuildFixedTerms(dt);
 	}
 
 	for (int iters = 0; iters < 16; ++iters)
@@ -76,7 +76,7 @@ void Island::ResolveContacts()
 
 #else
 
-void Island::ResolveContacts() const
+void Island::ResolveContacts(double dt) const
 {
 	// dynamic variables are v, w
 	// constraint is ...
