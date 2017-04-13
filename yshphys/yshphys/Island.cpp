@@ -18,13 +18,18 @@ void Island::AddContact(const PositionConstraint_Contact& contact)
 {
 	m_contacts.push_back(contact);
 
-	if (!contact.body[0]->IsStatic())
+	int nBodies;
+	RigidBody*const* bodies;
+	(&contact)->GetBodies(bodies, nBodies);
+
+	for (int i = 0; i < nBodies; ++i)
 	{
-		contact.body[0]->SetIsland(this);
-	}
-	if (!contact.body[1]->IsStatic())
-	{
-		contact.body[1]->SetIsland(this);
+		RigidBody* body = bodies[i];
+
+		if (!body->IsStatic())
+		{
+			body->SetIsland(this);
+		}
 	}
 }
 

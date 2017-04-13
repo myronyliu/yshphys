@@ -18,6 +18,9 @@ public:
 	PositionConstraint();
 	virtual ~PositionConstraint();
 
+	// Ugh... this is ugly, but seems to be the most efficient thing I can imagine at the moment.
+	virtual void GetBodies(RigidBody*const*& bodies, int& nBodies) const = 0;
+
 	virtual void BuildFixedTerms(double dt);
 	// Evaluates Jv + b, where v = [v_0, w_0, ..., v_n, w_n] and b is the bias term (e.g. resitution, Baumgarte stabilization)
 	// Subsequently solves for the delta Impulse to be applied, clamping the accumulated impulse if necessary.

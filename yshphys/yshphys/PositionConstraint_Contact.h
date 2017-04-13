@@ -12,6 +12,8 @@ public:
 	PositionConstraint_Contact();
 	virtual ~PositionConstraint_Contact();
 
+	virtual void GetBodies(RigidBody*const*& bodies, int& nBodies) const;
+
 	virtual void Resolve();
 
 protected:

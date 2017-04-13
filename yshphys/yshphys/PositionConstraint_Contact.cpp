@@ -11,6 +11,12 @@ PositionConstraint_Contact::~PositionConstraint_Contact()
 {
 }
 
+void PositionConstraint_Contact::GetBodies(RigidBody*const*& bodies, int& nBodies) const
+{
+	bodies = body;
+	nBodies = 2;
+}
+
 void PositionConstraint_Contact::EvaluateC()
 {
 	m_C = (x[0] - x[1]).Dot(n[0]);
