@@ -201,6 +201,14 @@ void RigidBody::SetInertia(const dQuat& principleAxes, const dVec3& inertia)
 	I.SetRow(2, dVec3(0.0, 0.0, inertia.z));
 	SetInertia(R.Transpose()*I*R);
 }
+void RigidBody::SetIsland(Island* island)
+{
+	m_island = island;
+}
+Island* RigidBody::GetIsland() const
+{
+	return m_island;
+}
 
 void RigidBody::ApplyBruteForce(Force* force)
 {
@@ -247,6 +255,23 @@ void RigidBody::ApplyAngImpulse_Immediate(const dVec3& angImpulse)
 		m_state.L = m_state.L + angImpulse;
 		m_w = m_Iinv.Transform(m_state.L);
 	}
+}
+
+void RigidBody::UpdateDependentStateVariables()
+{
+	dMat33 R(m_state.q);
+	m_Iinv = R*m_inertia.Ibodyinv*R.Transpose();
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < i; ++j)
+		{
+			const double x = (m_Iinv(i, j) + m_Iinv(j, i))*0.5;
+			m_Iinv(i, j) = x;
+			m_Iinv(j, i) = x;
+		}
+	}
+	m_w = m_Iinv.Transform(m_state.L);
+	m_v = m_state.P.Scale(m_inertia.minv);
 }
 
 void RigidBody::UpdateAABB()

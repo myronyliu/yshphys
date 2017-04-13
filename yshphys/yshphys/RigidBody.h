@@ -82,19 +82,12 @@ public:
 	void ApplyAngImpulse_Immediate(const dVec3& angImpulse);
 
 	void ApplyForceAtCOM(const dVec3& force) { m_F = m_F + force; }
-	void ApplyImpulseAtCOM(const dVec3& impulse) { m_dP = m_dP + impulse; }
 
 	dVec3 GetForce() const { return m_F; }
 	dVec3 GetTorque() const { return m_T; }
 
-	void SetIsland(Island* island)
-	{
-		m_island = island;
-	}
-	Island* GetIsland() const
-	{
-		return m_island;
-	}
+	void SetIsland(Island* island);
+	Island* GetIsland() const;
 
 	virtual void UpdateAABB();
 
@@ -118,24 +111,7 @@ protected:
 	dVec3 m_v; // linear  velocity
 	dVec3 m_w; // angular velocity
 
-	void UpdateDependentStateVariables()
-	{
-		dMat33 R(m_state.q);
-		m_Iinv = R*m_inertia.Ibodyinv*R.Transpose();
-		for (int i = 0; i < 3; ++i)
-		{
-			for (int j = 0; j < i; ++j)
-			{
-				const double x = (m_Iinv(i, j) + m_Iinv(j, i))*0.5;
-				m_Iinv(i, j) = x;
-				m_Iinv(j, i) = x;
-			}
-		}
-		m_w = m_Iinv.Transform(m_state.L);
-		m_v = m_state.P.Scale(m_inertia.minv);
-
-		assert(m_Iinv.Transpose() == m_Iinv);
-	}
+	void UpdateDependentStateVariables();
 
 	Force* m_forces[64];
 	int m_nForces;
